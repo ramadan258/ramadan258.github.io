@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ramadan258.github.io/wa3i-al-ahd/sitemap.xml

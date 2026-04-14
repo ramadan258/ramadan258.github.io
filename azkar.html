@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الأذكار | واعي</title>
+  <meta name="theme-color" content="#0c1320" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="today.css" />
+  <link rel="icon" href="favicon.ico?v=2" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2" />
+  <link rel="apple-touch-icon" href="images/site-icon-512.png?v=2" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --zikr-font: 29px;
+      --zikr-line: 2.1;
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin: 0;
+      min-height: 100dvh;
+      font-family: "Cairo", sans-serif;
+      color: var(--text-light, #eaecf0);
+      background:
+        radial-gradient(circle at top left, rgba(78,205,196,.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(245,200,66,.06), transparent 24%),
+        linear-gradient(180deg, #09111b 0%, #0c1320 100%);
+    }
+
+    .azkar-page{
+      width: min(1100px, calc(100% - 20px));
+      margin: 0 auto;
+      padding: 14px 0 28px;
+    }
+
+    .azkar-topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .azkar-back{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:999px;
+      text-decoration:none;
+      color: var(--text-light, #eaecf0);
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .azkar-shell{
+      border-radius: 30px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.06);
+      background: linear-gradient(180deg, rgba(12,19,32,.96), rgba(9,15,25,.97));
+      box-shadow: 0 22px 56px rgba(0,0,0,.34);
+    }
+
+    .azkar-head{
+      padding: 20px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      background: linear-gradient(135deg, rgba(78,205,196,.06), rgba(245,200,66,.04));
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) auto;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .azkar-kicker{
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--gold, #f5c842);
+      letter-spacing: .4px;
+      margin-bottom: 7px;
+    }
+
+    .azkar-title{
+      margin: 0;
+      font-family: "Amiri", serif;
+      font-size: clamp(30px, 4vw, 42px);
+      color: var(--text-light, #eaecf0);
+    }
+
+    .azkar-sub{
+      margin: 10px 0 0;
+      max-width: 58ch;
+      color: var(--text-muted, #92a0b3);
+      font-size: 13px;
+      line-height: 1.9;
+    }
+
+    .azkar-controls{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .azkar-switch{
+      display:flex;
+      gap:8px;
+      padding: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+    }
+
+    .azkar-switch-btn,
+    .azkar-tool-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap: 6px;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      color: var(--text-light, #eaecf0);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .azkar-switch-btn.active{
+      background: rgba(78,205,196,.14);
+      border-color: rgba(78,205,196,.28);
+      color: var(--primary, #4ecdc4);
+    }
+
+    .azkar-tool-btn:hover,
+    .azkar-switch-btn:hover{
+      transform: translateY(-1px);
+    }
+
+    .azkar-tool-btn.gold{
+      background: rgba(245,200,66,.12);
+      border-color: rgba(245,200,66,.24);
+      color: var(--gold, #f5c842);
+    }
+
+    .azkar-body{
+      padding: 18px;
+    }
+
+    .azkar-meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      padding: 12px 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.05);
+      background: rgba(255,255,255,.03);
+    }
+
+    .azkar-meta-text{
+      color: var(--text-muted, #92a0b3);
+      font-size: 12px;
+      line-height: 1.9;
+    }
+
+    .azkar-zoom{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border-radius:999px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      padding: 6px;
+    }
+
+    .azkar-zoom button{
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+      color: var(--text-light, #eaecf0);
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .azkar-zoom-value{
+      min-width: 52px;
+      text-align:center;
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--text-light, #eaecf0);
+    }
+
+    .azkar-list{
+      display: grid;
+      gap: 14px;
+    }
+
+    .zikr-card{
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.05);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.025));
+      box-shadow: 0 14px 34px rgba(0,0,0,.2);
+      overflow: hidden;
+    }
+
+    .zikr-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      background: rgba(255,255,255,.025);
+      flex-wrap: wrap;
+    }
+
+    .zikr-order{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(78,205,196,.14);
+      color: var(--primary, #4ecdc4);
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .zikr-count{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(245,200,66,.12);
+      border: 1px solid rgba(245,200,66,.2);
+      color: var(--gold, #f5c842);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .zikr-content{
+      padding: 18px 18px 14px;
+      font-family: "Amiri", serif;
+      font-size: var(--zikr-font);
+      line-height: var(--zikr-line);
+      color: #f7f7f3;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .zikr-details{
+      margin: 0 18px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.05);
+      background: rgba(0,0,0,.12);
+      overflow: hidden;
+    }
+
+    .zikr-details summary{
+      list-style: none;
+      cursor: pointer;
+      padding: 12px 14px;
+      color: var(--text-light, #eaecf0);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .zikr-details summary::-webkit-details-marker{ display: none; }
+
+    .zikr-extra{
+      padding: 0 14px 14px;
+      color: var(--text-muted, #92a0b3);
+      font-size: 12px;
+      line-height: 1.95;
+      display: grid;
+      gap: 12px;
+    }
+
+    .zikr-extra-block strong{
+      display:block;
+      margin-bottom: 5px;
+      color: var(--gold, #f5c842);
+      font-size: 11px;
+      letter-spacing: .3px;
+    }
+
+    .azkar-empty{
+      padding: 32px 18px;
+      text-align: center;
+      color: var(--text-muted, #92a0b3);
+      line-height: 1.9;
+    }
+
+    @media (max-width: 900px){
+      .azkar-head{
+        grid-template-columns: 1fr;
+      }
+      .azkar-controls{
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 640px){
+      :root{
+        --zikr-font: 25px;
+        --zikr-line: 2;
+      }
+
+      .azkar-page{
+        width: min(100%, calc(100% - 10px));
+        padding: 8px 0 18px;
+      }
+
+      .azkar-shell{
+        border-radius: 22px;
+      }
+
+      .azkar-head,
+      .azkar-body{
+        padding: 12px;
+      }
+
+      .azkar-meta{
+        padding: 10px 12px;
+      }
+
+      .azkar-switch,
+      .azkar-zoom{
+        width: 100%;
+        justify-content: center;
+      }
+
+      .azkar-switch-btn,
+      .azkar-tool-btn{
+        flex: 1 1 auto;
+      }
+
+      .zikr-head{
+        padding: 12px;
+      }
+
+      .zikr-content{
+        padding: 16px 14px 12px;
+      }
+
+      .zikr-details{
+        margin: 0 14px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="azkar-page">
+    <div class="azkar-topbar">
+      <a class="azkar-back" id="azkarBackHome" href="index.html?resume=1">← العودة للصفحة الرئيسية</a>
+    </div>
+
+    <section class="azkar-shell">
+      <div class="azkar-head">
+        <div>
+          <div class="azkar-kicker">صفحة أذكار محلية داخل الموقع</div>
+          <h1 class="azkar-title" id="azkarTitle">أذكار الصباح</h1>
+          <p class="azkar-sub" id="azkarSub" hidden></p>
+        </div>
+
+        <div class="azkar-controls">
+          <div class="azkar-switch">
+            <a class="azkar-switch-btn" id="switchMorning" href="?type=morning">الصباح</a>
+            <a class="azkar-switch-btn" id="switchEvening" href="?type=evening">المساء</a>
+          </div>
+          <button class="azkar-tool-btn gold" id="expandAllBtn" type="button">فتح التفاصيل</button>
+        </div>
+      </div>
+
+      <div class="azkar-body">
+        <div class="azkar-meta">
+          <div class="azkar-meta-text" id="azkarMetaText" hidden></div>
+          <div class="azkar-zoom" aria-label="التحكم في حجم النص">
+            <button id="zoomOutBtn" type="button" aria-label="تصغير">−</button>
+            <div class="azkar-zoom-value" id="zoomValue">100%</div>
+            <button id="zoomResetBtn" type="button" aria-label="الحجم الافتراضي">•</button>
+            <button id="zoomInBtn" type="button" aria-label="تكبير">+</button>
+          </div>
+        </div>
+
+        <div class="azkar-list" id="azkarList"></div>
+        <div class="azkar-empty" id="azkarEmpty" hidden>تعذر تحميل الأذكار الآن.</div>
+      </div>
+    </section>
+  </div>
+
+  <script src="azkar-data.js"></script>
+  <script>
+    (function () {
+      const qs = (sel) => document.querySelector(sel);
+      const params = new URLSearchParams(window.location.search);
+      const type = String(params.get("type") || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
+      const titleMap = {
+        morning: "أذكار الصباح",
+        evening: "أذكار المساء"
+      };
+
+      const root = document.documentElement;
+      const backHome = qs("#azkarBackHome");
+      const titleEl = qs("#azkarTitle");
+      const subEl = qs("#azkarSub");
+      const metaEl = qs("#azkarMetaText");
+      const listEl = qs("#azkarList");
+      const emptyEl = qs("#azkarEmpty");
+      const switchMorning = qs("#switchMorning");
+      const switchEvening = qs("#switchEvening");
+
+      function previewFlagEnabled() {
+        try {
+          const currentUrl = new URL(window.location.href);
+          if (currentUrl.searchParams.get("preview") === "1") return true;
+        } catch {}
+        try {
+          const ref = new URL(document.referrer);
+          if (ref.searchParams.get("preview") === "1") return true;
+        } catch {}
+        return false;
+      }
+
+      function buildHomeUrl() {
+        const homeUrl = new URL("index.html", window.location.href);
+        homeUrl.search = "";
+        homeUrl.hash = "";
+        homeUrl.searchParams.set("resume", "1");
+        if (previewFlagEnabled()) {
+          homeUrl.searchParams.set("preview", "1");
+        }
+        return `${homeUrl.pathname}${homeUrl.search}`;
+      }
+
+      function buildAzkarTypeUrl(nextType) {
+        const pageUrl = new URL("azkar.html", window.location.href);
+        pageUrl.search = "";
+        pageUrl.hash = "";
+        pageUrl.searchParams.set("type", nextType === "evening" ? "evening" : "morning");
+        pageUrl.searchParams.set("fresh", "20260411p");
+        if (previewFlagEnabled()) {
+          pageUrl.searchParams.set("preview", "1");
+        }
+        return `${pageUrl.pathname}${pageUrl.search}`;
+      }
+
+      try {
+        if (backHome) backHome.href = buildHomeUrl();
+        if (switchMorning) switchMorning.href = buildAzkarTypeUrl("morning");
+        if (switchEvening) switchEvening.href = buildAzkarTypeUrl("evening");
+      } catch {}
+      const expandAllBtn = qs("#expandAllBtn");
+      const zoomValueEl = qs("#zoomValue");
+
+      const defaultFont = window.matchMedia("(max-width: 640px)").matches ? 25 : 29;
+      let currentFont = defaultFont;
+      let detailsOpen = false;
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function clampFont(next) {
+        return Math.max(20, Math.min(38, Number(next || defaultFont)));
+      }
+
+      function applyFontSize() {
+        root.style.setProperty("--zikr-font", `${currentFont}px`);
+        zoomValueEl.textContent = `${Math.round((currentFont / defaultFont) * 100)}%`;
+      }
+
+      function renderHeader(totalCount) {
+        const pageTitle = titleMap[type];
+        document.title = `${pageTitle} | واعي`;
+        titleEl.textContent = pageTitle;
+        if (subEl) subEl.hidden = true;
+        if (metaEl) metaEl.hidden = true;
+        switchMorning.classList.toggle("active", type === "morning");
+        switchEvening.classList.toggle("active", type === "evening");
+      }
+
+      function renderAzkar(items) {
+        if (!Array.isArray(items) || !items.length) {
+          listEl.innerHTML = "";
+          emptyEl.hidden = false;
+          return;
+        }
+
+        emptyEl.hidden = true;
+        listEl.innerHTML = items.map((item, index) => {
+          const countText = item.count_description || (item.count ? `${item.count} مرات` : "مرة واحدة");
+          const fadl = String(item.fadl || "").trim();
+          const source = String(item.source || "").trim();
+          const hasDetails = Boolean(fadl || source);
+          return `
+            <article class="zikr-card">
+              <div class="zikr-head">
+                <span class="zikr-order">${index + 1}</span>
+                <span class="zikr-count">${escapeHtml(countText)}</span>
+              </div>
+              <div class="zikr-content">${escapeHtml(item.content || "")}</div>
+              ${hasDetails ? `
+                <details class="zikr-details"${detailsOpen ? " open" : ""}>
+                  <summary>إظهار الفائدة والمصدر</summary>
+                  <div class="zikr-extra">
+                    ${fadl ? `<div class="zikr-extra-block"><strong>الفضل</strong>${escapeHtml(fadl)}</div>` : ""}
+                    ${source ? `<div class="zikr-extra-block"><strong>المصدر</strong>${escapeHtml(source)}</div>` : ""}
+                  </div>
+                </details>
+              ` : ""}
+            </article>
+          `;
+        }).join("");
+      }
+
+      function loadAzkar() {
+        try {
+          const data = window.AZKAR_DATA || {};
+          const items = Array.isArray(data[type]) ? data[type] : [];
+          renderHeader(items.length);
+          renderAzkar(items);
+        } catch (error) {
+          console.error("Failed to load azkar data", error);
+          renderHeader(0);
+          renderAzkar([]);
+        }
+      }
+
+      expandAllBtn.addEventListener("click", () => {
+        detailsOpen = !detailsOpen;
+        expandAllBtn.textContent = detailsOpen ? "إغلاق التفاصيل" : "فتح التفاصيل";
+        qs("#azkarList")?.querySelectorAll(".zikr-details").forEach((detailsEl) => {
+          detailsEl.open = detailsOpen;
+        });
+      });
+
+      qs("#zoomOutBtn").addEventListener("click", () => {
+        currentFont = clampFont(currentFont - 2);
+        applyFontSize();
+      });
+
+      qs("#zoomInBtn").addEventListener("click", () => {
+        currentFont = clampFont(currentFont + 2);
+        applyFontSize();
+      });
+
+      qs("#zoomResetBtn").addEventListener("click", () => {
+        currentFont = defaultFont;
+        applyFontSize();
+      });
+
+      applyFontSize();
+      loadAzkar();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1741 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نموذج التقرير اليومي — قبيلة الموحدون</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico?v=3" type="image/x-icon" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3" />
+  <style>
+    /* ── Site design tokens (mirrors style.css) ── */
+    :root {
+      --primary: #4ecdc4;
+      --primary-glow: rgba(78,205,196,.18);
+      --dark-bg: #0a0d12;
+      --dark-card: #111520;
+      --dark-card2: #161b26;
+      --text-light: #eaecf0;
+      --text-muted: #8892a4;
+      --gold: #f5c842;
+      --gold-glow: rgba(245,200,66,.15);
+      --soft-border: rgba(245,200,66,.13);
+      --green: #34d399;
+      --card-shadow: 0 8px 32px rgba(0,0,0,.55);
+      --glow-shadow: 0 0 30px rgba(78,205,196,.06);
+      --radius: 22px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Cairo", Arial, sans-serif;
+      background-color: var(--dark-bg);
+      color: var(--text-light);
+      min-height: 100vh;
+      padding: 0 0 80px;
+      position: relative;
+      overflow-x: hidden;
+      line-height: 1.9;
+    }
+
+    /* Ambient background matching the site */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 15% 10%, rgba(78,205,196,.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 85%, rgba(245,200,66,.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 40%, rgba(100,80,180,.03) 0%, transparent 60%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "✦";
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 80px;
+      color: rgba(245,200,66,.05);
+      z-index: 0;
+      pointer-events: none;
+      animation: moonFloat 8s ease-in-out infinite;
+    }
+
+    @keyframes moonFloat {
+      0%, 100% { transform: translateY(0) rotate(-5deg); opacity: .05; }
+      50% { transform: translateY(-10px) rotate(5deg); opacity: .09; }
+    }
+
+    /* ── Back link ── */
+    .back-bar {
+      background: rgba(10,13,18,.92);
+      backdrop-filter: blur(14px);
+      padding: 12px 24px;
+      border-bottom: 1px solid rgba(78,205,196,.08);
+      position: relative;
+      z-index: 10;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 700;
+      transition: color .2s;
+    }
+    .back-link:hover { color: var(--primary); }
+
+    /* ── Page header ── */
+    .page-header {
+      background: radial-gradient(ellipse at 50% 0%, #0e2028 0%, var(--dark-bg) 70%);
+      padding: 48px 20px 40px;
+      text-align: center;
+      border-bottom: 1px solid var(--soft-border);
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      animation: fadeSlideDown .6s ease both;
+    }
+    .page-header::before {
+      content: "التقرير";
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      font-size: 90px;
+      font-weight: 900;
+      color: rgba(78,205,196,.025);
+      white-space: nowrap;
+      pointer-events: none;
+      letter-spacing: .1em;
+    }
+    .page-header h1 {
+      font-family: "Amiri", serif;
+      font-size: 32px;
+      color: var(--primary);
+      text-shadow: 0 0 40px rgba(78,205,196,.25);
+      position: relative;
+      z-index: 1;
+    }
+    .page-header p {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
+    }
+    .page-header .gold-tag {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--gold);
+      letter-spacing: 1.5px;
+      position: relative;
+      z-index: 1;
+    }
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Report banner ── */
+    .report-banner {
+      background: linear-gradient(90deg, #083d30, #0a1f1a, #083d30);
+      color: var(--gold);
+      text-align: center;
+      padding: 12px 20px;
+      font-size: 13.5px;
+      letter-spacing: 2px;
+      border-bottom: 1px solid rgba(245,200,66,.22);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Main wrapper ── */
+    .wrap {
+      width: min(860px, calc(100% - 40px));
+      margin: 36px auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Wizard card ── */
+    .card {
+      background: linear-gradient(160deg, var(--dark-card2) 0%, var(--dark-card) 100%);
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow), var(--glow-shadow);
+      overflow: hidden;
+      animation: fadeInUp .5s ease both;
+      position: relative;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      background: linear-gradient(90deg, transparent, rgba(78,205,196,.35), rgba(245,200,66,.25), transparent);
+      pointer-events: none;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Card head ── */
+    .cardHead {
+      padding: 16px 22px;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      background: linear-gradient(180deg, rgba(78,205,196,.07) 0%, transparent 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .cardHead .h {
+      font-size: 14.5px;
+      font-weight: 900;
+      color: var(--text-light);
+    }
+    .cardHead .sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* ── Progress bar ── */
+    .progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 160px;
+      justify-content: flex-end;
+    }
+    #progText {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--primary);
+      min-width: 36px;
+      text-align: left;
+    }
+    .bar {
+      width: 110px;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.05);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .bar > div {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--primary), var(--gold));
+      border-radius: 999px;
+      transition: width .5s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 0 8px rgba(78,205,196,.4);
+    }
+
+    .cardBody { padding: 24px 22px; }
+
+    /* ── Step content ── */
+    .stepTitle {
+      font-family: "Amiri", serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .hint {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    /* ── Form elements (matching today.css inputs) ── */
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 13px;
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(0,0,0,.28);
+      color: var(--text-light);
+      font-family: "Cairo", sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+      border-color: rgba(78,205,196,.45);
+      box-shadow: 0 0 0 3px rgba(78,205,196,.1);
+    }
+    select option { background: var(--dark-card2); }
+    textarea { min-height: 110px; resize: vertical; line-height: 1.8; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media(max-width: 600px) { .row { grid-template-columns: 1fr; } }
+
+    /* ── Buttons (matching site .btn style) ── */
+    .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+
+    button {
+      font-family: "Cairo", sans-serif;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.05);
+      color: var(--text-light);
+      padding: 11px 18px;
+      border-radius: 13px;
+      cursor: pointer;
+      font-weight: 900;
+      font-size: 13.5px;
+      transition: transform .15s, box-shadow .15s, border-color .2s, background .2s;
+    }
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: scale(.98); }
+
+    button.primary {
+      background: rgba(78,205,196,.18);
+      color: var(--primary);
+      border-color: rgba(78,205,196,.32);
+    }
+    button.primary:hover {
+      background: rgba(78,205,196,.26);
+      box-shadow: 0 8px 22px rgba(78,205,196,.15);
+    }
+
+    button.ghost {
+      background: transparent;
+      border-color: rgba(255,255,255,.1);
+      color: var(--text-muted);
+    }
+    button.ghost:hover { border-color: rgba(255,255,255,.2); color: var(--text-light); }
+
+    button.danger {
+      background: rgba(255,99,99,.1);
+      border-color: rgba(255,99,99,.28);
+      color: #ffb4b4;
+    }
+    button.danger:hover { border-color: rgba(255,99,99,.5); }
+
+    button.ok {
+      background: rgba(52,211,153,.1);
+      border-color: rgba(52,211,153,.28);
+      color: var(--green);
+    }
+    button.ok:hover { background: rgba(52,211,153,.18); }
+
+    button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
+
+    /* ── Habit card (matching task-card style) ── */
+    .habitCard {
+      background: linear-gradient(155deg, #151e2a, #0f1520);
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      justify-content: space-between;
+      box-shadow: 0 6px 22px rgba(0,0,0,.4);
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+    .habitCard::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(245,200,66,.15), transparent);
+    }
+    .habitCard:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0,0,0,.5);
+      border-color: rgba(78,205,196,.15);
+    }
+
+    .habitLeft { flex: 1; }
+    .habitName {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--text-light);
+      margin-bottom: 5px;
+      line-height: 1.5;
+    }
+    .habitMeta { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    .toggle {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
+
+    .chip {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      border: 1px solid rgba(255,255,255,.09);
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.2);
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+      user-select: none;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .chip:hover { border-color: rgba(78,205,196,.3); background: rgba(78,205,196,.05); }
+    .chip input { accent-color: var(--primary); }
+
+    .countBox {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(0,0,0,.2);
+    }
+    .countBox input {
+      width: 80px;
+      padding: 6px 8px;
+      border-radius: 10px;
+    }
+
+    /* ── Score badge ── */
+    .scoreBadge {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: linear-gradient(155deg, rgba(245,200,66,.06), rgba(245,200,66,.02));
+      border: 1px solid rgba(245,200,66,.16);
+      border-radius: 18px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+    }
+    .scoreNum {
+      font-family: "Amiri", serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+      text-shadow: 0 0 30px rgba(245,200,66,.3);
+    }
+    .scoreLabel { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+    .scoreStats { font-size: 13px; color: var(--text-muted); line-height: 2; }
+    .scoreStats span { color: var(--text-light); font-weight: 900; }
+
+    /* ── Progress dots for habit questions ── */
+    .qDots { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; }
+    .qDot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.09);
+      border: 1px solid rgba(255,255,255,.07);
+      transition: all .3s;
+    }
+    .qDot.active { background: var(--primary); box-shadow: 0 0 7px rgba(78,205,196,.5); }
+    .qDot.done { background: var(--green); border-color: var(--green); }
+
+    /* ── Section badge ── */
+    .sectionBadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 13px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      margin-bottom: 12px;
+      letter-spacing: .3px;
+    }
+    .sectionBadge.ramadan {
+      background: rgba(245,200,66,.07);
+      border: 1px solid rgba(245,200,66,.18);
+      color: var(--gold);
+    }
+    .sectionBadge.daily {
+      background: var(--primary-glow);
+      border: 1px solid rgba(78,205,196,.22);
+      color: var(--primary);
+    }
+
+    /* ── Intro special ── */
+    .introCard { text-align: center; padding: 8px 0 4px; }
+    .introMoon { width: 64px; height: 64px; margin: 0 auto 14px; }
+    .introTitle {
+      font-family: "Amiri", serif;
+      font-size: 28px;
+      color: var(--gold);
+      margin-bottom: 6px;
+      text-shadow: 0 0 30px rgba(245,200,66,.2);
+    }
+    .introSub {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 400px;
+      margin: 0 auto 22px;
+    }
+
+    /* ── Divider ── */
+    .hr {
+      height: 1px;
+      background: rgba(255,255,255,.05);
+      margin: 18px 0;
+    }
+
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .small { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Report box ── */
+    .reportBox {
+      width: 100%;
+      min-height: 400px;
+      white-space: pre-wrap;
+      line-height: 1.7;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      background: rgba(0,0,0,.3);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 13px;
+      padding: 16px;
+      color: var(--text-light);
+      outline: none;
+      resize: vertical;
+    }
+    .reportBox:focus { border-color: rgba(78,205,196,.3); }
+
+    /* ── Saved days ── */
+    .saved-days-panel {
+      margin-top: 16px;
+      background: linear-gradient(160deg, rgba(11,18,28,.94), rgba(7,13,20,.96));
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 22px;
+      box-shadow: var(--card-shadow);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .saved-days-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(245,200,66,.08), transparent 36%);
+      pointer-events: none;
+    }
+    .saved-days-head {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .saved-days-title {
+      font-family: "Amiri", serif;
+      font-size: 24px;
+      color: var(--gold);
+      margin: 0 0 4px;
+    }
+    .saved-days-sub {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.7;
+      margin: 0;
+    }
+    .saved-days-badge {
+      flex-shrink: 0;
+      border-radius: 999px;
+      border: 1px solid rgba(78,205,196,.2);
+      background: rgba(78,205,196,.08);
+      color: var(--primary);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .saved-days-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+      gap: 14px;
+    }
+    .saved-day-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 340px;
+      overflow: auto;
+      padding-left: 4px;
+    }
+    .saved-day-item {
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 18px;
+      padding: 12px;
+      background: rgba(255,255,255,.03);
+      transition: border-color .2s ease, background .2s ease, transform .2s ease;
+    }
+    .saved-day-item.active {
+      border-color: rgba(245,200,66,.28);
+      background: linear-gradient(180deg, rgba(245,200,66,.09), rgba(255,255,255,.03));
+      transform: translateY(-1px);
+    }
+    .saved-day-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-light);
+      margin-bottom: 6px;
+      line-height: 1.6;
+    }
+    .saved-day-meta {
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .saved-day-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .saved-day-btn {
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      color: var(--text-light);
+      border-radius: 12px;
+      padding: 9px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .saved-day-btn.primary {
+      border-color: rgba(78,205,196,.24);
+      background: rgba(78,205,196,.1);
+      color: var(--primary);
+    }
+    .saved-day-preview {
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 20px;
+      background: rgba(255,255,255,.025);
+      padding: 14px;
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .saved-day-preview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .saved-day-preview-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--text-light);
+      margin: 0;
+    }
+    .saved-day-preview-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 4px 0 0;
+      line-height: 1.6;
+    }
+    .saved-day-preview-box {
+      flex: 1;
+      min-height: 190px;
+      max-height: 340px;
+      overflow: auto;
+      white-space: pre-wrap;
+      line-height: 1.9;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      background: rgba(0,0,0,.24);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 14px;
+      color: var(--text-light);
+    }
+    .saved-day-empty {
+      position: relative;
+      z-index: 1;
+      border: 1px dashed rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+      color: var(--text-muted);
+      line-height: 1.8;
+      background: rgba(255,255,255,.02);
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(10,13,18,.92);
+      border: 1px solid rgba(78,205,196,.2);
+      color: var(--text-light);
+      padding: 11px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      box-shadow: 0 8px 28px rgba(0,0,0,.55);
+      backdrop-filter: blur(14px);
+      z-index: 1000;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Animations ── */
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(16px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .anim-in { animation: slideIn .3s ease both; }
+
+    /* ── Responsive ── */
+    @media(max-width: 640px) {
+      .wrap { width: calc(100% - 28px); margin: 20px auto; }
+      .cardBody { padding: 18px 16px; }
+      .cardHead { padding: 14px 16px; }
+      .stepTitle { font-size: 20px; }
+      .page-header { padding: 36px 16px 30px; }
+      .page-header h1 { font-size: 26px; }
+      .saved-days-panel { margin-top: 14px; padding: 16px; border-radius: 18px; }
+      .saved-days-head,
+      .saved-day-preview-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .saved-days-grid { grid-template-columns: 1fr; }
+      .saved-day-list { max-height: 260px; }
+      .saved-day-actions { flex-wrap: wrap; }
+      .saved-day-btn { flex: 1 1 0; }
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(78,205,196,.2); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(78,205,196,.35); }
+  </style>
+</head>
+<body>
+
+<!-- Back nav -->
+  <div class="back-bar">
+    <a href="index.html?resume=1" class="back-link">← العودة إلى الصفحة الرئيسية</a>
+  </div>
+
+<!-- Page Header -->
+<div class="page-header">
+  <h1>🧭 تقرير التعافي اليومي</h1>
+  <p class="gold-tag" id="todayPill">📅 جارِ التحميل…</p>
+</div>
+
+<!-- Covenant Banner -->
+<div class="report-banner">
+  🤝 نموذج يومي للثبات، المتابعة، وبناء حياة تعافٍ جديدة بإذن الله
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="cardHead">
+      <div>
+        <div class="h" id="stepHeader">الخطوة 1</div>
+        <div class="sub" id="stepSub">نبدأ بالمعلومات الأساسية</div>
+      </div>
+      <div class="progress">
+        <div id="progText">0%</div>
+        <div class="bar"><div id="progBar"></div></div>
+      </div>
+    </div>
+    <div class="cardBody" id="app"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">تم ✅</div>
+
+<script>
+(function(){
+  const $ = (q)=>document.querySelector(q);
+  const REPORT_STORAGE_PREFIX = window.location.pathname.toLowerCase().includes("ramadan_report")
+    ? "ramadan_report"
+    : "daily_report";
+  const STATE_STORAGE_KEY = `wa3i_${REPORT_STORAGE_PREFIX}_state_v1`;
+  const ARCHIVE_STORAGE_KEY = `wa3i_${REPORT_STORAGE_PREFIX}_archive_v1`;
+  const LEGACY_STATE_STORAGE_KEY = "tribe_report_state_v2";
+  const LEGACY_ARCHIVE_STORAGE_KEY = "tribe_reports_archive_v2";
+
+  // ---------- Helpers ----------
+  const todayISO = new Date().toISOString().slice(0,10);
+  const pill = document.getElementById("todayPill");
+  if(pill) pill.textContent = "📅 " + new Date().toLocaleDateString("ar-SA", {weekday:"long", year:"numeric", month:"long", day:"numeric"});
+
+  const toast = (msg)=>{
+    const t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(()=>t.classList.remove("show"), 1500);
+  };
+
+  const loadState = ()=>{
+    try{
+      const raw = localStorage.getItem(STATE_STORAGE_KEY) || localStorage.getItem(LEGACY_STATE_STORAGE_KEY);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){ return null; }
+  };
+
+  const saveState = ()=>{
+    localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(state));
+  };
+
+  const loadArchive = ()=>{
+    try{
+      const raw = localStorage.getItem(ARCHIVE_STORAGE_KEY) || localStorage.getItem(LEGACY_ARCHIVE_STORAGE_KEY) || "[]";
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter(item => item && item.report).slice(0,90) : [];
+    }catch(e){ return []; }
+  };
+
+  const saveArchive = (archive)=>{
+    localStorage.setItem(ARCHIVE_STORAGE_KEY, JSON.stringify((Array.isArray(archive) ? archive : []).slice(0,90)));
+  };
+
+  const escapeHtml = (str)=>{
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  };
+
+  const copyText = async (text, successMessage)=>{
+    try{
+      await navigator.clipboard.writeText(text);
+      toast(successMessage || "تم النسخ ✅");
+    }catch(e){
+      const temp = document.createElement("textarea");
+      temp.value = text;
+      temp.setAttribute("readonly","readonly");
+      temp.style.position = "fixed";
+      temp.style.opacity = "0";
+      document.body.appendChild(temp);
+      temp.focus();
+      temp.select();
+      document.execCommand("copy");
+      temp.remove();
+      toast(successMessage || "تم النسخ ✅");
+    }
+  };
+
+  const formatSavedDayTitle = (entry, index)=>{
+    const hijri = String(entry?.hijriDate || "").trim();
+    if(hijri) return hijri;
+    const iso = String(entry?.dateISO || "").trim();
+    if(iso){
+      const parsed = new Date(`${iso}T12:00:00`);
+      if(!Number.isNaN(parsed.getTime())){
+        return parsed.toLocaleDateString("ar-SA", { year:"numeric", month:"long", day:"numeric" });
+      }
+      return iso;
+    }
+    return `نسخة محفوظة ${index+1}`;
+  };
+
+  let selectedArchiveIndex = 0;
+  let savedDaysVisible = false;
+
+  const renderSavedDaysPanel = (panel = document.getElementById("savedDaysIntroPanel"))=>{
+    if(!panel) return;
+
+    const archive = loadArchive();
+    const count = archive.length;
+
+    if(!count){
+      panel.innerHTML = `
+        <div class="saved-days-head">
+          <div>
+            <h2 class="saved-days-title">الأيام المحفوظة</h2>
+            <p class="saved-days-sub">ستظهر هنا الأيام التي تحفظها من نهاية التقرير، حتى تصل إليها مباشرة من بداية الصفحة.</p>
+          </div>
+          <div class="saved-days-badge">0 يوم محفوظ</div>
+        </div>
+        <div class="saved-day-empty">لا توجد أيام محفوظة الآن. عند الضغط على "حفظ اليوم" ستظهر النسخ هنا مباشرة.</div>
+      `;
+      return;
+    }
+
+    selectedArchiveIndex = Math.max(0, Math.min(selectedArchiveIndex, count - 1));
+    const active = archive[selectedArchiveIndex];
+    const activeTitle = formatSavedDayTitle(active, selectedArchiveIndex);
+    const completed = Number(active?.completedHabits || 0);
+
+    panel.innerHTML = `
+      <div class="saved-days-head">
+        <div>
+          <h2 class="saved-days-title">الأيام المحفوظة</h2>
+          <p class="saved-days-sub">اختر أي يوم محفوظ لترى التقرير مباشرة أو تنسخه بدون الحاجة للذهاب إلى نهاية الصفحة.</p>
+        </div>
+        <div class="saved-days-badge">${count} ${count === 1 ? "يوم محفوظ" : "أيام محفوظة"}</div>
+      </div>
+      <div class="saved-days-grid">
+        <div class="saved-day-list">
+          ${archive.map((entry, index)=>{
+            const title = formatSavedDayTitle(entry, index);
+            const dateLine = String(entry?.dateISO || "").trim() || "بدون تاريخ";
+            const score = Number(entry?.completedHabits || 0);
+            return `
+              <div class="saved-day-item${index === selectedArchiveIndex ? " active" : ""}">
+                <div class="saved-day-name">${escapeHtml(title)}</div>
+                <div class="saved-day-meta">التاريخ: ${escapeHtml(dateLine)}<br>العادات المنجزة: ${score}</div>
+                <div class="saved-day-actions">
+                  <button class="saved-day-btn primary" type="button" data-archive-view="${index}">عرض</button>
+                  <button class="saved-day-btn" type="button" data-archive-copy="${index}">نسخ</button>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+        <div class="saved-day-preview">
+          <div class="saved-day-preview-head">
+            <div>
+              <h3 class="saved-day-preview-title">${escapeHtml(activeTitle)}</h3>
+              <p class="saved-day-preview-sub">العادات المنجزة: ${completed} • محفوظ على هذا الجهاز داخل المتصفح الحالي.</p>
+            </div>
+            <button class="saved-day-btn primary" type="button" id="copyActiveSavedDay">نسخ هذا التقرير</button>
+          </div>
+          <div class="saved-day-preview-box">${escapeHtml(active.report || "")}</div>
+        </div>
+      </div>
+    `;
+
+    panel.querySelectorAll("[data-archive-view]").forEach((btn)=>{
+      btn.addEventListener("click", ()=>{
+        selectedArchiveIndex = Number(btn.getAttribute("data-archive-view") || "0");
+        renderSavedDaysPanel();
+      });
+    });
+
+    panel.querySelectorAll("[data-archive-copy]").forEach((btn)=>{
+      btn.addEventListener("click", async ()=>{
+        const index = Number(btn.getAttribute("data-archive-copy") || "0");
+        const entry = archive[index];
+        if(!entry?.report) return;
+        await copyText(entry.report, "تم نسخ التقرير المحفوظ ✅");
+      });
+    });
+
+    const copyActiveBtn = document.getElementById("copyActiveSavedDay");
+    copyActiveBtn?.addEventListener("click", async ()=>{
+      if(!active?.report) return;
+      await copyText(active.report, "تم نسخ التقرير المحفوظ ✅");
+    });
+  };
+
+  const defaultState = {
+    dateISO: todayISO,
+    hijriDate: "",
+    recoveryDay: "",
+    answers: {}, // id => {done:boolean, count:number}
+    avoided: [""],
+    gratitude: ["","",""],
+    feelingPreset: "متفائل",
+    feelingCustom: "",
+    summary: "",
+    motivation: [""],
+    notes: [
+      "",
+      "",
+      ""
+    ],
+  };
+
+  let state = loadState();
+  if(!state) state = structuredClone(defaultState);
+  if(!state.dateISO) state.dateISO = todayISO;
+  if(typeof state.motivation === "string") state.motivation = state.motivation ? [state.motivation] : [""];
+  if(!Array.isArray(state.motivation)) state.motivation = [""];
+  if(!Array.isArray(state.notes)) state.notes = ["","",""];
+  if(!Array.isArray(state.avoided)) state.avoided = [""];
+  if(!Array.isArray(state.gratitude)) state.gratitude = ["","",""];
+
+  // ---------- Habits Definition ----------
+  const recoveryHabits = [
+    { id:"habit_fard_mosque", name:"أداء صلوات الفريضة جماعة فالمسجد 🕌", type:"bool" },
+    { id:"habit_sleep", name:"النوم الجيد 😪", type:"bool" },
+    { id:"habit_adhkar", name:"قراءة اذكار الصباح والمساء 📿", type:"bool" },
+    { id:"habit_quran", name:"قراءة الورد اليومي من القرآن الكريم 🌱", type:"bool" },
+    { id:"habit_lower_gaze", name:"غض البصر ✋🏻", type:"bool" },
+    { id:"habit_obligations", name:"أداء الإلتزامات اليومية 🏆", type:"bool" },
+    { id:"habit_food", name:"تجنب الطعام الضار 🚫", type:"bool" },
+    { id:"habit_learn", name:"التثقف عن التعافي 🧗🏻", type:"bool" },
+    { id:"habit_exercise", name:"ممارسة الرياضة 💪🏻", type:"bool" },
+    { id:"habit_teeth", name:"تفريش الأسنان 🪥", type:"bool" },
+    { id:"habit_cold_shower", name:"الإستحمام بالماء البارد ❄️", type:"bool" },
+    { id:"habit_journal", name:"كتابة اليوميات ✍🏻", type:"bool" },
+    { id:"habit_book", name:"قراءة كتاب لمدة ٥ دقائق 📚", type:"bool" },
+    { id:"habit_clean_porn", name:"يوم نظيف بلا إباحية 👑", type:"bool" },
+    { id:"habit_clean_mast", name:"يوم نظيف بلا إستمناء 👑", type:"bool" },
+  ];
+
+  // init default answers if missing
+  const initAnswers = ()=>{
+    const all = [...recoveryHabits];
+    for(const h of all){
+      if(!state.answers[h.id]){
+        state.answers[h.id] = { done:false, count:0 };
+      }
+    }
+  };
+  initAnswers();
+  saveState();
+
+  // ---------- Wizard Steps ----------
+  const steps = [
+    { id:"intro", title:"بيانات التقرير", sub:"اكتب التاريخ الهجري ورقم يومك في حياة التعافي" },
+    { id:"habits_recovery", title:"🌿 عادات التعافي", sub:"سؤال وراء سؤال — بنفس الأسلوب" },
+    { id:"avoided", title:"🚫 جانب (لا تقربوا)", sub:"اكتب الأشياء التي تجنبتها اليوم" },
+    { id:"gratitude", title:"🤲 الحمد", sub:"اكتب نعم تشكر الله عليها" },
+    { id:"feeling", title:"⭐ التقييم اليومي", sub:"كيف شعورك اليوم؟" },
+    { id:"summary", title:"🗒️ ملخص اليوم", sub:"اكتب ملخصًا مختصرًا" },
+    { id:"motivation", title:"🚀 التحفيز الذاتي", sub:"اكتب سطورًا تحفيزية لنفسك" },
+    { id:"notes", title:"📎 ملاحظات مهمة", sub:"اكتب الملاحظات التي تريدها في آخر التقرير" },
+    { id:"report", title:"📌 التقرير النهائي", sub:"انسخ التقرير وأرسله" },
+  ];
+
+  let stepIndex = 0;
+
+  const setProgress = ()=>{
+    const pct = Math.round((stepIndex)/(steps.length-1) * 100);
+    $("#progText").textContent = pct + "%";
+    $("#progBar").style.width = pct + "%";
+    $("#stepHeader").textContent = `الخطوة ${stepIndex+1} من ${steps.length}: ${steps[stepIndex].title}`;
+    $("#stepSub").textContent = steps[stepIndex].sub;
+  };
+
+  const go = (dir)=>{
+    stepIndex = Math.max(0, Math.min(steps.length-1, stepIndex + dir));
+    render();
+  };
+
+  // ---------- Counts + Lists ----------
+  function habitLabel(h, a){
+    return h.name;
+  }
+
+  const computeScores = ()=>{
+    let doneTotal = 0;
+    let totalTotal = 0;
+
+    const habitsDone = [];
+    const habitsNot = [];
+
+    for(const h of recoveryHabits){
+      totalTotal++;
+      const a = state.answers[h.id] || {done:false, count:0};
+      const achieved = !!a.done;
+      if(achieved){ doneTotal++; habitsDone.push(habitLabel(h,a)); }
+      else { habitsNot.push(habitLabel(h,a)); }
+    }
+
+    return {
+      doneTotal, totalTotal,
+      habitsDone, habitsNot
+    };
+  };
+
+  const buildReport = ()=>{
+    const S = computeScores();
+
+    const hijri = (state.hijriDate||"—").trim();
+    const dayNo = (state.recoveryDay||"—").trim();
+
+    const feeling = (state.feelingCustom && state.feelingCustom.trim())
+      ? state.feelingCustom.trim()
+      : (state.feelingPreset||"");
+
+    const avoidedLines = (state.avoided||[])
+      .map(x=>x.trim()).filter(Boolean)
+      .map(x=>`❌ ${x}`).join("\n") || "❌ —";
+
+    const gratitudeLines = (state.gratitude||[])
+      .map(x=>x.trim()).filter(Boolean)
+      .map(x=>`🤲🏻 ${x}`).join("\n") || "🤲🏻 —";
+
+    const summary = (state.summary||"").trim() || "—";
+    const motivationLines = (state.motivation||[])
+      .map(x=>String(x||"").trim()).filter(Boolean)
+      .map(x=>`⚡️ ${x}`).join("\n") || "⚡️";
+
+    const notes = (state.notes||[])
+      .map(x=>String(x||"").trim()).filter(Boolean)
+      .map(x=>`📌 ${x}`).join("\n") || "📌";
+
+    const habitsList = recoveryHabits.map(h=>{
+      const a = state.answers[h.id] || {done:false};
+      return `${a.done ? "✅" : "❌"} ${h.name}`;
+    }).join("\n");
+
+    return `🧭 تقرير التعافي اليومي
+
+🗓️ اليوم: ${hijri}
+🕰️ اليوم رقم: ${dayNo} في حياة التعافي بفضل الله
+
+---
+
+🌿 عادات التعافي:
+
+${habitsList}
+
+---
+
+🚫 جانب "لا تَقربوا"
+
+العادات السيئة التي تجنبتها اليوم:
+${avoidedLines}
+
+---
+
+🤲🏻 الحمد:
+
+نعم أحمد الله عليها اليوم:
+${gratitudeLines}
+
+---
+
+⭐️ التقييم اليومي:
+
+📈 عدد العادات المنجزة: ${S.doneTotal} من ${S.totalTotal}
+🔍 شعوري العام: ${feeling}
+🗒️ ملخص يومي: ${summary}
+
+---
+
+🚀 التحفيز الذاتي:
+
+${motivationLines}
+
+---
+
+📎 ملاحظات مهمة:
+
+${notes}
+
+#قبيلة_الموحدون`;
+  };
+
+  // ---------- Render ----------
+  const app = $("#app");
+
+  const renderIntro = ()=>{
+    app.innerHTML = `
+      <div class="anim-in introCard">
+        <div class="introMoon">
+          <svg viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="12" y="9" width="46" height="52" rx="11" fill="url(#reportGlow)"/>
+            <rect x="18" y="15" width="34" height="40" rx="8" fill="#0b1320" stroke="#f5c842" stroke-width="2.5"/>
+            <path d="M26 27h18" stroke="#4ecdc4" stroke-width="3" stroke-linecap="round"/>
+            <path d="M26 35h12" stroke="#4ecdc4" stroke-width="3" stroke-linecap="round"/>
+            <path d="M26 43h16" stroke="#4ecdc4" stroke-width="3" stroke-linecap="round"/>
+            <path d="M45 24l3 3 6-7" stroke="#f5c842" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <radialGradient id="reportGlow" cx="30%" cy="20%" r="80%">
+                <stop offset="0%" stop-color="#f5c842"/>
+                <stop offset="55%" stop-color="#4ecdc4"/>
+                <stop offset="100%" stop-color="#17314a"/>
+              </radialGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="introTitle">ابدأ تقريرك اليومي</div>
+        <p class="introSub">املأ النموذج خطوةً خطوة، ثم انسخ التقرير بصيغته الجاهزة وأرسله للقبيلة.</p>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>📅 التاريخ الهجري</label>
+          <input id="hijri" type="text" placeholder="مثال: الأربعاء 19 جمادى الثانية 1447هـ" value="${escapeHtml(state.hijriDate||"")}" />
+          <div class="small" style="margin-top:8px;">اكتبها بأي طريقة تناسبك</div>
+        </div>
+        <div>
+          <label>🏁 اليوم رقم كم في حياة التعافي؟</label>
+          <input id="dayNo" type="number" min="1" placeholder="مثال: 1" value="${escapeHtml(state.recoveryDay||"")}" />
+          <div class="small" style="margin-top:8px;">مثال: 1 / 25 / 130 ...</div>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button class="primary" id="next">البداية ←</button>
+        <button class="ghost" id="reset">↺ إعادة ضبط اليوم</button>
+      </div>
+      <div class="btns" style="margin-top:10px">
+        <button class="ghost" id="toggleSavedDays">${savedDaysVisible ? "إخفاء الأيام المحفوظة" : "الأيام المحفوظة"}</button>
+      </div>
+      <div id="savedDaysIntroPanel" ${savedDaysVisible ? "" : "hidden"}></div>
+    `;
+
+    $("#next").onclick = ()=>{
+      state.hijriDate = $("#hijri").value;
+      state.recoveryDay = $("#dayNo").value;
+      saveState();
+      go(+1);
+    };
+
+    $("#reset").onclick = ()=>{
+      if(confirm("بدك تصفر إجابات اليوم؟ (رح نخلي القالب)")){
+        const keep = { hijriDate: state.hijriDate, recoveryDay: state.recoveryDay };
+        state = structuredClone(defaultState);
+        state.hijriDate = keep.hijriDate;
+        state.recoveryDay = keep.recoveryDay;
+        initAnswers();
+        saveState();
+        toast("تمت إعادة الضبط ✅");
+        render();
+      }
+    };
+
+    const savedDaysToggle = $("#toggleSavedDays");
+    const savedDaysIntroPanel = $("#savedDaysIntroPanel");
+    savedDaysToggle?.addEventListener("click", ()=>{
+      savedDaysVisible = !savedDaysVisible;
+      if(savedDaysToggle) {
+        savedDaysToggle.textContent = savedDaysVisible ? "إخفاء الأيام المحفوظة" : "الأيام المحفوظة";
+      }
+      if(!savedDaysIntroPanel) return;
+      savedDaysIntroPanel.hidden = !savedDaysVisible;
+      if(savedDaysVisible){
+        renderSavedDaysPanel(savedDaysIntroPanel);
+      }
+    });
+
+    if(savedDaysVisible && savedDaysIntroPanel){
+      savedDaysIntroPanel.hidden = false;
+      renderSavedDaysPanel(savedDaysIntroPanel);
+    }
+  };
+
+  // One-by-one habit question screen
+  const habitFlow = { section:"recovery", index:0 };
+
+  const getHabitsBySection = ()=> recoveryHabits;
+
+  const renderHabitStep = (section)=>{
+    const habits = getHabitsBySection();
+    const total = habits.length;
+
+    if(habitFlow.section !== section){
+      habitFlow.section = section;
+      habitFlow.index = 0;
+    }
+
+    const h = habits[habitFlow.index];
+    const a = state.answers[h.id] || {done:false, count:0};
+
+    const counterUI = `
+      <label class="chip"><input id="done" type="checkbox" ${a.done ? "checked":""} /> ✅ نعم</label>
+      <label class="chip"><input id="notdone" type="checkbox" ${!a.done ? "checked":""} /> ❌ لا</label>
+    `;
+
+    app.innerHTML = `
+      <div class="anim-in">
+      <div class="sectionBadge daily">🌿 عادات التعافي</div>
+      <h2 class="stepTitle">سؤال ${habitFlow.index+1} من ${total}</h2>
+      <p class="hint">أجب بصدق، وسيظهر الناتج مباشرة في قالب التقرير النهائي.</p>
+
+      <div class="qDots">
+        ${habits.map((_,qi)=>`<div class="qDot${qi===habitFlow.index?' active':qi<habitFlow.index?' done':''}"></div>`).join("")}
+      </div>
+
+      <div class="habitCard">
+        <div class="habitLeft">
+          <p class="habitName">${escapeHtml(h.name)}</p>
+          <p class="habitMeta">اختر نعم أو لا بحسب حال هذا اليوم.</p>
+        </div>
+        <div class="toggle">${counterUI}</div>
+      </div>
+
+      <div class="btns">
+        <button class="ghost" id="prevQ" ${habitFlow.index===0 ? "disabled":""}>← السابق</button>
+        <button class="primary" id="nextQ">${habitFlow.index===total-1 ? "✅ إنهاء القسم" : "التالي ←"}</button>
+      </div>
+
+      <div class="hr"></div>
+      <div class="btns">
+        <button class="ghost" id="backStep">↩ رجوع للخطوة</button>
+        <button class="ok" id="skipStep">تجاوز القسم ⏭</button>
+      </div>
+      </div>
+    `;
+
+    const doneEl = $("#done");
+    const notEl = $("#notdone");
+    const sync = ()=>{
+      if(doneEl.checked && notEl.checked) notEl.checked = false;
+      if(!doneEl.checked && !notEl.checked) notEl.checked = true;
+    };
+    doneEl.onchange = ()=>{ if(doneEl.checked) notEl.checked=false; sync(); };
+    notEl.onchange = ()=>{ if(notEl.checked) doneEl.checked=false; sync(); };
+    sync();
+
+    const saveCurrent = ()=>{
+      const d = $("#done").checked;
+      state.answers[h.id] = { done: d, count: 0 };
+      saveState();
+    };
+
+    $("#prevQ").onclick = ()=>{
+      saveCurrent();
+      habitFlow.index = Math.max(0, habitFlow.index-1);
+      renderHabitStep(section);
+    };
+
+    $("#nextQ").onclick = ()=>{
+      saveCurrent();
+      if(habitFlow.index < total-1){
+        habitFlow.index += 1;
+        renderHabitStep(section);
+      }else{
+        habitFlow.index = 0;
+        go(+1);
+      }
+    };
+
+    $("#backStep").onclick = ()=>{
+      saveCurrent();
+      go(-1);
+    };
+
+    $("#skipStep").onclick = ()=>{
+      saveCurrent();
+      habitFlow.index = 0;
+      go(+1);
+    };
+  };
+
+  const renderAvoided = ()=>{
+    app.innerHTML = `
+      <div class="anim-in">
+      <h2 class="stepTitle">🚫 جانب "لا تَقربوا"</h2>
+      <p class="hint">اكتب العادات السيئة التي تجنبتها اليوم. سطر لكل عنصر.</p>
+
+      <div id="avoidList" class="list"></div>
+
+      <div class="btns">
+        <button class="ok" id="add">+ إضافة سطر</button>
+        <button class="ghost" id="prev">← السابق</button>
+        <button class="primary" id="next">التالي →</button>
+      </div>
+      </div>
+    `;
+
+    const list = $("#avoidList");
+
+    const renderList = ()=>{
+      list.innerHTML = "";
+      (state.avoided||[""]).forEach((v, i)=>{
+        const div = document.createElement("div");
+        div.className = "habitCard";
+        div.innerHTML = `
+          <div class="habitLeft">
+            <label>عنصر ${i+1}</label>
+            <input type="text" value="${escapeHtml(v||"")}" placeholder="مثال: تجنبت التصفح العشوائي" data-i="${i}" />
+          </div>
+          <div class="toggle">
+            <button class="danger" data-del="${i}">حذف</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      list.querySelectorAll('input[type="text"]').forEach(inp=>{
+        inp.oninput = (e)=>{
+          const idx = Number(e.target.getAttribute("data-i"));
+          state.avoided[idx] = e.target.value;
+          saveState();
+        };
+      });
+
+      list.querySelectorAll('button[data-del]').forEach(btn=>{
+        btn.onclick = ()=>{
+          const idx = Number(btn.getAttribute("data-del"));
+          state.avoided.splice(idx,1);
+          if(state.avoided.length===0) state.avoided.push("");
+          saveState();
+          renderList();
+        };
+      });
+    };
+
+    renderList();
+
+    $("#add").onclick = ()=>{
+      state.avoided.push("");
+      saveState();
+      renderList();
+    };
+    $("#prev").onclick = ()=>go(-1);
+    $("#next").onclick = ()=>go(+1);
+  };
+
+  const renderGratitude = ()=>{
+    app.innerHTML = `
+      <div class="anim-in">
+      <h2 class="stepTitle">🤲🏻 الحمد</h2>
+      <p class="hint">اكتب نعمًا أحمدت الله عليها اليوم، ويمكنك زيادة الأسطر أو تقليلها.</p>
+
+      <div id="gratList" class="list"></div>
+
+      <div class="btns">
+        <button class="ok" id="add">+ إضافة نعمة</button>
+        <button class="ghost" id="prev">← السابق</button>
+        <button class="primary" id="next">التالي →</button>
+      </div>
+      </div>
+    `;
+
+    const list = $("#gratList");
+
+    const renderList = ()=>{
+      list.innerHTML = "";
+      (state.gratitude||[""]).forEach((v,i)=>{
+        const div = document.createElement("div");
+        div.className = "habitCard";
+        div.innerHTML = `
+          <div class="habitLeft">
+            <label>نعمة ${i+1}</label>
+            <input type="text" value="${escapeHtml(v||"")}" placeholder="مثال: الصحة / الأهل / التوفيق" data-i="${i}" />
+          </div>
+          <div class="toggle">
+            <button class="danger" data-del="${i}">حذف</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      list.querySelectorAll('input[type="text"]').forEach(inp=>{
+        inp.oninput = (e)=>{
+          const idx = Number(e.target.getAttribute("data-i"));
+          state.gratitude[idx] = e.target.value;
+          saveState();
+        };
+      });
+
+      list.querySelectorAll('button[data-del]').forEach(btn=>{
+        btn.onclick = ()=>{
+          const idx = Number(btn.getAttribute("data-del"));
+          state.gratitude.splice(idx,1);
+          if(state.gratitude.length===0) state.gratitude.push("");
+          saveState();
+          renderList();
+        };
+      });
+    };
+
+    renderList();
+
+    $("#add").onclick = ()=>{
+      state.gratitude.push("");
+      saveState();
+      renderList();
+    };
+    $("#prev").onclick = ()=>go(-1);
+    $("#next").onclick = ()=>go(+1);
+  };
+
+  const renderFeeling = ()=>{
+    app.innerHTML = `
+      <div class="anim-in">
+      <h2 class="stepTitle">⭐ التقييم اليومي</h2>
+      <p class="hint">اختار شعورك أو اكتب شعورك بنفسك.</p>
+
+      <div class="row">
+        <div>
+          <label>اختيار سريع</label>
+          <select id="preset">
+            ${["متفائل","متحمس","حامد لله","هادئ","مضغوط شوي","تعبان","قلقان","مرتاح"].map(v=>`
+              <option ${state.feelingPreset===v?"selected":""}>${v}</option>
+            `).join("")}
+          </select>
+        </div>
+        <div>
+          <label>أو اكتب شعورك الخاص (اختياري)</label>
+          <input id="custom" type="text" placeholder="مثال: متفائل ومركز" value="${escapeHtml(state.feelingCustom||"")}" />
+        </div>
+      </div>
+
+      <div class="btns">
+        <button class="ghost" id="prev">← السابق</button>
+        <button class="primary" id="next">التالي →</button>
+      </div>
+      </div>
+    `;
+
+    $("#prev").onclick = ()=>go(-1);
+    $("#next").onclick = ()=>{
+      state.feelingPreset = $("#preset").value;
+      state.feelingCustom = $("#custom").value;
+      saveState();
+      go(+1);
+    };
+  };
+
+  const renderSummary = ()=>{
+    app.innerHTML = `
+      <div class="anim-in">
+      <h2 class="stepTitle">🗒️ ملخص اليوم</h2>
+      <p class="hint">اكتب ملخصًا بسيطًا عن يومك.</p>
+
+      <label>ملخص يومي</label>
+      <textarea id="summary" placeholder="اكتب ملخص يومك...">${escapeHtml(state.summary||"")}</textarea>
+
+      <div class="btns">
+        <button class="ghost" id="prev">← السابق</button>
+        <button class="primary" id="next">التالي →</button>
+      </div>
+      </div>
+    `;
+    $("#prev").onclick = ()=>go(-1);
+    $("#next").onclick = ()=>{
+      state.summary = $("#summary").value;
+      saveState();
+      go(+1);
+    };
+  };
+
+  const renderMotivation = ()=>{
+    app.innerHTML = `
+      <div class="anim-in">
+      <h2 class="stepTitle">🚀 التحفيز الذاتي</h2>
+      <p class="hint">اكتب سطرًا في كل خانة، ويمكنك ترك ما لا تحتاجه فارغًا.</p>
+
+      <div id="motList" class="list"></div>
+
+      <div class="btns">
+        <button class="ok" id="add">+ إضافة سطر</button>
+        <button class="ghost" id="prev">← السابق</button>
+        <button class="primary" id="next">التالي →</button>
+      </div>
+      </div>
+    `;
+
+    const list = $("#motList");
+    const renderList = ()=>{
+      list.innerHTML = "";
+      (state.motivation||[""]).forEach((v,i)=>{
+        const div = document.createElement("div");
+        div.className = "habitCard";
+        div.innerHTML = `
+          <div class="habitLeft">
+            <label>سطر ${i+1}</label>
+            <input type="text" value="${escapeHtml(v||"")}" placeholder="مثال: القادم أجمل بإذن الله" data-i="${i}" />
+          </div>
+          <div class="toggle">
+            <button class="danger" data-del="${i}">حذف</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      list.querySelectorAll('input[type="text"]').forEach(inp=>{
+        inp.oninput = (e)=>{
+          const idx = Number(e.target.getAttribute("data-i"));
+          state.motivation[idx] = e.target.value;
+          saveState();
+        };
+      });
+
+      list.querySelectorAll('button[data-del]').forEach(btn=>{
+        btn.onclick = ()=>{
+          const idx = Number(btn.getAttribute("data-del"));
+          state.motivation.splice(idx,1);
+          if(state.motivation.length===0) state.motivation.push("");
+          saveState();
+          renderList();
+        };
+      });
+    };
+
+    renderList();
+
+    $("#prev").onclick = ()=>go(-1);
+    $("#add").onclick = ()=>{
+      state.motivation.push("");
+      saveState();
+      renderList();
+    };
+    $("#next").onclick = ()=>{
+      go(+1);
+    };
+  };
+
+  const renderNotes = ()=>{
+    app.innerHTML = `
+      <div class="anim-in">
+      <h2 class="stepTitle">📎 ملاحظات مهمة</h2>
+      <p class="hint">اكتب الملاحظات التي تريد ظهورها في آخر التقرير.</p>
+
+      <div id="notesList" class="list"></div>
+
+      <div class="btns">
+        <button class="ok" id="add">+ إضافة ملاحظة</button>
+        <button class="ghost" id="prev">← السابق</button>
+        <button class="primary" id="next">عرض التقرير ✨</button>
+      </div>
+      </div>
+    `;
+
+    const list = $("#notesList");
+    const renderList = ()=>{
+      list.innerHTML = "";
+      (state.notes||[""]).forEach((v,i)=>{
+        const div = document.createElement("div");
+        div.className = "habitCard";
+        div.innerHTML = `
+          <div class="habitLeft">
+            <label>ملاحظة ${i+1}</label>
+            <input type="text" value="${escapeHtml(v||"")}" placeholder="مثال: أبتعد عن الخلوة الطويلة بالجوال" data-i="${i}" />
+          </div>
+          <div class="toggle">
+            <button class="danger" data-del="${i}">حذف</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      list.querySelectorAll('input[type="text"]').forEach(inp=>{
+        inp.oninput = (e)=>{
+          const idx = Number(e.target.getAttribute("data-i"));
+          state.notes[idx] = e.target.value;
+          saveState();
+        };
+      });
+
+      list.querySelectorAll('button[data-del]').forEach(btn=>{
+        btn.onclick = ()=>{
+          const idx = Number(btn.getAttribute("data-del"));
+          state.notes.splice(idx,1);
+          if(state.notes.length===0) state.notes.push("");
+          saveState();
+          renderList();
+        };
+      });
+    };
+
+    renderList();
+
+    $("#prev").onclick = ()=>go(-1);
+    $("#add").onclick = ()=>{
+      state.notes.push("");
+      saveState();
+      renderList();
+    };
+    $("#next").onclick = ()=>go(+1);
+  };
+
+  const renderReport = ()=>{
+    const report = buildReport();
+
+    app.innerHTML = `
+      <h2 class="stepTitle">📌 التقرير النهائي</h2>
+      <p class="hint">اضغط "نسخ التقرير" وبعدين لصقه بالقبيلة. ✅</p>
+
+      <label>التقرير</label>
+      <textarea class="reportBox" id="reportText" readonly>${escapeHtml(report)}</textarea>
+
+      <div class="btns">
+        <button class="primary" id="copy">📋 نسخ التقرير</button>
+        <button class="ok" id="saveToday">💾 حفظ اليوم</button>
+        <button class="ghost" id="prev">← السابق</button>
+        <button class="danger" id="clear">🗑 مسح البيانات</button>
+      </div>
+
+      <div class="hr"></div>
+      <div class="small">
+        💾 البيانات محفوظة على جهازك فقط بشكل آمن.
+      </div>
+    `;
+
+    $("#copy").onclick = async ()=>{
+      await copyText(report, "تم نسخ التقرير ✅");
+    };
+
+    $("#saveToday").onclick = ()=>{
+      const archive = loadArchive();
+      archive.unshift({
+        dateISO: state.dateISO || todayISO,
+        hijriDate: state.hijriDate,
+        completedHabits: computeScores().doneTotal,
+        report
+      });
+      selectedArchiveIndex = 0;
+      saveArchive(archive);
+      renderSavedDaysPanel();
+      toast("تم حفظ نسخة اليوم ✅");
+    };
+
+    $("#prev").onclick = ()=>go(-1);
+
+    $("#clear").onclick = ()=>{
+      if(confirm("متأكد تمسح كل شيء؟")){
+        localStorage.removeItem(STATE_STORAGE_KEY);
+        localStorage.removeItem(LEGACY_STATE_STORAGE_KEY);
+        toast("تم المسح");
+        location.reload();
+      }
+    };
+  };
+
+  function render(){
+    setProgress();
+    const id = steps[stepIndex].id;
+
+    if(id==="intro") return renderIntro();
+    if(id==="habits_recovery") return renderHabitStep("recovery");
+    if(id==="avoided") return renderAvoided();
+    if(id==="gratitude") return renderGratitude();
+    if(id==="feeling") return renderFeeling();
+    if(id==="summary") return renderSummary();
+    if(id==="motivation") return renderMotivation();
+    if(id==="notes") return renderNotes();
+    if(id==="report") return renderReport();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
