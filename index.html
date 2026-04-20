@@ -409,10 +409,12 @@ setDoc,
     <div class="member-overview-layout">
       <article class="member-overview-card">
         <div class="member-overview-date">
-          <div>
+          <div class="today-date-copy">
             <div class="today-date-label">اليوم</div>
-            <div class="today-date-val" id="todayDate">—</div>
+            <div class="today-date-val" id="todayWeekday">—</div>
+            <div class="today-date-meta" id="todayDate">—</div>
           </div>
+          <button class="btn ghost today-reset-btn" id="resetToday" type="button">تصفير</button>
         </div>
 
         <div class="member-overview-main">
@@ -443,165 +445,192 @@ setDoc,
 
     <div class="member-task-block-head">
       <div>
-        <div class="member-overview-title">المهام اليومية</div>
-        <div class="member-overview-sub">بطاقات أصغر، وخطوات أوضح، واستخدام أسرع.</div>
+        <div class="member-overview-title">مهام اليوم</div>
       </div>
       <div class="today-footer">
         <span class="panel-sub">الحفظ تلقائي</span>
-        <button class="btn ghost" id="resetToday" type="button">تصفير اليوم</button>
       </div>
     </div>
 
-    <div class="today-cards">
+    <div class="today-task-groups">
+      <section class="today-task-group">
+        <div class="today-task-group__head">
+          <div class="today-task-group__title">أساسيات الثبات</div>
+          <div class="today-task-group__sub">هذه هي العادات التي تشكّل يومك من الداخل قبل أي تفاصيل إضافية.</div>
+        </div>
 
-      <!-- أذكار الصباح -->
-      <div class="tcard" id="tcard-morning">
-        <div class="tcard-glow"></div>
-        <div class="tcard-header">
-          <span class="tcard-emoji">☀️</span>
-          <label class="tcard-toggle">
-            <input type="checkbox" data-task="morning_adhkar" />
-            <span class="tcard-knob"></span>
-          </label>
-        </div>
-        <div class="tcard-body">
-          <div class="tcard-title">أذكار الصباح</div>
-          <div class="tcard-desc">بداية سريعة وهادئة.</div>
-          <button type="button" class="tcard-link-btn azkar-open-btn" id="openMorningAzkar">
-            افتح الآن
-          </button>
-        </div>
-      </div>
-
-      <!-- التنفس العميق -->
-      <div class="tcard tcard-breath" id="tcard-breath">
-        <div class="tcard-glow"></div>
-        <div class="tcard-header">
-          <span class="tcard-emoji">🫁</span>
-          <span class="pill" id="breathStatus">غير مكتمل</span>
-        </div>
-        <div class="tcard-body">
-          <div class="tcard-title">التنفّس العميق</div>
-          <div class="breath-box" style="margin-top:10px">
-            <div class="breath-left">
-              <div class="breath-time" id="breathTime">01:00</div>
-              <div class="breath-hint" id="breathHint">شهيق 4 • حبس 2 • زفير 6</div>
-            </div>
-            <div class="breath-actions">
-              <button class="btn" id="breathStart" type="button">ابدأ</button>
-              <button class="btn ghost" id="breathReset" type="button">إعادة</button>
-              <label class="task-line compact">
-                <input type="checkbox" data-task="deep_breath" />
-                <span>تم ✅️</span>
+        <div class="today-cards today-cards--report">
+          <div class="tcard" id="tcard-prayer">
+            <div class="tcard-glow"></div>
+            <div class="tcard-header">
+              <span class="tcard-emoji">🕌</span>
+              <label class="tcard-toggle">
+                <input type="checkbox" data-task="habit_fard_mosque" />
+                <span class="tcard-knob"></span>
               </label>
             </div>
+            <div class="tcard-body">
+              <div class="tcard-title">الفريضة جماعة</div>
+              <div class="tcard-desc">ذكّر نفسك أن الصلاة ليست بندًا عابرًا، بل عمود اليوم كله.</div>
+            </div>
+          </div>
+
+          <div class="tcard" id="tcard-sleep">
+            <div class="tcard-glow"></div>
+            <div class="tcard-header">
+              <span class="tcard-emoji">😴</span>
+              <label class="tcard-toggle">
+                <input type="checkbox" data-task="habit_sleep" />
+                <span class="tcard-knob"></span>
+              </label>
+            </div>
+            <div class="tcard-body">
+              <div class="tcard-title">النوم الجيد</div>
+              <div class="tcard-desc">النوم المرتب يخفف الاندفاع ويجعل بقية اليوم أخف وأصفى.</div>
+            </div>
+          </div>
+
+          <div class="tcard" id="tcard-adhkar">
+            <div class="tcard-glow"></div>
+            <div class="tcard-header">
+              <span class="tcard-emoji">📿</span>
+              <label class="tcard-toggle">
+                <input type="checkbox" data-task="habit_adhkar" />
+                <span class="tcard-knob"></span>
+              </label>
+            </div>
+            <div class="tcard-body">
+              <div class="tcard-title">أذكار اليوم</div>
+              <div class="tcard-desc">الصباح والمساء تحت بند واحد في التقرير، وهنا أيضًا لتبقى الصورة أوضح.</div>
+              <div class="today-inline-actions">
+                <button type="button" class="tcard-link-btn azkar-open-btn" id="openMorningAzkar">الصباح</button>
+                <button type="button" class="tcard-link-btn azkar-open-btn" id="openEveningAzkar">المساء</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="tcard" id="tcard-gaze">
+            <div class="tcard-glow"></div>
+            <div class="tcard-header">
+              <span class="tcard-emoji">✋🏻</span>
+              <label class="tcard-toggle">
+                <input type="checkbox" data-task="habit_lower_gaze" />
+                <span class="tcard-knob"></span>
+              </label>
+            </div>
+            <div class="tcard-body">
+              <div class="tcard-title">غض البصر</div>
+              <div class="tcard-desc">ضع هذه العلامة حين يكون يومك أنظف في النظر والحركة والتصفح.</div>
+            </div>
+          </div>
+
+          <div class="tcard" id="tcard-obligations">
+            <div class="tcard-glow"></div>
+            <div class="tcard-header">
+              <span class="tcard-emoji">🏆</span>
+              <label class="tcard-toggle">
+                <input type="checkbox" data-task="habit_obligations" />
+                <span class="tcard-knob"></span>
+              </label>
+            </div>
+            <div class="tcard-body">
+              <div class="tcard-title">التزامات اليوم</div>
+              <div class="tcard-desc">أنهِ ما عليك من دراسة أو عمل أو واجبات حتى لا يتحول التأجيل إلى ضغط.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="today-task-group">
+        <div class="today-task-group__head">
+          <div class="today-task-group__title">مهام داعمة</div>
+          <div class="today-task-group__sub">ليست زائدة، لكنها تقوي الجو العام وتمنع الفراغ من التمدد داخل اليوم.</div>
+        </div>
+
+        <div class="today-cards today-cards--report today-cards--supportive">
+          <div class="tcard" id="tcard-learning">
+            <div class="tcard-glow"></div>
+            <div class="tcard-header">
+              <span class="tcard-emoji">💬</span>
+              <label class="tcard-toggle">
+                <input type="checkbox" data-task="habit_learn" />
+                <span class="tcard-knob"></span>
+              </label>
+            </div>
+            <div class="tcard-body">
+              <div class="tcard-title">التثقّف عن التعافي</div>
+              <div class="tcard-desc">افتح سؤالًا واحدًا فقط إذا احتجت توضيحًا سريعًا أو تثبيتًا للفهم.</div>
+              <div class="qa-plan-box" aria-live="polite">
+                <div class="qa-plan-range" id="qaDailyCategories">قوائم التعافي</div>
+                <div class="qa-plan-meta" id="qaDailyMeta" hidden></div>
+              </div>
+              <button type="button" class="tcard-link-btn" id="openQaPage">افتح الآن</button>
+            </div>
+          </div>
+
+          <div class="tcard" id="tcard-book">
+            <div class="tcard-glow"></div>
+            <div class="tcard-header">
+              <span class="tcard-emoji">📚</span>
+              <label class="tcard-toggle">
+                <input type="checkbox" data-task="habit_book" />
+                <span class="tcard-knob"></span>
+              </label>
+            </div>
+            <div class="tcard-body">
+              <div class="tcard-title">قراءة 5 دقائق</div>
+              <div class="tcard-desc">خمس دقائق من كتاب نافع تكسر الفراغ وتعيدك إلى مسار أهدأ.</div>
+              <div class="library-meta">
+                <span class="library-chip" id="libraryCountChip">٠ كتاب</span>
+                <span class="library-chip">جاهزة للقراءة</span>
+              </div>
+              <button type="button" class="tcard-link-btn" id="openRecoveryLibrary">افتح الآن</button>
+            </div>
+          </div>
+
+          <div class="tcard" id="tcard-exercise">
+            <div class="tcard-glow"></div>
+            <div class="tcard-header">
+              <span class="tcard-emoji">💪🏻</span>
+              <label class="tcard-toggle">
+                <input type="checkbox" data-task="habit_exercise" />
+                <span class="tcard-knob"></span>
+              </label>
+            </div>
+            <div class="tcard-body">
+              <div class="tcard-title">حركة أو رياضة</div>
+              <div class="tcard-desc">ولو كانت دقائق معدودة. المهم أن لا يبقى الجسد ساكنًا والذهن محتقنًا.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="today-support-strip">
+      <div class="today-support-card today-support-card--breath">
+        <div class="today-support-kicker">عند الحاجة فقط</div>
+        <div class="today-support-title">تهدئة سريعة قبل أن تكبر الموجة</div>
+        <div class="breath-box today-support-breath">
+          <div class="breath-left">
+            <div class="breath-time" id="breathTime">01:00</div>
+            <div class="breath-hint" id="breathHint">شهيق 4 • حبس 2 • زفير 6</div>
+          </div>
+          <div class="breath-actions">
+            <span class="pill" id="breathStatus">جاهز الآن</span>
+            <button class="btn" id="breathStart" type="button">ابدأ</button>
+            <button class="btn ghost" id="breathReset" type="button">إعادة</button>
           </div>
         </div>
       </div>
 
-      <!-- سؤال وجواب -->
-      <div class="tcard" id="tcard-qa">
-        <div class="tcard-glow"></div>
-        <div class="tcard-header">
-          <span class="tcard-emoji">💬</span>
-          <label class="tcard-toggle">
-            <input type="checkbox" data-task="qa_review" />
-            <span class="tcard-knob"></span>
-          </label>
-        </div>
-        <div class="tcard-body">
-          <div class="tcard-title">سؤال وجواب</div>
-          <div class="tcard-desc">وضوح سريع وقت الحيرة أو الضعف.</div>
-          <div class="qa-plan-box" aria-live="polite">
-            <div class="qa-plan-kicker">المتاح الآن</div>
-            <div class="qa-plan-range" id="qaDailyCategories">يُحسب الآن…</div>
-            <div class="qa-plan-meta" id="qaDailyMeta">سيظهر عدد القوائم والأسئلة هنا.</div>
-          </div>
-          <button type="button" class="tcard-link-btn" id="openQaPage">
-            افتح الآن
-          </button>
+      <div class="today-support-card today-support-card--actions">
+        <div class="today-support-kicker">أدوات مساندة</div>
+        <div class="today-support-title">إذا شعرت بضغط أو أردت إنهاء اليوم بسرعة</div>
+        <div class="today-support-actions">
+          <button type="button" class="btn ghost" id="openRescueCenter">فتح النجدة</button>
+          <a class="today-support-report-btn" href="daily_report.html">كتابة التقرير</a>
         </div>
       </div>
-
-      <!-- أذكار المساء -->
-      <div class="tcard" id="tcard-evening">
-        <div class="tcard-glow"></div>
-        <div class="tcard-header">
-          <span class="tcard-emoji">🌙</span>
-          <label class="tcard-toggle">
-            <input type="checkbox" data-task="evening_adhkar" />
-            <span class="tcard-knob"></span>
-          </label>
-        </div>
-        <div class="tcard-body">
-          <div class="tcard-title">أذكار المساء</div>
-          <div class="tcard-desc">إغلاق هادئ لليوم.</div>
-          <button type="button" class="tcard-link-btn azkar-open-btn" id="openEveningAzkar">
-            افتح الآن
-          </button>
-        </div>
-      </div>
-
-      <!-- خطة النجاة -->
-      <div class="tcard" id="tcard-rescue">
-        <div class="tcard-glow"></div>
-        <div class="tcard-header">
-          <span class="tcard-emoji">🛟</span>
-          <label class="tcard-toggle">
-            <input type="checkbox" data-task="rescue_plan" />
-            <span class="tcard-knob"></span>
-          </label>
-        </div>
-        <div class="tcard-body">
-          <div class="tcard-title">مركز النجاة</div>
-          <div class="tcard-desc">افتحه فورًا عند الضغط أو الفراغ.</div>
-          <button type="button" class="tcard-link-btn" id="openRescueCenter">
-            افتح الآن
-          </button>
-        </div>
-      </div>
-
-      <!-- مكتبة التعافي -->
-      <div class="tcard" id="tcard-library">
-        <div class="tcard-glow"></div>
-        <div class="tcard-header">
-          <span class="tcard-emoji">📚</span>
-          <label class="tcard-toggle">
-            <input type="checkbox" data-task="recovery_book" />
-            <span class="tcard-knob"></span>
-          </label>
-        </div>
-        <div class="tcard-body">
-          <div class="tcard-title">مكتبة التعافي</div>
-          <div class="tcard-desc">كتاب سريع بدل الفراغ.</div>
-          <div class="library-meta">
-            <span class="library-chip" id="libraryCountChip">٠ كتاب</span>
-            <span class="library-chip">قابلة للتوسع</span>
-          </div>
-          <button type="button" class="tcard-link-btn" id="openRecoveryLibrary">
-            افتح الآن
-          </button>
-        </div>
-      </div>
-
-      <!-- تقرير التعافي -->
-      <div class="tcard tcard-report">
-        <div class="tcard-glow tcard-glow-gold"></div>
-        <div class="tcard-header">
-          <span class="tcard-emoji">📊</span>
-        </div>
-        <div class="tcard-body">
-          <div class="tcard-title" style="color:var(--gold)">تقرير التعافي</div>
-          <div class="tcard-desc">اكتب وأرسل في دقائق.</div>
-          <a href="daily_report.html" style="text-decoration:none;display:block;margin-top:12px">
-            <button class="btn w-full" type="button"
-              style="background:rgba(245,200,66,.13);color:var(--gold);border-color:rgba(245,200,66,.28);font-family:inherit">
-              كتابة التقرير
-            </button>
-          </a>
-        </div>
-      </div>
-
     </div>
   </section>
 
@@ -1339,7 +1368,7 @@ setDoc,
   <script src="js/auth-ui.js?v=20260412qa8"></script>
   <script src="js/member-status.js"></script>
   <script src="js/ahd.js?v=20260412qa8"></script>
-  <script src="js/qa.js?v=20260412qa8"></script>
+  <script src="js/qa.js?v=20260420qaclean2"></script>
   <script src="js/recovery-tools.js?v=20260412rescue1"></script>
   <script src="js/hadith.js"></script>
 </body>

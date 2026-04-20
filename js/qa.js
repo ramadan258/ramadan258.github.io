@@ -161,25 +161,17 @@ function selectQaAdminCategory(categoryId) {
   renderQaAdminPanel();
 }
 
-function categoryQuestionCount(categoryId) {
-  return getQaItemsForView().filter((item) => item.categoryId === categoryId).length;
-}
-
 function renderQaTaskMeta() {
-  const counts = getQaCounts();
   const categoriesEl = qs("#qaDailyCategories");
   const metaEl = qs("#qaDailyMeta");
 
   if (categoriesEl) {
-    categoriesEl.textContent = counts.categoriesCount
-      ? `${formatArabicNumber(counts.categoriesCount)} قوائم جاهزة`
-      : "لا توجد قوائم بعد";
+    categoriesEl.textContent = "قوائم التعافي";
   }
 
   if (metaEl) {
-    metaEl.textContent = counts.itemsCount
-      ? `${formatArabicNumber(counts.itemsCount)} سؤال وجواب متاح`
-      : "أضف أول قائمة من لوحة أمجد";
+    metaEl.textContent = "";
+    metaEl.hidden = true;
   }
 }
 
@@ -219,12 +211,10 @@ function renderQaPage() {
   }
 
   categoryRail.innerHTML = categories.map((category) => {
-    const count = categoryQuestionCount(category.id);
     const active = category.id === selectedCategoryId;
     return `
       <a class="qa-category-card${active ? " is-active" : ""}" href="${escapeHtml(buildQaPageUrl(category.id))}" data-qa-category="${escapeHtml(category.id)}">
         <span class="qa-category-card-title">${escapeHtml(category.name)}</span>
-        <span class="qa-category-card-count">${formatArabicNumber(count)} سؤال</span>
       </a>
     `;
   }).join("");

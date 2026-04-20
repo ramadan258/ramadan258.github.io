@@ -88,13 +88,26 @@
     };
 
     const TASK_KEYS = [
-      "morning_adhkar",
-      "deep_breath",
-      "qa_review",
-      "evening_adhkar",
-      "rescue_plan",
-      "recovery_book",
+      "habit_fard_mosque",
+      "habit_sleep",
+      "habit_adhkar",
+      "habit_lower_gaze",
+      "habit_obligations",
+      "habit_learn",
+      "habit_book",
+      "habit_exercise",
     ];
+
+    const LEGACY_TASK_ALIASES = {
+      habit_fard_mosque: ["habit_fard_mosque"],
+      habit_sleep: ["habit_sleep"],
+      habit_adhkar: ["habit_adhkar", "morning_adhkar", "evening_adhkar"],
+      habit_lower_gaze: ["habit_lower_gaze"],
+      habit_obligations: ["habit_obligations"],
+      habit_learn: ["habit_learn", "qa_review", "quran_reading"],
+      habit_book: ["habit_book", "recovery_book"],
+      habit_exercise: ["habit_exercise"],
+    };
 
     const RISK_CHECK_FIELDS = ["mood", "isolation", "urge"];
     const RISK_CHECK_OPTIONS = {
@@ -1825,6 +1838,7 @@ function toLocalISODate(d) {
         tasks,
         breathSecondsLeft: CONFIG.BREATH.TOTAL_SECONDS,
         breathRunning: false,
+        breathCompleted: false,
         completedAll: false,
         completedAt: null,
         riskCheck: defaultRiskCheckState(),
@@ -1865,19 +1879,17 @@ function toLocalISODate(d) {
       if (!rawState || typeof rawState !== "object") return base;
 
       TASK_KEYS.forEach((k) => {
-        if (k === "qa_review") {
-          base.tasks[k] = Boolean(rawState.tasks && (rawState.tasks[k] || rawState.tasks.quran_reading));
-          return;
-        }
-        base.tasks[k] = Boolean(rawState.tasks && rawState.tasks[k]);
+        const aliases = Array.isArray(LEGACY_TASK_ALIASES[k]) ? LEGACY_TASK_ALIASES[k] : [k];
+        base.tasks[k] = aliases.some((alias) => Boolean(rawState.tasks && rawState.tasks[alias]));
       });
 
       const seconds = Number(rawState.breathSecondsLeft);
       if (Number.isFinite(seconds)) base.breathSecondsLeft = Math.max(0, Math.min(CONFIG.BREATH.TOTAL_SECONDS, Math.floor(seconds)));
 
       base.breathRunning = Boolean(rawState.breathRunning);
-      base.completedAll = Boolean(rawState.completedAll);
-      base.completedAt = typeof rawState.completedAt === "string" ? rawState.completedAt : null;
+      base.breathCompleted = Boolean(rawState.breathCompleted || (rawState.tasks && rawState.tasks.deep_breath));
+      base.completedAll = Boolean(rawState.completedAll) && TASK_KEYS.every((k) => Boolean(base.tasks[k]));
+      base.completedAt = base.completedAll && typeof rawState.completedAt === "string" ? rawState.completedAt : null;
       base.riskCheck = normalizeRiskCheckState(rawState.riskCheck);
 
       return base;
@@ -1981,10 +1993,8 @@ function toLocalISODate(d) {
 
     function chooseRiskAzkarConfig(state) {
       const hour = new Date().getHours();
-      const needMorning = !state?.tasks?.morning_adhkar;
-      const needEvening = !state?.tasks?.evening_adhkar;
-      if (needMorning && (!needEvening || hour < 15)) return CONFIG.AZKAR.MORNING;
-      if (needEvening) return CONFIG.AZKAR.EVENING;
+      const adhkarDone = Boolean(state?.tasks?.habit_adhkar || state?.tasks?.morning_adhkar || state?.tasks?.evening_adhkar);
+      if (!adhkarDone) return hour < 15 ? CONFIG.AZKAR.MORNING : CONFIG.AZKAR.EVENING;
       return hour < 15 ? CONFIG.AZKAR.MORNING : CONFIG.AZKAR.EVENING;
     }
 
@@ -2045,7 +2055,7 @@ function toLocalISODate(d) {
 
       if (breathBtn) {
         if (state?.breathRunning) breathBtn.textContent = "التنفس جارٍ الآن";
-        else if (state?.tasks?.deep_breath) breathBtn.textContent = "أعد دقيقة تنفس";
+        else if (state?.breathCompleted) breathBtn.textContent = "أعد دقيقة تنفس";
         else breathBtn.textContent = evaluation.level === "high" ? "ابدأ النجدة الآن" : "ابدأ التنفس الآن";
         breathBtn.classList.toggle("emergency", evaluation.level === "high");
       }
@@ -2213,12 +2223,14 @@ function previousISODate(isoDate) {
       // Done-state glow on cards
       document.querySelectorAll(".tcard[id]").forEach(card => {
         const taskMap = {
-          "tcard-morning": "morning_adhkar",
-          "tcard-breath": "deep_breath",
-          "tcard-qa": "qa_review",
-          "tcard-evening": "evening_adhkar",
-          "tcard-rescue": "rescue_plan",
-          "tcard-library": "recovery_book"
+          "tcard-prayer": "habit_fard_mosque",
+          "tcard-sleep": "habit_sleep",
+          "tcard-adhkar": "habit_adhkar",
+          "tcard-gaze": "habit_lower_gaze",
+          "tcard-obligations": "habit_obligations",
+          "tcard-learning": "habit_learn",
+          "tcard-book": "habit_book",
+          "tcard-exercise": "habit_exercise"
         };
         const key = taskMap[card.id];
         if (key) card.classList.toggle("is-done", Boolean(state.tasks[key]));
@@ -2291,15 +2303,20 @@ function previousISODate(isoDate) {
     }
 
     function setBreathUI(state) {
-      qs("#breathTime").textContent = fmtTime(state.breathSecondsLeft);
-      qs("#breathHint").textContent = CONFIG.BREATH.PATTERN_TEXT;
+      const timeEl = qs("#breathTime");
+      const hintEl = qs("#breathHint");
+      const startEl = qs("#breathStart");
+      if (timeEl) timeEl.textContent = fmtTime(state.breathSecondsLeft);
+      if (hintEl) hintEl.textContent = CONFIG.BREATH.PATTERN_TEXT;
 
-      const done = Boolean(state.tasks.deep_breath);
+      const done = Boolean(state.breathCompleted);
       const pill = qs("#breathStatus");
-      pill.textContent = done ? "مكتمل ✅️" : "غير مكتمل";
-      pill.classList.toggle("ok", done);
+      if (pill) {
+        pill.textContent = done ? "مكتمل ✅️" : "جاهز الآن";
+        pill.classList.toggle("ok", done);
+      }
 
-      qs("#breathStart").textContent = state.breathRunning ? "إيقاف" : "ابدأ";
+      if (startEl) startEl.textContent = state.breathRunning ? "إيقاف" : "ابدأ";
     }
 
     function stopBreathTimer(state) {
@@ -2319,6 +2336,10 @@ function previousISODate(isoDate) {
         return;
       }
 
+      if (state.breathCompleted && state.breathSecondsLeft === 0) {
+        state.breathSecondsLeft = CONFIG.BREATH.TOTAL_SECONDS;
+      }
+      state.breathCompleted = false;
       state.breathRunning = true;
       setBreathUI(state);
       renderRiskCheckUI(state);
@@ -2330,8 +2351,7 @@ function previousISODate(isoDate) {
         state.breathSecondsLeft = Math.max(0, state.breathSecondsLeft - 1);
 
         if (state.breathSecondsLeft === 0) {
-          state.tasks.deep_breath = true;
-          setCheckbox("deep_breath", true);
+          state.breathCompleted = true;
           stopBreathTimer(state);
           updateProgressUI(state);
           maybeUpdateStreakOnFullCompletion(todayISO, state);
@@ -2345,6 +2365,7 @@ function previousISODate(isoDate) {
     function resetBreathTimer(todayISO, state) {
       stopBreathTimer(state);
       state.breathSecondsLeft = CONFIG.BREATH.TOTAL_SECONDS;
+      state.breathCompleted = false;
       setBreathUI(state);
       renderRiskCheckUI(state);
       setDailyState(todayISO, state);
@@ -2427,12 +2448,16 @@ function previousISODate(isoDate) {
       const today = new Date();
       const todayISO = toLocalISODate(today);
 
-      qs("#todayDate").textContent = today.toLocaleDateString("ar", {
-        weekday: "long",
+      const weekdayEl = qs("#todayWeekday");
+      const dateEl = qs("#todayDate");
+      const weekdayText = today.toLocaleDateString("ar", { weekday: "long" });
+      const dateText = today.toLocaleDateString("ar", {
         year: "numeric",
         month: "long",
         day: "numeric",
       });
+      if (weekdayEl) weekdayEl.textContent = weekdayText;
+      if (dateEl) dateEl.textContent = dateText;
 
       let state = getDailyState(todayISO);
       if (!state) state = defaultDailyState();
@@ -2464,11 +2489,6 @@ function previousISODate(isoDate) {
         el.onchange = () => {
           const key = el.getAttribute("data-task");
           state.tasks[key] = el.checked;
-
-          if (key === "deep_breath" && el.checked === false) {
-            state.breathSecondsLeft = CONFIG.BREATH.TOTAL_SECONDS;
-            stopBreathTimer(state);
-          }
 
           setBreathUI(state);
           updateProgressUI(state);
@@ -2508,9 +2528,11 @@ function previousISODate(isoDate) {
       const todayISO = toLocalISODate(today);
       const previewState = defaultDailyState();
 
-      previewState.tasks.morning_adhkar = true;
-      previewState.tasks.qa_review = true;
-      previewState.tasks.recovery_book = true;
+      previewState.tasks.habit_fard_mosque = true;
+      previewState.tasks.habit_adhkar = true;
+      previewState.tasks.habit_obligations = true;
+      previewState.tasks.habit_learn = true;
+      previewState.tasks.habit_book = true;
       previewState.riskCheck = {
         mood: "calm",
         isolation: "connected",
