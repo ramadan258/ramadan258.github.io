@@ -69,6 +69,7 @@
       signOut,
       setPersistence,
       inMemoryPersistence,
+      browserSessionPersistence,
           signInAnonymously,
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import {
@@ -84,6 +85,7 @@ setDoc,
       getDocs,
       query,
       orderBy,
+      limitToLast,
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -109,6 +111,7 @@ setDoc,
       signOut,
       setPersistence,
       inMemoryPersistence,
+      browserSessionPersistence,
       signInAnonymously,
       collection,
       doc,
@@ -121,11 +124,12 @@ setDoc,
       getDocs,
       query,
       orderBy,
+      limitToLast,
     };
   </script>
 
   <link rel="stylesheet" href="css/index-page.css" />
-  <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260412dockcolors1" />
+  <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260501review1" />
 </head>
 
 <body class="member-design-canvas-mode">
@@ -888,6 +892,7 @@ setDoc,
         </aside>
       </div>
     </div>
+
   </section>
 
   <!-- =====================
@@ -932,6 +937,10 @@ setDoc,
           <aside class="today-side" style="flex:1">
             <div class="panel-title" style="margin-bottom:10px">أعضاء العهد</div>
             <div id="ahdManageList" class="identity-grid" aria-label="أعضاء العهد للإدارة"></div>
+            <div id="ahdOrphanWrap" style="display:none; margin-top:14px">
+              <div class="panel-title" style="margin-bottom:10px">عناصر قديمة غير مرتبطة بعضو</div>
+              <div id="ahdOrphanList" class="identity-grid" aria-label="عناصر قديمة في العهد"></div>
+            </div>
           </aside>
         </div>
 
@@ -1364,10 +1373,10 @@ setDoc,
   
   </div>
 
-  <script src="js/main.js?v=20260412qa8"></script>
-  <script src="js/auth-ui.js?v=20260412qa8"></script>
+  <script src="js/main.js?v=20260501adminresume1"></script>
+  <script src="js/auth-ui.js?v=20260501adminresume1"></script>
   <script src="js/member-status.js"></script>
-  <script src="js/ahd.js?v=20260412qa8"></script>
+  <script src="js/ahd.js?v=20260501ahdghostfix1"></script>
   <script src="js/qa.js?v=20260420qaclean2"></script>
   <script src="js/recovery-tools.js?v=20260412rescue1"></script>
   <script src="js/hadith.js"></script>

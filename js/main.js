@@ -856,6 +856,8 @@ let LOCAL_ADMIN_ACCESS = {
   qa: false,
 };
 
+const LOCAL_ADMIN_ACCESS_STORAGE_KEY = "wa3i_local_admin_access_v1";
+
 const ADMIN_UI_STATE = {
   activePanel: null,
   menuOpen: false,
@@ -911,6 +913,48 @@ function canAccessAdminPanel(panelKey) {
   return false;
 }
 
+function persistLocalAdminAccess() {
+  try {
+    const hasAccess = Boolean(
+      LOCAL_ADMIN_ACCESS.owner &&
+      (LOCAL_ADMIN_ACCESS.memberStatus || LOCAL_ADMIN_ACCESS.ahd || LOCAL_ADMIN_ACCESS.memberManage || LOCAL_ADMIN_ACCESS.qa)
+    );
+    if (!hasAccess) {
+      localStorage.removeItem(LOCAL_ADMIN_ACCESS_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(LOCAL_ADMIN_ACCESS_STORAGE_KEY, JSON.stringify(LOCAL_ADMIN_ACCESS));
+  } catch {}
+}
+
+function restoreLocalAdminAccessForCurrentUser() {
+  try {
+    const currentUser = readCurrentUser();
+    if (!currentUser?.id) {
+      LOCAL_ADMIN_ACCESS = { owner: "", memberStatus: false, ahd: false, memberManage: false, qa: false };
+      return false;
+    }
+
+    const raw = localStorage.getItem(LOCAL_ADMIN_ACCESS_STORAGE_KEY);
+    if (!raw) return false;
+
+    const parsed = JSON.parse(raw);
+    const owner = String(parsed?.owner || "").trim();
+    if (!owner || owner !== String(currentUser.id || "").trim()) return false;
+
+    LOCAL_ADMIN_ACCESS = {
+      owner,
+      memberStatus: Boolean(parsed?.memberStatus),
+      ahd: Boolean(parsed?.ahd),
+      memberManage: Boolean(parsed?.memberManage),
+      qa: Boolean(parsed?.qa),
+    };
+    return hasAnyAdminAccess();
+  } catch {
+    return false;
+  }
+}
+
 function grantLocalAdminAccess(nextAccess = {}) {
   LOCAL_ADMIN_ACCESS = {
     owner: String(nextAccess.owner || "").trim(),
@@ -919,6 +963,7 @@ function grantLocalAdminAccess(nextAccess = {}) {
     memberManage: Boolean(nextAccess.memberManage),
     qa: Boolean(nextAccess.qa),
   };
+  persistLocalAdminAccess();
   setAdminMenuVisibility();
   setMemberStatusAdminVisibility();
   setAhdAdminVisibility();

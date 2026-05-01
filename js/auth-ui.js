@@ -84,9 +84,9 @@ async function submitAdminLogin() {
 
   const trySignIn = async () => {
     if (!fbAvailable()) throw new Error("FB_NOT_READY");
-    const { auth, setPersistence, inMemoryPersistence, signInWithEmailAndPassword } = window.FB;
+    const { auth, setPersistence, browserSessionPersistence, inMemoryPersistence, signInWithEmailAndPassword } = window.FB;
 
-    await setPersistence(auth, inMemoryPersistence);
+    await setPersistence(auth, browserSessionPersistence || inMemoryPersistence);
     return signInWithEmailAndPassword(auth, email, password);
   };
 
@@ -96,7 +96,13 @@ async function submitAdminLogin() {
 
     closeAdminLoginModal();
     if (pending) {
-      resetLocalAdminAccess();
+      grantLocalAdminAccess({
+        owner: pending.id,
+        memberStatus: true,
+        ahd: true,
+        memberManage: true,
+        qa: true,
+      });
       saveCurrentUser({ id: pending.id, name: pending.name, kind: "member" });
       startApp();
     }
@@ -155,6 +161,7 @@ function wireSwitchUserButton() {
 }
 
 function startApp() {
+  restoreLocalAdminAccessForCurrentUser();
   wireSwitchUserButton();
   wireAdminQuickMenu();
   wireMemberCanvasWindows();
