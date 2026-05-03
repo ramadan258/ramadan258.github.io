@@ -960,6 +960,14 @@
   .member-manage-list-wrap .panel-title {
     margin-bottom: 12px;
   }
+  .identity-confirm-password-wrap {
+    width: 100%;
+    margin-top: 10px;
+  }
+  .identity-confirm-password-wrap .text-input {
+    width: 100%;
+    text-align: center;
+  }
   .member-manage-preview {
     width: 112px;
     height: 112px;
@@ -1041,6 +1049,27 @@
     color: var(--gold);
     background: rgba(245,200,66,.08);
   }
+  .member-manage-badge.secure {
+    border-color: rgba(78,205,196,.22);
+    color: var(--primary);
+    background: rgba(78,205,196,.08);
+  }
+  .member-manage-badge.unsecured {
+    border-color: rgba(255,120,120,.18);
+    color: #ffb4b4;
+    background: rgba(255,120,120,.08);
+  }
+  .member-manage-access-line {
+    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  .member-manage-access-value {
+    color: var(--text-light);
+    font-weight: 900;
+    letter-spacing: .08em;
+  }
   .member-manage-remove {
     width: 100%;
     border: 1px solid rgba(255,120,120,.18);
@@ -1059,7 +1088,7 @@
   }
   .member-manage-card-actions {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     margin-top: 12px;
   }
@@ -1074,6 +1103,22 @@
     font-size: 13px;
     font-weight: 800;
     cursor: pointer;
+  }
+  .member-manage-pin-toggle {
+    width: 100%;
+    border: 1px solid rgba(245,200,66,.18);
+    background: rgba(245,200,66,.08);
+    color: #ffe8a3;
+    border-radius: 14px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .member-manage-pin-toggle[disabled] {
+    opacity: .55;
+    cursor: not-allowed;
   }
   .member-manage-empty {
     padding: 18px;

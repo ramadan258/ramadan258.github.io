@@ -226,6 +226,9 @@ function openIdentityConfirm(user) {
   const overlay = qs("#identityConfirmOverlay");
   const img = qs("#identityConfirmAvatar");
   const name = qs("#identityConfirmName");
+  const title = qs("#identityConfirmTitle");
+  const hint = qs("#identityConfirmHint");
+  const password = qs("#identityConfirmPassword");
   const err = qs("#identityConfirmError");
   const resetActions = qs("#identityResetActions");
   const yes = qs("#identityConfirmYes");
@@ -236,6 +239,9 @@ function openIdentityConfirm(user) {
     err.textContent = "";
   }
   if (resetActions) resetActions.classList.add("is-hidden");
+  if (title) title.textContent = "دخول العضو";
+  if (hint) hint.textContent = "بعد اختيار صورتك، أدخل كلمة المرور الخاصة بك للمتابعة. دخول الضيف لا يحتاج كلمة مرور.";
+  if (password) password.value = "";
   if (yes) yes.disabled = false;
   if (no) no.disabled = false;
 
@@ -246,10 +252,18 @@ function openIdentityConfirm(user) {
   if (name) name.textContent = user?.name || "—";
 
   overlay?.classList.add("open");
+  setTimeout(() => password?.focus?.(), 50);
 }
 
 function closeIdentityConfirm() {
   qs("#identityConfirmOverlay")?.classList.remove("open");
+  const password = qs("#identityConfirmPassword");
+  const err = qs("#identityConfirmError");
+  if (password) password.value = "";
+  if (err) {
+    err.textContent = "";
+    err.classList.add("is-hidden");
+  }
   PENDING_IDENTITY = null;
 }
 
@@ -268,12 +282,16 @@ function wireIdentityConfirmModal() {
 
   const yes = qs("#identityConfirmYes");
   const no = qs("#identityConfirmNo");
+  const password = qs("#identityConfirmPassword");
   const reset = qs("#identityResetBtn");
   const resetCancel = qs("#identityResetCancel");
 
   if (no) no.addEventListener("click", () => closeIdentityConfirm());
   if (resetCancel) resetCancel.addEventListener("click", () => closeIdentityConfirm());
   if (reset) reset.addEventListener("click", () => resetDeviceIdentity());
+  password?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") yes?.click();
+  });
 
   if (yes) {
     yes.addEventListener("click", async () => {
@@ -282,10 +300,37 @@ function wireIdentityConfirmModal() {
 
       const errBox = qs("#identityConfirmError");
       const resetActions = qs("#identityResetActions");
+      const typedPassword = String(qs("#identityConfirmPassword")?.value || "").trim();
       yes.disabled = true;
       if (no) no.disabled = true;
 
       try {
+        if (!isValidMemberAccessPin(typedPassword)) {
+          if (errBox) {
+            errBox.textContent = "اكتب كلمة المرور من 1 إلى 5 أرقام.";
+            errBox.classList.remove("is-hidden");
+          }
+          return;
+        }
+
+        const accessRecord = await resolveMemberAccessRecord(user.id);
+        if (!accessRecord?.passwordHash) {
+          if (errBox) {
+            errBox.textContent = "لم تُضبط كلمة مرور لهذا العضو بعد. اطلب من أمجد إضافتها من إدارة الأعضاء.";
+            errBox.classList.remove("is-hidden");
+          }
+          return;
+        }
+
+        const typedHash = await sha256Hex(normalizeMemberAccessPin(typedPassword));
+        if (typedHash !== accessRecord.passwordHash) {
+          if (errBox) {
+            errBox.textContent = "كلمة المرور غير صحيحة.";
+            errBox.classList.remove("is-hidden");
+          }
+          return;
+        }
+
         saveCurrentUser({ id: user.id, name: user.name, kind: "member" });
         const binding = await ensureMemberBinding(user.id);
         closeIdentityConfirm();

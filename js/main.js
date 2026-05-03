@@ -254,11 +254,13 @@ function updateUserBar() {
 
 const FIRESTORE_CUSTOM_MEMBERS = "featuredMembers";
 const FIRESTORE_HIDDEN_MEMBERS = "featuredMembers";
+const FIRESTORE_MEMBER_ACCESS = "featuredMembers";
 const LOCAL_MEMBER_DIRECTORY_CUSTOM_KEY = "wa3i_member_directory_custom_v1";
 const LOCAL_MEMBER_DIRECTORY_HIDDEN_KEY = "wa3i_member_directory_hidden_v1";
 const MEMBER_DIRECTORY_STATE = {
   baseMembers: [],
   remoteCustomMembers: new Map(),
+  remoteAccessById: new Map(),
   localCustomMembers: new Map(),
   remoteHiddenMemberIds: new Set(),
   localHiddenMemberIds: new Set(),
@@ -295,6 +297,72 @@ function customMemberDocId(memberId) {
 
 function hiddenMemberDocId(memberId) {
   return `hidden__${String(memberId || "").trim()}`;
+}
+
+function memberAccessDocId(memberId) {
+  return `access__${String(memberId || "").trim()}`;
+}
+
+function normalizeMemberAccessPin(value) {
+  return String(value || "").replace(/\D/g, "").slice(0, 5);
+}
+
+function isValidMemberAccessPin(value) {
+  return /^[0-9]{1,5}$/.test(String(value || "").trim());
+}
+
+function memberAccessRecordFromData(docId, data = {}) {
+  const memberId = String(data.memberId || docId.replace(/^access__/, "")).trim();
+  const passwordHash = String(data.passwordHash || "").trim();
+  const passwordPlain = String(data.passwordPlain || "").trim();
+  if (!memberId) return null;
+  return {
+    memberId,
+    passwordHash,
+    passwordPlain,
+    type: String(data.type || "member_access").trim(),
+  };
+}
+
+function getMemberAccessRecord(memberId) {
+  const id = String(memberId || "").trim();
+  if (!id) return null;
+  return MEMBER_DIRECTORY_STATE.remoteAccessById.get(id) || null;
+}
+
+function memberHasAccessPin(memberId) {
+  return Boolean(getMemberAccessRecord(memberId)?.passwordHash);
+}
+
+async function sha256Hex(value) {
+  const text = String(value || "");
+  if (!(window.crypto && window.crypto.subtle && typeof TextEncoder !== "undefined")) {
+    throw new Error("CRYPTO_UNAVAILABLE");
+  }
+  const bytes = new TextEncoder().encode(text);
+  const digest = await window.crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function resolveMemberAccessRecord(memberId) {
+  const id = String(memberId || "").trim();
+  if (!id) return null;
+
+  const existing = getMemberAccessRecord(id);
+  if (existing) return existing;
+  if (!fbAvailable()) return null;
+
+  try {
+    const { db, doc, getDoc } = window.FB;
+    const snap = await getDoc(doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id)));
+    if (!snap.exists()) return null;
+    const record = memberAccessRecordFromData(snap.id, snap.data() || {});
+    if (!record) return null;
+    MEMBER_DIRECTORY_STATE.remoteAccessById.set(id, record);
+    return record;
+  } catch {
+    return null;
+  }
 }
 
 function persistLocalMemberDirectoryState() {
@@ -1328,8 +1396,8 @@ function refreshMemberManageFormState() {
   }
   if (hint) {
     hint.textContent = editing
-      ? "يمكنك تعديل الاسم فقط أو اختيار صورة جديدة. إذا لم تختر صورة فستبقى الصورة الحالية كما هي."
-      : "تُضغط الصورة تلقائيًا بقوة لتناسب الرفع والعرض داخل الموقع.";
+      ? "يمكنك تعديل الاسم أو الصورة، وترك كلمة المرور فارغة للإبقاء على الحالية، أو كتابة كلمة مرور جديدة من 1 إلى 5 أرقام."
+      : "تُضغط الصورة تلقائيًا بقوة لتناسب الرفع والعرض داخل الموقع. ويمكنك أيضًا ضبط كلمة مرور دخول من 1 إلى 5 أرقام.";
   }
   if (addBtn) {
     addBtn.textContent = editing ? "حفظ التعديل" : "إضافة العضو";
@@ -1343,9 +1411,11 @@ function resetMemberManageForm() {
   MEMBER_DIRECTORY_STATE.pendingImageDataUrl = "";
   MEMBER_DIRECTORY_STATE.editingMemberId = "";
   const name = qs("#memberManageName");
+  const pin = qs("#memberManageAccessPin");
   const image = qs("#memberManageImage");
   const preview = qs("#memberManagePreview");
   if (name) name.value = "";
+  if (pin) pin.value = "";
   if (image) image.value = "";
   if (preview) preview.src = "images/person1.jpg";
   setMemberManageStatus("");
@@ -1362,13 +1432,15 @@ function beginEditManagedMember(memberId) {
   MEMBER_DIRECTORY_STATE.pendingImageDataUrl = String(member.src || "").trim();
 
   const name = qs("#memberManageName");
+  const pin = qs("#memberManageAccessPin");
   const image = qs("#memberManageImage");
   const preview = qs("#memberManagePreview");
   if (name) name.value = member.name || "";
+  if (pin) pin.value = "";
   if (image) image.value = "";
   if (preview) preview.src = member.src || "images/person1.jpg";
 
-  setMemberManageStatus("عدّل الاسم أو الصورة ثم اضغط حفظ التعديل.");
+  setMemberManageStatus(memberHasAccessPin(id) ? "يمكنك تعديل الاسم أو الصورة أو كتابة كلمة مرور جديدة." : "هذا العضو لا يملك كلمة مرور دخول بعد. أضف واحدة إذا أردت.");
   refreshMemberManageFormState();
   renderMemberManageAdminList();
   name?.focus?.();
@@ -1454,6 +1526,9 @@ function renderMemberManageAdminList() {
         const isCustom = member.source === "custom";
         const locked = isAmjadMember(member);
         const status = getMemberStatus(member.id);
+        const accessRecord = getMemberAccessRecord(member.id);
+        const hasPin = Boolean(accessRecord?.passwordHash);
+        const canRevealPin = Boolean(accessRecord?.passwordPlain);
         const isEditing = String(MEMBER_DIRECTORY_STATE.editingMemberId || "").trim() === String(member.id || "").trim();
         return `
           <div class="member-manage-card${isEditing ? " is-editing" : ""}">
@@ -1467,9 +1542,22 @@ function renderMemberManageAdminList() {
             <div class="member-manage-badges">
               <span class="member-manage-badge ${isCustom ? "custom" : "static"}">${isCustom ? "مضاف من أمجد" : "عضو أساسي"}</span>
               <span class="member-manage-badge">${escapeHtml(memberStatusLabel(status))}</span>
+              <span class="member-manage-badge ${hasPin ? "secure" : "unsecured"}">${hasPin ? "بكلمة مرور" : "بدون كلمة مرور"}</span>
+            </div>
+            <div class="member-manage-access-line">
+              ${
+                hasPin
+                  ? canRevealPin
+                    ? `كلمة المرور: <span class="member-manage-access-value" data-member-pin-value="${escapeHtml(member.id)}">•••••</span>`
+                    : `كلمة المرور الحالية غير قابلة للعرض. أعد تعيينها إذا أردت رؤيتها.`
+                  : `لا توجد كلمة مرور مضبوطة لهذا العضو.`
+              }
             </div>
             <div class="member-manage-card-actions">
               <button class="member-manage-edit" type="button" data-member-edit="${escapeHtml(member.id)}">تعديل</button>
+              <button class="member-manage-pin-toggle" type="button" data-member-reveal-pin="${escapeHtml(member.id)}" ${canRevealPin ? "" : "disabled"}>
+                ${canRevealPin ? "إظهار كلمة المرور" : "غير متاحة"}
+              </button>
               <button class="member-manage-remove" type="button" data-member-remove="${escapeHtml(member.id)}" ${locked ? "disabled" : ""}>
                 ${locked ? "لا يمكن حذف أمجد" : "حذف العضو"}
               </button>
@@ -1482,6 +1570,18 @@ function renderMemberManageAdminList() {
   el.querySelectorAll("[data-member-edit]").forEach((btn) => {
     btn.addEventListener("click", () => {
       beginEditManagedMember(btn.getAttribute("data-member-edit"));
+    });
+  });
+
+  el.querySelectorAll("[data-member-reveal-pin]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const memberId = String(btn.getAttribute("data-member-reveal-pin") || "").trim();
+      const accessRecord = getMemberAccessRecord(memberId);
+      const valueEl = el.querySelector(`[data-member-pin-value="${memberId}"]`);
+      if (!accessRecord?.passwordPlain || !valueEl) return;
+      const hidden = valueEl.textContent !== accessRecord.passwordPlain;
+      valueEl.textContent = hidden ? accessRecord.passwordPlain : "•••••";
+      btn.textContent = hidden ? "إخفاء كلمة المرور" : "إظهار كلمة المرور";
     });
   });
 
@@ -1498,6 +1598,8 @@ async function addManagedMember() {
 
   const editingMember = getEditingManagedMember();
   const name = String(qs("#memberManageName")?.value || "").trim();
+  const rawAccessPin = String(qs("#memberManageAccessPin")?.value || "").trim();
+  const normalizedAccessPin = normalizeMemberAccessPin(rawAccessPin);
   const src = MEMBER_DIRECTORY_STATE.pendingImageDataUrl;
 
   if (!name) {
@@ -1506,6 +1608,10 @@ async function addManagedMember() {
   }
   if (!src) {
     setMemberManageStatus("اختر صورة العضو أولًا.", true);
+    return;
+  }
+  if (rawAccessPin && !isValidMemberAccessPin(rawAccessPin)) {
+    setMemberManageStatus("كلمة المرور يجب أن تكون من 1 إلى 5 أرقام فقط.", true);
     return;
   }
 
@@ -1528,6 +1634,7 @@ async function addManagedMember() {
 
   const { db, doc, setDoc, serverTimestamp } = window.FB;
   try {
+    const writes = [];
     const payload = {
       type: "custom_member",
       memberId: id,
@@ -1538,11 +1645,26 @@ async function addManagedMember() {
     if (!editingMember) {
       payload.createdAt = serverTimestamp();
     }
-    await setDoc(
+    writes.push(setDoc(
       doc(db, FIRESTORE_CUSTOM_MEMBERS, customMemberDocId(id)),
       payload,
       { merge: true }
-    );
+    ));
+    if (normalizedAccessPin) {
+      const passwordHash = await sha256Hex(normalizedAccessPin);
+      writes.push(setDoc(
+        doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id)),
+        {
+          type: "member_access",
+          memberId: id,
+          passwordHash,
+          passwordPlain: normalizedAccessPin,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      ));
+    }
+    await Promise.all(writes);
     resetMemberManageForm();
     renderMemberManageAdminList();
     showIdentityToast(editingMember ? `تم تحديث العضو ${name}` : `تمت إضافة العضو ${name}`);
@@ -1615,6 +1737,7 @@ async function deleteManagedMember(memberId) {
       deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "elite"))),
       deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "active"))),
       deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "lazy"))),
+      deleteDoc(doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id))),
     ];
 
     const cleanupResults = await Promise.allSettled(cleanup);
@@ -1727,6 +1850,18 @@ function initMemberDirectorySystem() {
         if (next.has(id)) MEMBER_DIRECTORY_STATE.pendingHiddenMemberIds.delete(id);
       });
       MEMBER_DIRECTORY_STATE.remoteHiddenMemberIds = next;
+      refreshMemberDirectoryUI();
+    });
+
+    onSnapshot(collection(db, FIRESTORE_MEMBER_ACCESS), (snap) => {
+      const next = new Map();
+      snap.forEach((docSnap) => {
+        if (!String(docSnap.id || "").startsWith("access__")) return;
+        const record = memberAccessRecordFromData(docSnap.id, docSnap.data() || {});
+        if (!record || !record.passwordHash) return;
+        next.set(record.memberId, record);
+      });
+      MEMBER_DIRECTORY_STATE.remoteAccessById = next;
       refreshMemberDirectoryUI();
     });
   };

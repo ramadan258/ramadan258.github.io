@@ -128,7 +128,7 @@ setDoc,
     };
   </script>
 
-  <link rel="stylesheet" href="css/index-page.css" />
+  <link rel="stylesheet" href="css/index-page.css?v=20260503memberpin1" />
   <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260501review1" />
 </head>
 
@@ -179,10 +179,22 @@ setDoc,
       تأكد أنك اخترت اسمك الصحيح. إذا اخترت بالخطأ يمكن إصلاح ذلك عبر زر “تبديل المستخدم”.
     </div>
 
+    <div id="identityConfirmPasswordWrap" class="identity-confirm-password-wrap">
+      <input
+        id="identityConfirmPassword"
+        class="text-input"
+        type="password"
+        inputmode="numeric"
+        maxlength="5"
+        autocomplete="one-time-code"
+        placeholder=""
+      />
+    </div>
+
     <div id="identityConfirmError" class="identity-confirm-error is-hidden" aria-live="polite"></div>
 
     <div class="identity-confirm-actions">
-      <button id="identityConfirmYes" class="identity-btn" type="button">نعم هذا أنا</button>
+      <button id="identityConfirmYes" class="identity-btn" type="button">دخول</button>
       <button id="identityConfirmNo" class="identity-btn ghost" type="button">رجوع</button>
     </div>
 
@@ -837,6 +849,7 @@ setDoc,
           <div class="panel-title" id="memberManageFormTitle">إضافة عضو جديد</div>
           <img id="memberManagePreview" class="member-manage-preview" src="images/person1.jpg" alt="معاينة صورة العضو" />
           <input id="memberManageName" class="text-input" type="text" placeholder="اسم العضو" autocomplete="off" />
+          <input id="memberManageAccessPin" class="text-input" type="password" inputmode="numeric" maxlength="5" placeholder="كلمة مرور الدخول (1-5 أرقام)" autocomplete="new-password" style="margin-top:10px" />
           <input id="memberManageImage" class="text-input" type="file" accept="image/*" style="margin-top:10px" />
           <div id="memberManageFormHint" class="panel-sub" style="margin-top:10px">
             تُضغط الصورة تلقائيًا بقوة لتناسب الرفع والعرض داخل الموقع.
@@ -1373,8 +1386,8 @@ setDoc,
   
   </div>
 
-  <script src="js/main.js?v=20260501adminresume1"></script>
-  <script src="js/auth-ui.js?v=20260501adminresume1"></script>
+  <script src="js/main.js?v=20260503memberpin1"></script>
+  <script src="js/auth-ui.js?v=20260503memberpin1"></script>
   <script src="js/member-status.js"></script>
   <script src="js/ahd.js?v=20260501ahdghostfix1"></script>
   <script src="js/qa.js?v=20260420qaclean2"></script>
