@@ -168,6 +168,28 @@ function currentUserId() {
   return WA3I_USER?.id || "guest";
 }
 
+const MEMBER_AUTH_SESSION_KEY = "wa3i_member_auth_session_v1";
+
+function markMemberSessionAuthorized(memberId) {
+  const id = String(memberId || "").trim();
+  if (!id) return;
+  try { sessionStorage.setItem(MEMBER_AUTH_SESSION_KEY, id); } catch {}
+}
+
+function hasMemberSessionAuthorization(memberId) {
+  const id = String(memberId || "").trim();
+  if (!id) return false;
+  try {
+    return String(sessionStorage.getItem(MEMBER_AUTH_SESSION_KEY) || "").trim() === id;
+  } catch {
+    return false;
+  }
+}
+
+function clearMemberSessionAuthorization() {
+  try { sessionStorage.removeItem(MEMBER_AUTH_SESSION_KEY); } catch {}
+}
+
 function readCurrentUser() {
   try {
     const raw = localStorage.getItem(USER_STORAGE_KEY);
@@ -191,6 +213,7 @@ function saveCurrentUser(user) {
 function clearCurrentUser() {
   WA3I_USER = null;
   try { localStorage.removeItem(USER_STORAGE_KEY); } catch {}
+  clearMemberSessionAuthorization();
   try { resetLocalAdminAccess(); } catch {}
   updateUserBar();
 }
@@ -270,6 +293,9 @@ const MEMBER_DIRECTORY_STATE = {
   controlsWired: false,
   pendingImageDataUrl: "",
   editingMemberId: "",
+  pendingAccessPinRemoval: false,
+  pendingLegacyAccessCleanupIds: new Set(),
+  legacyAccessCleanupTimer: null,
 };
 
 function extractMembersFromCards(cards) {
@@ -314,12 +340,12 @@ function isValidMemberAccessPin(value) {
 function memberAccessRecordFromData(docId, data = {}) {
   const memberId = String(data.memberId || docId.replace(/^access__/, "")).trim();
   const passwordHash = String(data.passwordHash || "").trim();
-  const passwordPlain = String(data.passwordPlain || "").trim();
+  const hasLegacyPlaintext = String(data.passwordPlain || "").trim().length > 0;
   if (!memberId) return null;
   return {
     memberId,
     passwordHash,
-    passwordPlain,
+    hasLegacyPlaintext,
     type: String(data.type || "member_access").trim(),
   };
 }
@@ -350,7 +376,7 @@ async function resolveMemberAccessRecord(memberId) {
 
   const existing = getMemberAccessRecord(id);
   if (existing) return existing;
-  if (!fbAvailable()) return null;
+  if (!fbAvailable()) throw new Error("ACCESS_CHECK_UNAVAILABLE");
 
   try {
     const { db, doc, getDoc } = window.FB;
@@ -360,8 +386,47 @@ async function resolveMemberAccessRecord(memberId) {
     if (!record) return null;
     MEMBER_DIRECTORY_STATE.remoteAccessById.set(id, record);
     return record;
+  } catch (error) {
+    throw error || new Error("ACCESS_CHECK_FAILED");
+  }
+}
+
+function queueLegacyMemberAccessCleanup(memberId) {
+  const id = String(memberId || "").trim();
+  if (!id || !FB_STATE.isAdmin || !fbAvailable()) return;
+
+  MEMBER_DIRECTORY_STATE.pendingLegacyAccessCleanupIds.add(id);
+  if (MEMBER_DIRECTORY_STATE.legacyAccessCleanupTimer) return;
+
+  MEMBER_DIRECTORY_STATE.legacyAccessCleanupTimer = window.setTimeout(async () => {
+    const ids = Array.from(MEMBER_DIRECTORY_STATE.pendingLegacyAccessCleanupIds);
+    MEMBER_DIRECTORY_STATE.pendingLegacyAccessCleanupIds.clear();
+    MEMBER_DIRECTORY_STATE.legacyAccessCleanupTimer = null;
+    if (!ids.length || !FB_STATE.isAdmin || !fbAvailable()) return;
+
+    const { db, doc, setDoc, deleteField, serverTimestamp } = window.FB;
+    await Promise.allSettled(ids.map((memberIdValue) => (
+      setDoc(
+        doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(memberIdValue)),
+        {
+          passwordPlain: deleteField(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      )
+    )));
+  }, 200);
+}
+
+async function canResumeMemberSession(memberId) {
+  const id = String(memberId || "").trim();
+  if (!id) return false;
+
+  try {
+    const accessRecord = await resolveMemberAccessRecord(id);
+    return !accessRecord?.passwordHash || hasMemberSessionAuthorization(id);
   } catch {
-    return null;
+    return false;
   }
 }
 
@@ -592,7 +657,12 @@ function renderIdentityGrid(members, filterText = "") {
         return;
       }
 
-      openIdentityConfirm(user);
+      try {
+        const accessRecord = await resolveMemberAccessRecord(user.id);
+        openIdentityConfirm(user, { requiresPassword: Boolean(accessRecord?.passwordHash) });
+      } catch {
+        showIdentityToast("تعذّر التحقق من إعدادات دخول هذا العضو الآن. تحقق من الاتصال ثم أعد المحاولة.");
+      }
     });
   });
 }
@@ -1388,16 +1458,23 @@ function refreshMemberManageFormState() {
   const hint = qs("#memberManageFormHint");
   const addBtn = qs("#memberManageAddBtn");
   const resetBtn = qs("#memberManageResetBtn");
+  const clearPinBtn = qs("#memberManageClearPinBtn");
   const editingMember = getEditingManagedMember();
   const editing = Boolean(editingMember);
+  const hasPin = editingMember ? memberHasAccessPin(editingMember.id) : false;
+  const pendingPinRemoval = Boolean(MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval);
 
   if (title) {
     title.textContent = editing ? `تعديل العضو (${editingMember?.name || "—"})` : "إضافة عضو جديد";
   }
   if (hint) {
-    hint.textContent = editing
-      ? "يمكنك تعديل الاسم أو الصورة، وترك كلمة المرور فارغة للإبقاء على الحالية، أو كتابة كلمة مرور جديدة من 1 إلى 5 أرقام."
-      : "تُضغط الصورة تلقائيًا بقوة لتناسب الرفع والعرض داخل الموقع. ويمكنك أيضًا ضبط كلمة مرور دخول من 1 إلى 5 أرقام.";
+    if (editing) {
+      hint.textContent = pendingPinRemoval
+        ? "سيتم حذف كلمة السر الحالية عند حفظ التعديل، إلا إذا كتبت كلمة مرور جديدة قبل الحفظ."
+        : "يمكنك تعديل الاسم أو الصورة، وترك كلمة المرور فارغة للإبقاء على الحالية، أو كتابة كلمة مرور جديدة من 1 إلى 5 أرقام. تُحفظ كلمة المرور بشكل آمن ولا يمكن عرضها لاحقًا.";
+    } else {
+      hint.textContent = "تُضغط الصورة تلقائيًا بقوة لتناسب الرفع والعرض داخل الموقع. ويمكنك أيضًا ضبط كلمة مرور دخول من 1 إلى 5 أرقام، وتُحفظ بشكل آمن.";
+    }
   }
   if (addBtn) {
     addBtn.textContent = editing ? "حفظ التعديل" : "إضافة العضو";
@@ -1405,11 +1482,17 @@ function refreshMemberManageFormState() {
   if (resetBtn) {
     resetBtn.textContent = editing ? "إلغاء التعديل" : "إعادة ضبط";
   }
+  if (clearPinBtn) {
+    clearPinBtn.style.display = editing ? "" : "none";
+    clearPinBtn.disabled = !editing || (!hasPin && !pendingPinRemoval);
+    clearPinBtn.textContent = pendingPinRemoval ? "سيتم مسح كلمة السر" : "مسح كلمة السر";
+  }
 }
 
 function resetMemberManageForm() {
   MEMBER_DIRECTORY_STATE.pendingImageDataUrl = "";
   MEMBER_DIRECTORY_STATE.editingMemberId = "";
+  MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval = false;
   const name = qs("#memberManageName");
   const pin = qs("#memberManageAccessPin");
   const image = qs("#memberManageImage");
@@ -1430,6 +1513,7 @@ function beginEditManagedMember(memberId) {
 
   MEMBER_DIRECTORY_STATE.editingMemberId = id;
   MEMBER_DIRECTORY_STATE.pendingImageDataUrl = String(member.src || "").trim();
+  MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval = false;
 
   const name = qs("#memberManageName");
   const pin = qs("#memberManageAccessPin");
@@ -1444,6 +1528,22 @@ function beginEditManagedMember(memberId) {
   refreshMemberManageFormState();
   renderMemberManageAdminList();
   name?.focus?.();
+}
+
+function markManagedMemberPinForRemoval() {
+  const editingMember = getEditingManagedMember();
+  if (!editingMember) return;
+  if (!memberHasAccessPin(editingMember.id)) {
+    setMemberManageStatus("هذا العضو لا يملك كلمة سر محفوظة أصلًا.", true);
+    return;
+  }
+  const ok = confirm(`هل تريد مسح كلمة السر عن العضو “${editingMember.name}”؟`);
+  if (!ok) return;
+  MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval = true;
+  const pin = qs("#memberManageAccessPin");
+  if (pin) pin.value = "";
+  setMemberManageStatus("سيتم مسح كلمة السر عند حفظ التعديل.");
+  refreshMemberManageFormState();
 }
 
 function createManagedMemberId(name) {
@@ -1528,7 +1628,6 @@ function renderMemberManageAdminList() {
         const status = getMemberStatus(member.id);
         const accessRecord = getMemberAccessRecord(member.id);
         const hasPin = Boolean(accessRecord?.passwordHash);
-        const canRevealPin = Boolean(accessRecord?.passwordPlain);
         const isEditing = String(MEMBER_DIRECTORY_STATE.editingMemberId || "").trim() === String(member.id || "").trim();
         return `
           <div class="member-manage-card${isEditing ? " is-editing" : ""}">
@@ -1547,16 +1646,14 @@ function renderMemberManageAdminList() {
             <div class="member-manage-access-line">
               ${
                 hasPin
-                  ? canRevealPin
-                    ? `كلمة المرور: <span class="member-manage-access-value" data-member-pin-value="${escapeHtml(member.id)}">•••••</span>`
-                    : `كلمة المرور الحالية غير قابلة للعرض. أعد تعيينها إذا أردت رؤيتها.`
+                  ? `كلمة المرور محفوظة بشكل آمن. إذا نسيتها، اكتب كلمة جديدة بدل الحالية.`
                   : `لا توجد كلمة مرور مضبوطة لهذا العضو.`
               }
             </div>
             <div class="member-manage-card-actions">
               <button class="member-manage-edit" type="button" data-member-edit="${escapeHtml(member.id)}">تعديل</button>
-              <button class="member-manage-pin-toggle" type="button" data-member-reveal-pin="${escapeHtml(member.id)}" ${canRevealPin ? "" : "disabled"}>
-                ${canRevealPin ? "إظهار كلمة المرور" : "غير متاحة"}
+              <button class="member-manage-pin-toggle" type="button" disabled>
+                مخفية للأمان
               </button>
               <button class="member-manage-remove" type="button" data-member-remove="${escapeHtml(member.id)}" ${locked ? "disabled" : ""}>
                 ${locked ? "لا يمكن حذف أمجد" : "حذف العضو"}
@@ -1570,18 +1667,6 @@ function renderMemberManageAdminList() {
   el.querySelectorAll("[data-member-edit]").forEach((btn) => {
     btn.addEventListener("click", () => {
       beginEditManagedMember(btn.getAttribute("data-member-edit"));
-    });
-  });
-
-  el.querySelectorAll("[data-member-reveal-pin]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const memberId = String(btn.getAttribute("data-member-reveal-pin") || "").trim();
-      const accessRecord = getMemberAccessRecord(memberId);
-      const valueEl = el.querySelector(`[data-member-pin-value="${memberId}"]`);
-      if (!accessRecord?.passwordPlain || !valueEl) return;
-      const hidden = valueEl.textContent !== accessRecord.passwordPlain;
-      valueEl.textContent = hidden ? accessRecord.passwordPlain : "•••••";
-      btn.textContent = hidden ? "إخفاء كلمة المرور" : "إظهار كلمة المرور";
     });
   });
 
@@ -1600,6 +1685,7 @@ async function addManagedMember() {
   const name = String(qs("#memberManageName")?.value || "").trim();
   const rawAccessPin = String(qs("#memberManageAccessPin")?.value || "").trim();
   const normalizedAccessPin = normalizeMemberAccessPin(rawAccessPin);
+  const shouldClearAccessPin = Boolean(editingMember && MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval && !normalizedAccessPin);
   const src = MEMBER_DIRECTORY_STATE.pendingImageDataUrl;
 
   if (!name) {
@@ -1632,7 +1718,7 @@ async function addManagedMember() {
   refreshMemberDirectoryUI();
   setMemberManageStatus(editingMember ? "جارٍ حفظ التعديل..." : "جارٍ إضافة العضو...");
 
-  const { db, doc, setDoc, serverTimestamp } = window.FB;
+  const { db, doc, setDoc, deleteDoc, deleteField, serverTimestamp } = window.FB;
   try {
     const writes = [];
     const payload = {
@@ -1658,11 +1744,13 @@ async function addManagedMember() {
           type: "member_access",
           memberId: id,
           passwordHash,
-          passwordPlain: normalizedAccessPin,
+          passwordPlain: deleteField(),
           updatedAt: serverTimestamp(),
         },
         { merge: true }
       ));
+    } else if (shouldClearAccessPin) {
+      writes.push(deleteDoc(doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id))));
     }
     await Promise.all(writes);
     resetMemberManageForm();
@@ -1766,8 +1854,10 @@ function wireMemberManageAdminControls() {
   const fileInput = qs("#memberManageImage");
   const preview = qs("#memberManagePreview");
   const nameInput = qs("#memberManageName");
+  const pinInput = qs("#memberManageAccessPin");
   const addBtn = qs("#memberManageAddBtn");
   const resetBtn = qs("#memberManageResetBtn");
+  const clearPinBtn = qs("#memberManageClearPinBtn");
 
   fileInput?.addEventListener("change", async () => {
     const file = fileInput.files?.[0];
@@ -1794,8 +1884,15 @@ function wireMemberManageAdminControls() {
 
   addBtn?.addEventListener("click", addManagedMember);
   resetBtn?.addEventListener("click", resetMemberManageForm);
+  clearPinBtn?.addEventListener("click", markManagedMemberPinForRemoval);
   nameInput?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") addManagedMember();
+  });
+  pinInput?.addEventListener("input", () => {
+    if (String(pinInput.value || "").trim()) {
+      MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval = false;
+      refreshMemberManageFormState();
+    }
   });
   refreshMemberManageFormState();
 }
@@ -1860,6 +1957,7 @@ function initMemberDirectorySystem() {
         const record = memberAccessRecordFromData(docSnap.id, docSnap.data() || {});
         if (!record || !record.passwordHash) return;
         next.set(record.memberId, record);
+        if (record.hasLegacyPlaintext) queueLegacyMemberAccessCleanup(record.memberId);
       });
       MEMBER_DIRECTORY_STATE.remoteAccessById = next;
       refreshMemberDirectoryUI();
@@ -2766,9 +2864,15 @@ function previousISODate(isoDate) {
       if (shouldResumeToHome || getStandaloneView()) {
         const rememberedUser = readCurrentUser();
         if (rememberedUser) {
-          saveCurrentUser(rememberedUser);
-          startApp();
-          return;
+          let canResumeRememberedUser = true;
+          if (rememberedUser.kind === "member" && rememberedUser.id !== "preview_member") {
+            canResumeRememberedUser = await canResumeMemberSession(rememberedUser.id);
+          }
+          if (canResumeRememberedUser) {
+            saveCurrentUser(rememberedUser);
+            startApp();
+            return;
+          }
         }
 
         try {

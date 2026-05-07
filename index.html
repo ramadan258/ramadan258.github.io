@@ -80,6 +80,7 @@
       getDoc,
 setDoc,
       deleteDoc,
+      deleteField,
       serverTimestamp,
       onSnapshot,
       getDocs,
@@ -119,6 +120,7 @@ setDoc,
       getDoc,
 setDoc,
       deleteDoc,
+      deleteField,
       serverTimestamp,
       onSnapshot,
       getDocs,
@@ -850,6 +852,7 @@ setDoc,
           <img id="memberManagePreview" class="member-manage-preview" src="images/person1.jpg" alt="معاينة صورة العضو" />
           <input id="memberManageName" class="text-input" type="text" placeholder="اسم العضو" autocomplete="off" />
           <input id="memberManageAccessPin" class="text-input" type="password" inputmode="numeric" maxlength="5" placeholder="كلمة مرور الدخول (1-5 أرقام)" autocomplete="new-password" style="margin-top:10px" />
+          <button id="memberManageClearPinBtn" class="identity-btn ghost" type="button" style="margin-top:10px; display:none">مسح كلمة السر</button>
           <input id="memberManageImage" class="text-input" type="file" accept="image/*" style="margin-top:10px" />
           <div id="memberManageFormHint" class="panel-sub" style="margin-top:10px">
             تُضغط الصورة تلقائيًا بقوة لتناسب الرفع والعرض داخل الموقع.
@@ -1386,8 +1389,8 @@ setDoc,
   
   </div>
 
-  <script src="js/main.js?v=20260503memberpin1"></script>
-  <script src="js/auth-ui.js?v=20260503memberpin1"></script>
+  <script src="js/main.js?v=20260508securepin1"></script>
+  <script src="js/auth-ui.js?v=20260508securepin1"></script>
   <script src="js/member-status.js"></script>
   <script src="js/ahd.js?v=20260501ahdghostfix1"></script>
   <script src="js/qa.js?v=20260420qaclean2"></script>

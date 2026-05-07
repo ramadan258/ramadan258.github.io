@@ -103,6 +103,7 @@ async function submitAdminLogin() {
         memberManage: true,
         qa: true,
       });
+      markMemberSessionAuthorized(pending.id);
       saveCurrentUser({ id: pending.id, name: pending.name, kind: "member" });
       startApp();
     }
@@ -221,13 +222,15 @@ function showIdentityToast(message) {
   el._t = window.setTimeout(() => el.classList.remove("open"), 5200);
 }
 
-function openIdentityConfirm(user) {
-  PENDING_IDENTITY = user;
+function openIdentityConfirm(user, options = {}) {
+  const requiresPassword = Boolean(options?.requiresPassword);
+  PENDING_IDENTITY = { user, requiresPassword };
   const overlay = qs("#identityConfirmOverlay");
   const img = qs("#identityConfirmAvatar");
   const name = qs("#identityConfirmName");
   const title = qs("#identityConfirmTitle");
   const hint = qs("#identityConfirmHint");
+  const passwordWrap = qs("#identityConfirmPasswordWrap");
   const password = qs("#identityConfirmPassword");
   const err = qs("#identityConfirmError");
   const resetActions = qs("#identityResetActions");
@@ -239,11 +242,17 @@ function openIdentityConfirm(user) {
     err.textContent = "";
   }
   if (resetActions) resetActions.classList.add("is-hidden");
-  if (title) title.textContent = "دخول العضو";
-  if (hint) hint.textContent = "بعد اختيار صورتك، أدخل كلمة المرور الخاصة بك للمتابعة. دخول الضيف لا يحتاج كلمة مرور.";
+  if (title) title.textContent = requiresPassword ? "دخول العضو" : "تأكيد الدخول";
+  if (hint) {
+    hint.textContent = requiresPassword
+      ? "بعد اختيار صورتك، أدخل كلمة المرور الخاصة بك للمتابعة."
+      : "تأكد أنك اخترت اسمك الصحيح، ثم تابع الدخول.";
+  }
+  if (passwordWrap) passwordWrap.style.display = requiresPassword ? "" : "none";
   if (password) password.value = "";
   if (yes) yes.disabled = false;
   if (no) no.disabled = false;
+  if (yes) yes.textContent = requiresPassword ? "دخول" : "نعم هذا أنا";
 
   if (img) {
     img.src = user?.src || "";
@@ -252,13 +261,18 @@ function openIdentityConfirm(user) {
   if (name) name.textContent = user?.name || "—";
 
   overlay?.classList.add("open");
-  setTimeout(() => password?.focus?.(), 50);
+  setTimeout(() => {
+    if (requiresPassword) password?.focus?.();
+    else yes?.focus?.();
+  }, 50);
 }
 
 function closeIdentityConfirm() {
   qs("#identityConfirmOverlay")?.classList.remove("open");
+  const passwordWrap = qs("#identityConfirmPasswordWrap");
   const password = qs("#identityConfirmPassword");
   const err = qs("#identityConfirmError");
+  if (passwordWrap) passwordWrap.style.display = "";
   if (password) password.value = "";
   if (err) {
     err.textContent = "";
@@ -295,7 +309,9 @@ function wireIdentityConfirmModal() {
 
   if (yes) {
     yes.addEventListener("click", async () => {
-      const user = PENDING_IDENTITY;
+      const pending = PENDING_IDENTITY;
+      const user = pending?.user;
+      const requiresPassword = Boolean(pending?.requiresPassword);
       if (!user) return;
 
       const errBox = qs("#identityConfirmError");
@@ -305,7 +321,7 @@ function wireIdentityConfirmModal() {
       if (no) no.disabled = true;
 
       try {
-        if (!isValidMemberAccessPin(typedPassword)) {
+        if (requiresPassword && !isValidMemberAccessPin(typedPassword)) {
           if (errBox) {
             errBox.textContent = "اكتب كلمة المرور من 1 إلى 5 أرقام.";
             errBox.classList.remove("is-hidden");
@@ -313,24 +329,27 @@ function wireIdentityConfirmModal() {
           return;
         }
 
-        const accessRecord = await resolveMemberAccessRecord(user.id);
-        if (!accessRecord?.passwordHash) {
-          if (errBox) {
-            errBox.textContent = "لم تُضبط كلمة مرور لهذا العضو بعد. اطلب من أمجد إضافتها من إدارة الأعضاء.";
-            errBox.classList.remove("is-hidden");
+        if (requiresPassword) {
+          const accessRecord = await resolveMemberAccessRecord(user.id);
+          if (!accessRecord?.passwordHash) {
+            if (errBox) {
+              errBox.textContent = "هذا العضو لم تعد له كلمة مرور حاليًا، يمكنك الدخول مباشرة بعد تحديث الصفحة.";
+              errBox.classList.remove("is-hidden");
+            }
+            return;
           }
-          return;
+
+          const typedHash = await sha256Hex(normalizeMemberAccessPin(typedPassword));
+          if (typedHash !== accessRecord.passwordHash) {
+            if (errBox) {
+              errBox.textContent = "كلمة المرور غير صحيحة.";
+              errBox.classList.remove("is-hidden");
+            }
+            return;
+          }
         }
 
-        const typedHash = await sha256Hex(normalizeMemberAccessPin(typedPassword));
-        if (typedHash !== accessRecord.passwordHash) {
-          if (errBox) {
-            errBox.textContent = "كلمة المرور غير صحيحة.";
-            errBox.classList.remove("is-hidden");
-          }
-          return;
-        }
-
+        markMemberSessionAuthorized(user.id);
         saveCurrentUser({ id: user.id, name: user.name, kind: "member" });
         const binding = await ensureMemberBinding(user.id);
         closeIdentityConfirm();
@@ -378,6 +397,8 @@ async function tryAutoStartFromBinding() {
 
     const member = memberById(memberId);
     if (!member) return false;
+
+    if (!(await canResumeMemberSession(member.id))) return false;
 
     saveCurrentUser({ id: member.id, name: member.name, kind: "member" });
     return true;
