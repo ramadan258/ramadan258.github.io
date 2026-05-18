@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>نموذج التقرير اليومي — قبيلة الموحدون</title>
+  <title>تقرير التعافي اليومي — قبيلة الموحدون</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -640,6 +640,11 @@
       background: rgba(78,205,196,.1);
       color: var(--primary);
     }
+    .saved-day-btn.danger {
+      border-color: rgba(255,99,99,.24);
+      background: rgba(255,99,99,.1);
+      color: #ffb4b4;
+    }
     .saved-day-preview {
       border: 1px solid rgba(255,255,255,.06);
       border-radius: 20px;
@@ -766,7 +771,7 @@
 
 <!-- Covenant Banner -->
 <div class="report-banner">
-  🤝 نموذج يومي للثبات، المتابعة، وبناء حياة تعافٍ جديدة بإذن الله
+  🏆 تقرير يومي بالنقاط لمتابعة الثبات والتعافي داخل قبيلة الموحدون
 </div>
 
 <div class="wrap">
@@ -903,6 +908,8 @@
     const active = archive[selectedArchiveIndex];
     const activeTitle = formatSavedDayTitle(active, selectedArchiveIndex);
     const completed = Number(active?.completedHabits || 0);
+    const totalHabits = Number(active?.totalHabits || recoveryHabits.length);
+    const points = Number(active?.points || 0);
 
     panel.innerHTML = `
       <div class="saved-days-head">
@@ -917,14 +924,17 @@
           ${archive.map((entry, index)=>{
             const title = formatSavedDayTitle(entry, index);
             const dateLine = String(entry?.dateISO || "").trim() || "بدون تاريخ";
-            const score = Number(entry?.completedHabits || 0);
+            const entryCompleted = Number(entry?.completedHabits || 0);
+            const entryTotalHabits = Number(entry?.totalHabits || recoveryHabits.length);
+            const entryPoints = Number(entry?.points || 0);
             return `
               <div class="saved-day-item${index === selectedArchiveIndex ? " active" : ""}">
                 <div class="saved-day-name">${escapeHtml(title)}</div>
-                <div class="saved-day-meta">التاريخ: ${escapeHtml(dateLine)}<br>العادات المنجزة: ${score}</div>
+                <div class="saved-day-meta">التاريخ: ${escapeHtml(dateLine)}<br>النقاط: ${formatPoints(entryPoints)} • العادات: ${entryCompleted}/${entryTotalHabits}</div>
                 <div class="saved-day-actions">
                   <button class="saved-day-btn primary" type="button" data-archive-view="${index}">عرض</button>
                   <button class="saved-day-btn" type="button" data-archive-copy="${index}">نسخ</button>
+                  <button class="saved-day-btn danger" type="button" data-archive-delete="${index}">حذف</button>
                 </div>
               </div>
             `;
@@ -934,7 +944,7 @@
           <div class="saved-day-preview-head">
             <div>
               <h3 class="saved-day-preview-title">${escapeHtml(activeTitle)}</h3>
-              <p class="saved-day-preview-sub">العادات المنجزة: ${completed} • محفوظ على هذا الجهاز داخل المتصفح الحالي.</p>
+              <p class="saved-day-preview-sub">النقاط: ${formatPoints(points)} • العادات المنجزة: ${completed}/${totalHabits} • محفوظ على هذا الجهاز داخل المتصفح الحالي.</p>
             </div>
             <button class="saved-day-btn primary" type="button" id="copyActiveSavedDay">نسخ هذا التقرير</button>
           </div>
@@ -959,6 +969,20 @@
       });
     });
 
+    panel.querySelectorAll("[data-archive-delete]").forEach((btn)=>{
+      btn.addEventListener("click", ()=>{
+        const index = Number(btn.getAttribute("data-archive-delete") || "-1");
+        if(index < 0 || index >= archive.length) return;
+        const title = formatSavedDayTitle(archive[index], index);
+        if(!confirm(`هل تريد حذف التقرير المحفوظ: ${title} ؟`)) return;
+        const nextArchive = archive.filter((_, itemIndex)=> itemIndex !== index);
+        selectedArchiveIndex = Math.max(0, Math.min(selectedArchiveIndex, nextArchive.length - 1));
+        saveArchive(nextArchive);
+        renderSavedDaysPanel(panel);
+        toast("تم حذف التقرير المحفوظ ✅");
+      });
+    });
+
     const copyActiveBtn = document.getElementById("copyActiveSavedDay");
     copyActiveBtn?.addEventListener("click", async ()=>{
       if(!active?.report) return;
@@ -971,8 +995,13 @@
     hijriDate: "",
     recoveryDay: "",
     answers: {}, // id => {done:boolean, count:number}
-    avoided: [""],
-    gratitude: ["","",""],
+    avoided: [
+      "التسويف",
+      "إطلاق البصر",
+      "استخدام الجوال قبل النوم",
+      "الغضب"
+    ],
+    gratitude: ["","","",""],
     feelingPreset: "متفائل",
     feelingCustom: "",
     summary: "",
@@ -982,6 +1011,7 @@
       "",
       ""
     ],
+    previousPointsTotal: "",
   };
 
   let state = loadState();
@@ -990,26 +1020,28 @@
   if(typeof state.motivation === "string") state.motivation = state.motivation ? [state.motivation] : [""];
   if(!Array.isArray(state.motivation)) state.motivation = [""];
   if(!Array.isArray(state.notes)) state.notes = ["","",""];
-  if(!Array.isArray(state.avoided)) state.avoided = [""];
-  if(!Array.isArray(state.gratitude)) state.gratitude = ["","",""];
+  if(typeof state.previousPointsTotal === "number") state.previousPointsTotal = String(state.previousPointsTotal);
+  if(typeof state.previousPointsTotal !== "string") state.previousPointsTotal = "";
+  if(!Array.isArray(state.avoided) || !state.avoided.length) state.avoided = structuredClone(defaultState.avoided);
+  if(!Array.isArray(state.gratitude) || !state.gratitude.length) state.gratitude = structuredClone(defaultState.gratitude);
+  while(state.gratitude.length < 4) state.gratitude.push("");
+  while(state.notes.length < 3) state.notes.push("");
 
   // ---------- Habits Definition ----------
   const recoveryHabits = [
-    { id:"habit_fard_mosque", name:"أداء صلوات الفريضة جماعة فالمسجد 🕌", type:"bool" },
-    { id:"habit_sleep", name:"النوم الجيد 😪", type:"bool" },
-    { id:"habit_adhkar", name:"قراءة اذكار الصباح والمساء 📿", type:"bool" },
-    { id:"habit_quran", name:"قراءة الورد اليومي من القرآن الكريم 🌱", type:"bool" },
-    { id:"habit_lower_gaze", name:"غض البصر ✋🏻", type:"bool" },
-    { id:"habit_obligations", name:"أداء الإلتزامات اليومية 🏆", type:"bool" },
-    { id:"habit_food", name:"تجنب الطعام الضار 🚫", type:"bool" },
-    { id:"habit_learn", name:"التثقف عن التعافي 🧗🏻", type:"bool" },
-    { id:"habit_exercise", name:"ممارسة الرياضة 💪🏻", type:"bool" },
-    { id:"habit_teeth", name:"تفريش الأسنان 🪥", type:"bool" },
-    { id:"habit_cold_shower", name:"الإستحمام بالماء البارد ❄️", type:"bool" },
-    { id:"habit_journal", name:"كتابة اليوميات ✍🏻", type:"bool" },
-    { id:"habit_book", name:"قراءة كتاب لمدة ٥ دقائق 📚", type:"bool" },
-    { id:"habit_clean_porn", name:"يوم نظيف بلا إباحية 👑", type:"bool" },
-    { id:"habit_clean_mast", name:"يوم نظيف بلا إستمناء 👑", type:"bool" },
+    { id:"habit_lower_gaze", name:"حصار العين والمدخلات (غض البصر التام)", points:250, type:"bool" },
+    { id:"habit_clean_day", name:"يوم نظيف بلا إباحية أو استمناء", points:200, type:"bool" },
+    { id:"habit_prayers", name:"حصانة اليوم (أداء خمس صلوات فريضة في أول الوقت 🕌)", points:50, type:"bool" },
+    { id:"habit_adhkar", name:"شحن الروح (قراءة أذكار الصباح والمساء)", points:40, type:"bool" },
+    { id:"habit_dua", name:"الدعاء لنفسي وللمسلمين 🤲", points:20, type:"bool" },
+    { id:"habit_commitments", name:"القيام بالالتزامات اليومية وجميع تحديات واعي 🏆", points:80, type:"bool" },
+    { id:"habit_learning", name:"تغذية الوعي (مشاهدة أو قراءة موضوع عن التعافي)", points:40, type:"bool" },
+    { id:"habit_support", name:"دعم وتفاعل (إرسال التقرير والتفاعل مع أعضاء القبيلة بإخلاص 🫂)", points:40, type:"bool" },
+    { id:"habit_exercise", name:"تفريغ الطاقة السلبية (ممارسة التمارين الرياضية والتنفس العميق)", points:60, type:"bool" },
+    { id:"habit_journal", name:"كتابة اليوميات ✍️", points:50, type:"bool" },
+    { id:"habit_cold_shower", name:"إطفاء الإلحاح (الاستحمام بالماء البارد ❄️)", points:30, type:"bool" },
+    { id:"habit_tomorrow_tasks", name:"كتابة 3 مهام راح تسويها غداً 📝", points:30, type:"bool" },
+    { id:"habit_digital_protection", name:"الحماية الرقمية (تجنب التصفح العشوائي وتجنب استخدام الجوال على السرير 📱📵)", points:250, type:"bool" },
   ];
 
   // init default answers if missing
@@ -1034,6 +1066,7 @@
     { id:"summary", title:"🗒️ ملخص اليوم", sub:"اكتب ملخصًا مختصرًا" },
     { id:"motivation", title:"🚀 التحفيز الذاتي", sub:"اكتب سطورًا تحفيزية لنفسك" },
     { id:"notes", title:"📎 ملاحظات مهمة", sub:"اكتب الملاحظات التي تريدها في آخر التقرير" },
+    { id:"points", title:"🏆 نقاطك اليوم", sub:"كم عدد نقاطك التي تريد اعتمادها لهذا اليوم؟" },
     { id:"report", title:"📌 التقرير النهائي", sub:"انسخ التقرير وأرسله" },
   ];
 
@@ -1057,29 +1090,60 @@
     return h.name;
   }
 
+  const formatPoints = (value)=>{
+    const number = Number(value || 0);
+    return Number.isFinite(number) ? new Intl.NumberFormat("ar-SA").format(number) : "0";
+  };
+
   const computeScores = ()=>{
     let doneTotal = 0;
     let totalTotal = 0;
+    let pointsTotal = 0;
+    let possiblePoints = 0;
 
     const habitsDone = [];
     const habitsNot = [];
 
-    for(const h of recoveryHabits){
+    recoveryHabits.forEach((h, index)=>{
       totalTotal++;
+      possiblePoints += Number(h.points || 0);
       const a = state.answers[h.id] || {done:false, count:0};
       const achieved = !!a.done;
-      if(achieved){ doneTotal++; habitsDone.push(habitLabel(h,a)); }
-      else { habitsNot.push(habitLabel(h,a)); }
-    }
+      const line = `${index + 1}✅ ${h.name}`;
+      if(achieved){
+        doneTotal++;
+        pointsTotal += Number(h.points || 0);
+        habitsDone.push(line);
+      }else{
+        habitsNot.push(`${index + 1}❌ ${h.name}`);
+      }
+    });
 
     return {
-      doneTotal, totalTotal,
-      habitsDone, habitsNot
+      doneTotal,
+      totalTotal,
+      pointsTotal,
+      possiblePoints,
+      habitsDone,
+      habitsNot
     };
+  };
+
+  const resolvePreviousPointsTotal = ()=>{
+    const raw = String(state.previousPointsTotal ?? "").trim();
+    const parsed = Number.parseInt(raw, 10);
+    if(Number.isFinite(parsed) && parsed >= 0) return parsed;
+    return 0;
+  };
+
+  const computeCumulativePoints = ()=>{
+    return resolvePreviousPointsTotal() + computeScores().pointsTotal;
   };
 
   const buildReport = ()=>{
     const S = computeScores();
+    const todayPoints = S.pointsTotal;
+    const cumulativePoints = computeCumulativePoints();
 
     const hijri = (state.hijriDate||"—").trim();
     const dayNo = (state.recoveryDay||"—").trim();
@@ -1089,43 +1153,56 @@
       : (state.feelingPreset||"");
 
     const avoidedLines = (state.avoided||[])
-      .map(x=>x.trim()).filter(Boolean)
-      .map(x=>`❌ ${x}`).join("\n") || "❌ —";
+      .map(x=>String(x||"").trim()).filter(Boolean)
+      .map(x=>`🚫 ${x}`).join("\n") || "🚫 —";
 
     const gratitudeLines = (state.gratitude||[])
-      .map(x=>x.trim()).filter(Boolean)
+      .map(x=>String(x||"").trim()).filter(Boolean)
       .map(x=>`🤲🏻 ${x}`).join("\n") || "🤲🏻 —";
 
     const summary = (state.summary||"").trim() || "—";
-    const motivationLines = (state.motivation||[])
+    const motivationText = (state.motivation||[])
       .map(x=>String(x||"").trim()).filter(Boolean)
-      .map(x=>`⚡️ ${x}`).join("\n") || "⚡️";
+      .join("\n") || "—";
 
-    const notes = (state.notes||[])
-      .map(x=>String(x||"").trim()).filter(Boolean)
-      .map(x=>`📌 ${x}`).join("\n") || "📌";
+    const notePrefixes = ["🛑", "🛑", "🔴"];
+    const notesLines = (state.notes||[])
+      .map(x=>String(x||"").trim())
+      .filter(Boolean)
+      .map((x, index)=>`${notePrefixes[index] || "📌"} ${x}`)
+      .join("\n") || "🛑 —";
 
-    const habitsList = recoveryHabits.map(h=>{
-      const a = state.answers[h.id] || {done:false};
-      return `${a.done ? "✅" : "❌"} ${h.name}`;
-    }).join("\n");
+    const habitsDoneText = S.habitsDone.length
+      ? S.habitsDone.join("\n\n")
+      : "لا توجد عادات منجزة مسجلة اليوم.";
+
+    const habitsNotText = S.habitsNot.length
+      ? S.habitsNot.join("\n")
+      : "✅ الحمد لله، التزمت بكل العادات اليوم.";
 
     return `🧭 تقرير التعافي اليومي
 
-🗓️ اليوم: ${hijri}
-🕰️ اليوم رقم: ${dayNo} في حياة التعافي بفضل الله
+📆 اليوم: ${hijri}
+🕰️ اليوم رقم ${dayNo} إلى التعافي إن شاء الله🤍
+——————————
 
----
+🗓️ نقاط تقرير اليوم-(${formatPoints(todayPoints)}) والمجموع الكلي(${formatPoints(cumulativePoints)})
 
-🌿 عادات التعافي:
+🌿 جوانب التعافي
 
-${habitsList}
+العادات التي التزمت بها اليوم:
+${habitsDoneText}
 
----
+العادات التي لم التزم بها:
+${habitsNotText}
+
+——————————————-
+
+📈 عدد العادات المنجزة من أصل ${S.totalTotal}: ${S.doneTotal}
 
 🚫 جانب "لا تَقربوا"
 
-العادات السيئة التي تجنبتها اليوم:
+العادات السلبية التي تجنبتها اليوم:
 ${avoidedLines}
 
 ---
@@ -1139,21 +1216,16 @@ ${gratitudeLines}
 
 ⭐️ التقييم اليومي:
 
-📈 عدد العادات المنجزة: ${S.doneTotal} من ${S.totalTotal}
-🔍 شعوري العام: ${feeling}
-🗒️ ملخص يومي: ${summary}
+شعوري العام: ${feeling}
 
----
+🗒️ ملخص يومي :
+${summary}
 
 🚀 التحفيز الذاتي:
+${motivationText}
 
-${motivationLines}
-
----
-
-📎 ملاحظات مهمة:
-
-${notes}
+ملاحظات مهمة:
+${notesLines}
 
 #قبيلة_الموحدون`;
   };
@@ -1350,7 +1422,7 @@ ${notes}
     app.innerHTML = `
       <div class="anim-in">
       <h2 class="stepTitle">🚫 جانب "لا تَقربوا"</h2>
-      <p class="hint">اكتب العادات السيئة التي تجنبتها اليوم. سطر لكل عنصر.</p>
+      <p class="hint">اكتب السلوكيات التي تجنبتها اليوم. سطر لكل عنصر، ويمكن تعديل القائمة كما تحب.</p>
 
       <div id="avoidList" class="list"></div>
 
@@ -1415,7 +1487,7 @@ ${notes}
     app.innerHTML = `
       <div class="anim-in">
       <h2 class="stepTitle">🤲🏻 الحمد</h2>
-      <p class="hint">اكتب نعمًا أحمدت الله عليها اليوم، ويمكنك زيادة الأسطر أو تقليلها.</p>
+      <p class="hint">اكتب النعم التي أحمدت الله عليها اليوم، ويمكنك زيادة الأسطر أو تقليلها.</p>
 
       <div id="gratList" class="list"></div>
 
@@ -1517,7 +1589,7 @@ ${notes}
     app.innerHTML = `
       <div class="anim-in">
       <h2 class="stepTitle">🗒️ ملخص اليوم</h2>
-      <p class="hint">اكتب ملخصًا بسيطًا عن يومك.</p>
+      <p class="hint">اكتب ملخصًا واضحًا ليومك حتى يظهر داخل التقرير النهائي.</p>
 
       <label>ملخص يومي</label>
       <textarea id="summary" placeholder="اكتب ملخص يومك...">${escapeHtml(state.summary||"")}</textarea>
@@ -1540,7 +1612,7 @@ ${notes}
     app.innerHTML = `
       <div class="anim-in">
       <h2 class="stepTitle">🚀 التحفيز الذاتي</h2>
-      <p class="hint">اكتب سطرًا في كل خانة، ويمكنك ترك ما لا تحتاجه فارغًا.</p>
+      <p class="hint">اكتب سطرًا أو أكثر لتحفّز نفسك في نهاية التقرير.</p>
 
       <div id="motList" class="list"></div>
 
@@ -1606,7 +1678,7 @@ ${notes}
     app.innerHTML = `
       <div class="anim-in">
       <h2 class="stepTitle">📎 ملاحظات مهمة</h2>
-      <p class="hint">اكتب الملاحظات التي تريد ظهورها في آخر التقرير.</p>
+      <p class="hint">اكتب الملاحظات أو التنبيهات المهمة التي تريد ظهورها في آخر التقرير.</p>
 
       <div id="notesList" class="list"></div>
 
@@ -1666,12 +1738,40 @@ ${notes}
     $("#next").onclick = ()=>go(+1);
   };
 
+  const renderPoints = ()=>{
+    app.innerHTML = `
+      <h2 class="stepTitle">🏆 كم عدد نقاطك؟</h2>
+      <p class="hint">اكتب مجموع نقاطك الحالي قبل إضافة نقاط تقرير اليوم، وسيتم جمعها تلقائيًا في التقرير النهائي.</p>
+
+      <label>مجموع نقاطك الحالي</label>
+      <input id="dailyPointsInput" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.previousPointsTotal || "")}" />
+
+      <div class="btns">
+        <button class="ghost" id="prev">← السابق</button>
+        <button class="primary" id="next">التالي →</button>
+      </div>
+    `;
+
+    const input = $("#dailyPointsInput");
+    input.addEventListener("input", (e)=>{
+      const value = String(e.target.value || "").replace(/[^\d]/g, "");
+      e.target.value = value;
+      state.previousPointsTotal = value;
+      saveState();
+    });
+
+    $("#prev").onclick = ()=>go(-1);
+    $("#next").onclick = ()=>go(+1);
+  };
+
   const renderReport = ()=>{
     const report = buildReport();
+    const scores = computeScores();
+    const todayPoints = scores.pointsTotal;
 
     app.innerHTML = `
       <h2 class="stepTitle">📌 التقرير النهائي</h2>
-      <p class="hint">اضغط "نسخ التقرير" وبعدين لصقه بالقبيلة. ✅</p>
+      <p class="hint">اضغط "نسخ التقرير" ثم أرسله للقبيلة. النقاط اليومية والمجموع الكلي محدثان داخل النص مباشرة.</p>
 
       <label>التقرير</label>
       <textarea class="reportBox" id="reportText" readonly>${escapeHtml(report)}</textarea>
@@ -1694,11 +1794,13 @@ ${notes}
     };
 
     $("#saveToday").onclick = ()=>{
-      const archive = loadArchive();
+      const archive = loadArchive().filter(entry => String(entry?.dateISO || "").trim() !== String(state.dateISO || todayISO).trim());
       archive.unshift({
         dateISO: state.dateISO || todayISO,
         hijriDate: state.hijriDate,
-        completedHabits: computeScores().doneTotal,
+        completedHabits: scores.doneTotal,
+        totalHabits: scores.totalTotal,
+        points: todayPoints,
         report
       });
       selectedArchiveIndex = 0;
@@ -1731,6 +1833,7 @@ ${notes}
     if(id==="summary") return renderSummary();
     if(id==="motivation") return renderMotivation();
     if(id==="notes") return renderNotes();
+    if(id==="points") return renderPoints();
     if(id==="report") return renderReport();
   }
 
@@ -1739,3 +1842,4 @@ ${notes}
 </script>
 </body>
 </html>
+
