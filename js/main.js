@@ -321,8 +321,9 @@ function isBindingUnavailableError(error) {
 }
 
 function updateUserBar() {
-  const pill = qs("#currentUserPill");
-  if (pill) pill.textContent = WA3I_USER?.name || "ضيف";
+  qsa("[data-current-user-pill]").forEach((pill) => {
+    pill.textContent = WA3I_USER?.name || "ضيف";
+  });
 }
 
 const FIRESTORE_CUSTOM_MEMBERS = "featuredMembers";

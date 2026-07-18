@@ -172,23 +172,22 @@ function wireSwitchUserButton() {
   if (SWITCH_USER_WIRED) return;
   SWITCH_USER_WIRED = true;
 
-  const btn = qs("#switchUserBtn");
-  if (!btn) return;
+  qsa("[data-switch-user-btn]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      closeAllModals();
+      if (COUNTDOWN_INTERVAL_ID) {
+        clearInterval(COUNTDOWN_INTERVAL_ID);
+        COUNTDOWN_INTERVAL_ID = null;
+      }
 
-  btn.addEventListener("click", async () => {
-    closeAllModals();
-    if (COUNTDOWN_INTERVAL_ID) {
-      clearInterval(COUNTDOWN_INTERVAL_ID);
-      COUNTDOWN_INTERVAL_ID = null;
-    }
+      clearCurrentUser();
 
-    clearCurrentUser();
+      try {
+        if (fbAvailable()) await window.FB.signOut(window.FB.auth);
+      } catch {}
 
-    try {
-      if (fbAvailable()) await window.FB.signOut(window.FB.auth);
-    } catch {}
-
-    initIdentityGate();
+      initIdentityGate();
+    });
   });
 }
 
