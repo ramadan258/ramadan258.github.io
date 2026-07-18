@@ -219,25 +219,56 @@ function currentUserId() {
 }
 
 const MEMBER_AUTH_SESSION_KEY = "wa3i_member_auth_session_v1";
+const MEMBER_AUTH_DEVICE_KEY = "wa3i_member_auth_device_v1";
+
+function readPersistedMemberAuthorization() {
+  try {
+    const raw = localStorage.getItem(MEMBER_AUTH_DEVICE_KEY);
+    if (!raw) return "";
+    const parsed = JSON.parse(raw);
+    const id = String(parsed?.memberId || "").trim();
+    return id;
+  } catch {
+    return "";
+  }
+}
 
 function markMemberSessionAuthorized(memberId) {
   const id = String(memberId || "").trim();
   if (!id) return;
   try { sessionStorage.setItem(MEMBER_AUTH_SESSION_KEY, id); } catch {}
+  try {
+    localStorage.setItem(MEMBER_AUTH_DEVICE_KEY, JSON.stringify({
+      memberId: id,
+      grantedAt: Date.now(),
+    }));
+  } catch {}
 }
 
 function hasMemberSessionAuthorization(memberId) {
   const id = String(memberId || "").trim();
   if (!id) return false;
+  const boundMemberId = readLocalMemberBinding();
+  if (boundMemberId && boundMemberId !== id) return false;
+
   try {
-    return String(sessionStorage.getItem(MEMBER_AUTH_SESSION_KEY) || "").trim() === id;
+    if (String(sessionStorage.getItem(MEMBER_AUTH_SESSION_KEY) || "").trim() === id) {
+      return true;
+    }
   } catch {
-    return false;
+    // Continue to the persisted device authorization fallback below.
   }
+
+  const persistedId = readPersistedMemberAuthorization();
+  if (persistedId !== id) return false;
+
+  try { sessionStorage.setItem(MEMBER_AUTH_SESSION_KEY, id); } catch {}
+  return true;
 }
 
 function clearMemberSessionAuthorization() {
   try { sessionStorage.removeItem(MEMBER_AUTH_SESSION_KEY); } catch {}
+  try { localStorage.removeItem(MEMBER_AUTH_DEVICE_KEY); } catch {}
 }
 
 function readCurrentUser() {
