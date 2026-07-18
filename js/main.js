@@ -233,6 +233,21 @@ function readPersistedMemberAuthorization() {
   }
 }
 
+function hasPersistedLocalAdminAccess(memberId) {
+  const id = String(memberId || "").trim();
+  if (!id) return false;
+  try {
+    const raw = localStorage.getItem(LOCAL_ADMIN_ACCESS_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    const owner = String(parsed?.owner || "").trim();
+    if (!owner || owner !== id) return false;
+    return Boolean(parsed?.memberStatus || parsed?.ahd || parsed?.memberManage || parsed?.qa);
+  } catch {
+    return false;
+  }
+}
+
 function markMemberSessionAuthorized(memberId) {
   const id = String(memberId || "").trim();
   if (!id) return;
@@ -555,10 +570,17 @@ async function canResumeMemberSession(memberId) {
   if (!id) return false;
   if (isLegacyRemovedStaticMemberId(id)) return false;
   if (!getAllMembersList().some((member) => String(member.id || "").trim() === id)) return false;
+  if (hasMemberSessionAuthorization(id)) return true;
+  if (hasPersistedLocalAdminAccess(id)) return true;
 
   try {
+    const cachedAccessRecord = getMemberAccessRecord(id);
+    if (cachedAccessRecord) {
+      return !cachedAccessRecord.passwordHash;
+    }
+
     const accessRecord = await resolveMemberAccessRecord(id);
-    return !accessRecord?.passwordHash || hasMemberSessionAuthorization(id);
+    return !accessRecord?.passwordHash;
   } catch {
     return false;
   }

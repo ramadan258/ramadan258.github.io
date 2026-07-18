@@ -122,7 +122,6 @@ async function submitAdminLogin() {
     if (status) status.textContent = "جاري تسجيل الدخول…";
     await trySignIn();
 
-    closeAdminLoginModal();
     if (pending) {
       grantLocalAdminAccess({
         owner: pending.id,
@@ -133,7 +132,12 @@ async function submitAdminLogin() {
       });
       markMemberSessionAuthorized(pending.id);
       saveCurrentUser({ id: pending.id, name: pending.name, kind: "member" });
+      const binding = await ensureMemberBinding(pending.id);
+      closeAdminLoginModal();
       startApp();
+      if (binding?.localOnly) {
+        showIdentityToast("تم الدخول بنجاح. بعض المزامنة السحابية غير متاحة حاليًا، لكن يمكنك استخدام الموقع بشكل طبيعي.");
+      }
     }
   } catch (e) {
     if (String(e?.message || "").includes("FB_NOT_READY")) {
