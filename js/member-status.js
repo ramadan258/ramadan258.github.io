@@ -123,7 +123,7 @@ function renderMemberStatusAdminList() {
     return `
       <div class="status-admin-card">
         <div class="status-admin-head">
-          <img class="${avatarClass}" src="${m.src}" alt="${escapeHtml(m.name)}" />
+          <img class="${avatarClass}" loading="lazy" decoding="async" src="${m.src}" alt="${escapeHtml(m.name)}" />
           <div>
             <div class="status-admin-name">${escapeHtml(m.name)}</div>
             <div class="status-admin-current">الحالة الحالية: ${memberStatusLabel(status)}</div>

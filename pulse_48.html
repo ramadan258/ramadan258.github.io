@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>الثمانية والأربعين — نبض التعافي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico?v=20260718shell2" type="image/x-icon" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260718shell2" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260718shell3" />
+  <link rel="manifest" href="site.webmanifest?v=20260718shell3" />
+  <style>
+    :root {
+      --primary: #4ecdc4;
+      --gold: #f5c842;
+      --danger: #f87171;
+      --success: #34d399;
+      --dark-bg: #0a0d12;
+      --dark-card: #111520;
+      --dark-card2: #161b26;
+      --text-light: #eaecf0;
+      --text-muted: #8892a4;
+      --line: rgba(255, 255, 255, 0.08);
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.42);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Cairo", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(78, 205, 196, 0.06), transparent 26%),
+        radial-gradient(circle at top left, rgba(245, 200, 66, 0.06), transparent 20%),
+        linear-gradient(180deg, #081018 0%, #0b1320 48%, #0c1422 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      line-height: 1.9;
+      padding-bottom: 90px;
+    }
+
+    .back-bar {
+      background: rgba(10, 13, 18, 0.92);
+      backdrop-filter: blur(14px);
+      padding: 12px 24px;
+      border-bottom: 1px solid rgba(78, 205, 196, 0.08);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 700;
+    }
+
+    .back-link:hover { color: var(--primary); }
+
+    .hero {
+      width: min(1100px, calc(100% - 28px));
+      margin: 22px auto 0;
+      padding: 34px 24px;
+      border-radius: 30px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top right, rgba(78, 205, 196, 0.12), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(245, 200, 66, 0.08), transparent 30%),
+        linear-gradient(180deg, rgba(16, 24, 38, 0.96), rgba(9, 14, 24, 0.94));
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "48";
+      position: absolute;
+      inset-inline-start: 20px;
+      top: 8px;
+      font-size: 100px;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.03);
+      pointer-events: none;
+    }
+
+    .hero-kicker {
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      margin-top: 6px;
+      font-family: "Amiri", serif;
+      font-size: clamp(34px, 5vw, 46px);
+      color: var(--text-light);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      margin-top: 10px;
+      max-width: 760px;
+      color: var(--text-muted);
+      font-size: 15px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-pills {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+      font-size: 12.5px;
+      font-weight: 800;
+    }
+
+    .wrap {
+      width: min(1100px, calc(100% - 28px));
+      margin: 18px auto 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(300px, .82fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .main-stack,
+    .side-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(16, 24, 38, 0.94), rgba(10, 16, 27, 0.92));
+      box-shadow: var(--shadow);
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(245, 200, 66, 0.16), transparent);
+    }
+
+    .card-title {
+      font-size: 19px;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1.7;
+    }
+
+    .card-sub {
+      margin-top: 8px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .question-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-light);
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1.8;
+    }
+
+    .choice-grid,
+    .signal-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .signal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .choice-chip {
+      position: relative;
+      display: inline-flex;
+      cursor: pointer;
+    }
+
+    .choice-chip input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .choice-chip span {
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      text-align: center;
+      transition: border-color .2s, background .2s, color .2s, transform .2s;
+    }
+
+    .choice-chip:hover span {
+      transform: translateY(-1px);
+      border-color: rgba(78, 205, 196, 0.24);
+    }
+
+    .choice-chip input:checked + span {
+      border-color: rgba(78, 205, 196, 0.34);
+      background: rgba(78, 205, 196, 0.14);
+      color: var(--text-light);
+      box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.08);
+    }
+
+    .field {
+      margin-top: 14px;
+    }
+
+    .field small {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+      font-size: 12.5px;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(0, 0, 0, 0.26);
+      color: var(--text-light);
+      font-family: "Cairo", sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    input[type="number"]:focus,
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: rgba(78, 205, 196, 0.45);
+      box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.8;
+    }
+
+    .result-box {
+      border-radius: 22px;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-box.low {
+      background:
+        radial-gradient(circle at top right, rgba(52, 211, 153, 0.12), transparent 34%),
+        linear-gradient(180deg, rgba(15, 29, 24, 0.94), rgba(10, 20, 18, 0.92));
+      border-color: rgba(52, 211, 153, 0.2);
+    }
+
+    .result-box.medium {
+      background:
+        radial-gradient(circle at top right, rgba(245, 200, 66, 0.12), transparent 34%),
+        linear-gradient(180deg, rgba(30, 27, 15, 0.94), rgba(19, 17, 10, 0.92));
+      border-color: rgba(245, 200, 66, 0.2);
+    }
+
+    .result-box.high {
+      background:
+        radial-gradient(circle at top right, rgba(248, 113, 113, 0.12), transparent 34%),
+        linear-gradient(180deg, rgba(29, 16, 18, 0.94), rgba(18, 10, 12, 0.92));
+      border-color: rgba(248, 113, 113, 0.2);
+    }
+
+    .result-pill {
+      width: fit-content;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .result-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--text-light);
+    }
+
+    .result-copy,
+    .result-list {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      line-height: 1.8;
+    }
+
+    .result-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric-card {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .metric-label {
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      color: var(--text-light);
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    button {
+      font-family: "Cairo", sans-serif;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+      padding: 11px 18px;
+      border-radius: 13px;
+      cursor: pointer;
+      font-weight: 900;
+      font-size: 13.5px;
+      transition: transform .15s, border-color .2s, background .2s;
+    }
+
+    button:hover { transform: translateY(-2px); }
+
+    button.primary {
+      background: rgba(78, 205, 196, 0.18);
+      color: var(--primary);
+      border-color: rgba(78, 205, 196, 0.32);
+    }
+
+    button.ghost {
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .report-box {
+      width: 100%;
+      min-height: 330px;
+      white-space: pre-wrap;
+      line-height: 1.8;
+      font-size: 13px;
+      font-family: "Courier New", monospace;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 16px;
+      color: var(--text-light);
+      resize: vertical;
+    }
+
+    .note {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(10, 13, 18, 0.92);
+      border: 1px solid rgba(78, 205, 196, 0.2);
+      color: var(--text-light);
+      padding: 11px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+      z-index: 1000;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 860px) {
+      .wrap {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero,
+      .card {
+        padding: 18px 16px;
+      }
+
+      .signal-grid,
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="back-bar">
+    <a href="index.html?resume=1&v=20260718shell2" class="back-link">← العودة إلى الصفحة الرئيسية</a>
+  </div>
+
+  <header class="hero">
+    <div class="hero-kicker">نبض التعافي • فحص سريع كل 48 ساعة</div>
+    <h1>الثمانية والأربعين</h1>
+    <p>الهدف من هذا النموذج ليس الحكم على نفسك، بل اكتشاف الخطر مبكرًا قبل أن يتحول إلى زلة أو انتكاسة.</p>
+    <div class="hero-pills">
+      <span class="pill">سريع</span>
+      <span class="pill">واضح</span>
+      <span class="pill">كل 48 ساعة</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="main-stack">
+      <section class="card">
+        <div class="card-title">1️⃣ كيف كان يومك بشكل عام؟</div>
+        <div class="choice-grid">
+          <label class="choice-chip"><input type="radio" name="dayQuality" value="ممتاز"><span>ممتاز</span></label>
+          <label class="choice-chip"><input type="radio" name="dayQuality" value="جيد"><span>جيد</span></label>
+          <label class="choice-chip"><input type="radio" name="dayQuality" value="متوسط"><span>متوسط</span></label>
+          <label class="choice-chip"><input type="radio" name="dayQuality" value="صعب"><span>صعب</span></label>
+          <label class="choice-chip"><input type="radio" name="dayQuality" value="صعب جدًا"><span>صعب جدًا</span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">2️⃣ هل ظهرت عندك أي من إشارات الخطر التالية؟</div>
+        <div class="signal-grid">
+          <label class="choice-chip"><input type="checkbox" name="signals" value="سهر"><span>سهر</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="ملل"><span>ملل</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="فراغ"><span>فراغ</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="عزلة"><span>عزلة</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="ضغط نفسي"><span>ضغط نفسي</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="إرهاق أو تعب شديد"><span>إرهاق أو تعب شديد</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="تصفح عشوائي"><span>تصفح عشوائي</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="محفزات خارجية"><span>محفزات خارجية</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="خيالات"><span>خيالات</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="ترك بعض العادات"><span>ترك بعض العادات</span></label>
+          <label class="choice-chip"><input type="checkbox" id="signalNone" name="signals" value="لا يوجد"><span>لا يوجد</span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="planCommitment">3️⃣ كيف كان التزامك بخطة التعافي؟</label>
+        <div class="field">
+          <small>من 1 إلى 10</small>
+          <input id="planCommitment" type="number" min="1" max="10" inputmode="numeric" placeholder="__ /10">
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="urgeLevel">4️⃣ كيف كان مستوى الرغبة أو الإلحاح؟</label>
+        <div class="field">
+          <small>من 1 إلى 10</small>
+          <input id="urgeLevel" type="number" min="1" max="10" inputmode="numeric" placeholder="__ /10">
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">5️⃣ هل شعرت أنك قريب من الزلة؟</div>
+        <div class="choice-grid">
+          <label class="choice-chip"><input type="radio" name="closeToSlip" value="نعم"><span>نعم</span></label>
+          <label class="choice-chip"><input type="radio" name="closeToSlip" value="قليلًا"><span>قليلًا</span></label>
+          <label class="choice-chip"><input type="radio" name="closeToSlip" value="لا"><span>لا</span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="dangerPattern">6️⃣ هل لاحظت نمط الخطر المعتاد لديك؟</label>
+        <div class="field">
+          <small>مثل: بعد الشغل، بعد السهر، أثناء الفراغ، بعد الضغط، بعد الاستيقاظ.</small>
+          <input id="dangerPattern" type="text" placeholder="اكتب النمط الذي لاحظته...">
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="helpedMost">7️⃣ ما أكثر شيء ساعد تعافيك خلال اليومين الماضيين؟</label>
+        <div class="field">
+          <textarea id="helpedMost" placeholder="اكتب الشيء الأوضح الذي نفعك..."></textarea>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="threatenedMost">8️⃣ ما أكثر شيء هدد تعافيك خلال اليومين الماضيين؟</label>
+        <div class="field">
+          <textarea id="threatenedMost" placeholder="اكتب الشيء الأوضح الذي هددك..."></textarea>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="protectionStep">9️⃣ ما خطوة الحماية الوحيدة التي ستلتزم بها خلال الـ 24 ساعة القادمة؟</label>
+        <div class="field">
+          <textarea id="protectionStep" placeholder="اكتب خطوة واحدة واضحة ومحددة..."></textarea>
+        </div>
+      </section>
+    </div>
+
+    <aside class="side-stack">
+      <section class="card">
+        <div class="card-title">📊 تقييم نبض التعافي</div>
+        <div id="resultBox" class="result-box low">
+          <div id="resultPill" class="result-pill">وضع مستقر</div>
+          <div id="resultTitle" class="result-title">🟢 وضعك مستقر</div>
+          <div id="resultCopy" class="result-copy">استمر ولا تغتر بنفسك.</div>
+          <div id="resultList" class="result-list"></div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric-card">
+            <div class="metric-label">إشارات الخطر</div>
+            <div id="dangerCount" class="metric-value">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">الحالة الحالية</div>
+            <div id="dangerLevel" class="metric-value">🟢</div>
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="copyReport">نسخ التقرير</button>
+          <button class="ghost" id="resetForm">إعادة التصفير</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">📝 التقرير الجاهز</div>
+        <textarea id="reportBox" class="report-box" readonly></textarea>
+      </section>
+
+      <section class="card">
+        <div class="card-title">🤍 تذكر</div>
+        <div class="note">
+          الزلة لا تبدأ لحظة السقوط... بل تبدأ عندما يتغير نبض التعافي ولا ننتبه له.
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast">تم ✅</div>
+
+  <script>
+  (function () {
+    const STORAGE_KEY = "wa3i_pulse_48_state_v1";
+    const $ = (q) => document.querySelector(q);
+    const $$ = (q) => Array.from(document.querySelectorAll(q));
+
+    const defaultState = {
+      dayQuality: "",
+      signals: [],
+      planCommitment: "",
+      urgeLevel: "",
+      closeToSlip: "",
+      dangerPattern: "",
+      helpedMost: "",
+      threatenedMost: "",
+      protectionStep: ""
+    };
+
+    const loadState = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { ...defaultState };
+        const parsed = JSON.parse(raw);
+        return {
+          ...defaultState,
+          ...parsed,
+          signals: Array.isArray(parsed?.signals) ? parsed.signals : []
+        };
+      } catch (error) {
+        return { ...defaultState };
+      }
+    };
+
+    const state = loadState();
+
+    const toast = (msg) => {
+      const t = $("#toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1500);
+    };
+
+    const saveState = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    };
+
+    const escapeHtml = (str) => String(str ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+    const formatArabicNumber = (value) => new Intl.NumberFormat("ar-SA").format(value);
+
+    const getDangerSignals = () => state.signals.filter((item) => item !== "لا يوجد");
+
+    const evaluate = () => {
+      const count = getDangerSignals().length;
+      if (count >= 6) {
+        return {
+          level: "high",
+          emoji: "🔴",
+          pill: "خطر مرتفع",
+          title: "🔴 أنت قريب من منطقة الخطر",
+          copy: "مطلوب تدخل سريع الآن قبل أن يتحول الضغط إلى سقوط.",
+          actions: [
+            "اخرج من العزلة.",
+            "أغلق المحفزات.",
+            "عد إلى الروتين.",
+            "طبق خطة الهروب.",
+            "تواصل مع شخص داعم."
+          ]
+        };
+      }
+      if (count >= 3) {
+        return {
+          level: "medium",
+          emoji: "🟡",
+          pill: "يحتاج انتباهًا",
+          title: "🟡 بدأت تدخل منطقة تحتاج انتباهًا",
+          copy: "راجع روتينك وارفع مستوى الحذر قبل أن تكبر الإشارات.",
+          actions: [
+            "راجع روتينك في النوم والعزلة.",
+            "ارفع مستوى الحذر مع الهاتف والمحفزات.",
+            "ارجع إلى أساسيات الخطة سريعًا."
+          ]
+        };
+      }
+      return {
+        level: "low",
+        emoji: "🟢",
+        pill: "وضع مستقر",
+        title: "🟢 وضعك مستقر",
+        copy: "استمر ولا تغتر بنفسك.",
+        actions: [
+          "حافظ على الاستقرار الحالي.",
+          "لا تهمل الإشارات الصغيرة.",
+          "استمر في خطتك كما هي."
+        ]
+      };
+    };
+
+    const buildReport = () => {
+      const result = evaluate();
+      const signals = getDangerSignals();
+      return `🧭 نبض التعافي
+(فحص سريع كل 48 ساعة)
+
+1️⃣ كيف كان يومك بشكل عام؟
+${state.dayQuality || "غير محدد"}
+
+2️⃣ إشارات الخطر التي ظهرت:
+${signals.length ? signals.map((item) => `• ${item}`).join("\n") : "• لا يوجد"}
+
+3️⃣ التزامي بخطة التعافي:
+${state.planCommitment || "—"} /10
+
+4️⃣ مستوى الرغبة أو الإلحاح:
+${state.urgeLevel || "—"} /10
+
+5️⃣ هل شعرت أنك قريب من الزلة؟
+${state.closeToSlip || "غير محدد"}
+
+6️⃣ نمط الخطر المعتاد:
+${state.dangerPattern || "—"}
+
+7️⃣ أكثر شيء ساعد تعافيي:
+${state.helpedMost || "—"}
+
+8️⃣ أكثر شيء هدد تعافيي:
+${state.threatenedMost || "—"}
+
+9️⃣ خطوة الحماية خلال الـ 24 ساعة القادمة:
+${state.protectionStep || "—"}
+
+📊 تقييم نبض التعافي
+عدد إشارات الخطر: ${formatArabicNumber(signals.length)}
+${result.title}
+${result.copy}
+
+${result.actions.map((item) => `• ${item}`).join("\n")}
+
+🤍 تذكر:
+الزلة لا تبدأ لحظة السقوط...
+بل تبدأ عندما يتغير "نبض التعافي" ولا ننتبه له.`;
+    };
+
+    const syncFormFromState = () => {
+      $$('input[name="dayQuality"]').forEach((input) => {
+        input.checked = input.value === state.dayQuality;
+      });
+
+      $$('input[name="signals"]').forEach((input) => {
+        input.checked = state.signals.includes(input.value);
+      });
+
+      $$('input[name="closeToSlip"]').forEach((input) => {
+        input.checked = input.value === state.closeToSlip;
+      });
+
+      $("#planCommitment").value = state.planCommitment;
+      $("#urgeLevel").value = state.urgeLevel;
+      $("#dangerPattern").value = state.dangerPattern;
+      $("#helpedMost").value = state.helpedMost;
+      $("#threatenedMost").value = state.threatenedMost;
+      $("#protectionStep").value = state.protectionStep;
+    };
+
+    const updateView = () => {
+      const result = evaluate();
+      const dangerCount = getDangerSignals().length;
+      const resultBox = $("#resultBox");
+
+      resultBox.className = `result-box ${result.level}`;
+      $("#resultPill").textContent = result.pill;
+      $("#resultTitle").textContent = result.title;
+      $("#resultCopy").textContent = result.copy;
+      $("#resultList").innerHTML = result.actions.map((item) => `<div>• ${escapeHtml(item)}</div>`).join("");
+      $("#dangerCount").textContent = formatArabicNumber(dangerCount);
+      $("#dangerLevel").textContent = result.emoji;
+      $("#reportBox").value = buildReport();
+    };
+
+    const setSignals = (nextSignals) => {
+      state.signals = nextSignals;
+      saveState();
+      updateView();
+    };
+
+    const bindEvents = () => {
+      $$('input[name="dayQuality"]').forEach((input) => {
+        input.addEventListener("change", () => {
+          state.dayQuality = input.value;
+          saveState();
+          updateView();
+        });
+      });
+
+      const signalInputs = $$('input[name="signals"]');
+      const signalNone = $("#signalNone");
+      signalInputs.forEach((input) => {
+        input.addEventListener("change", () => {
+          const selected = signalInputs.filter((item) => item.checked).map((item) => item.value);
+          if (input.value === "لا يوجد" && input.checked) {
+            signalInputs.forEach((item) => {
+              if (item.value !== "لا يوجد") item.checked = false;
+            });
+            setSignals(["لا يوجد"]);
+            return;
+          }
+          if (input.value !== "لا يوجد" && input.checked && signalNone.checked) {
+            signalNone.checked = false;
+          }
+          setSignals(signalInputs.filter((item) => item.checked).map((item) => item.value));
+        });
+      });
+
+      $$('input[name="closeToSlip"]').forEach((input) => {
+        input.addEventListener("change", () => {
+          state.closeToSlip = input.value;
+          saveState();
+          updateView();
+        });
+      });
+
+      [
+        ["#planCommitment", "planCommitment"],
+        ["#urgeLevel", "urgeLevel"],
+        ["#dangerPattern", "dangerPattern"],
+        ["#helpedMost", "helpedMost"],
+        ["#threatenedMost", "threatenedMost"],
+        ["#protectionStep", "protectionStep"]
+      ].forEach(([selector, key]) => {
+        $(selector).addEventListener("input", (event) => {
+          state[key] = event.target.value;
+          saveState();
+          updateView();
+        });
+      });
+
+      $("#copyReport").addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText($("#reportBox").value);
+          toast("تم نسخ نبض التعافي ✅");
+        } catch (error) {
+          const temp = document.createElement("textarea");
+          temp.value = $("#reportBox").value;
+          temp.style.position = "fixed";
+          temp.style.opacity = "0";
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand("copy");
+          temp.remove();
+          toast("تم نسخ نبض التعافي ✅");
+        }
+      });
+
+      $("#resetForm").addEventListener("click", () => {
+        if (!confirm("هل تريد تصفير نموذج الثمانية والأربعين من هذا الجهاز؟")) return;
+        Object.assign(state, JSON.parse(JSON.stringify(defaultState)));
+        saveState();
+        syncFormFromState();
+        updateView();
+        toast("تم التصفير ✅");
+      });
+    };
+
+    syncFormFromState();
+    bindEvents();
+    updateView();
+  })();
+  </script>
+</body>
+</html>

@@ -4,10 +4,13 @@
   <meta charset="UTF-8" />
   <title>الموحدون – واعي | قبيلة الموحدون</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 
   <!-- SEO -->
   <meta name="description" content="الموحدون – واعي. مبادرة للثبات، مجاهدة النفس، وتجديد العهد في قبيلة الموحدون." />
-  <meta name="keywords" content="الموحدون, واعي, قبيلة الموحدون, التعافي, الثبات, مجاهدة النفس, عيد الأضحى" />
+  <meta name="keywords" content="الموحدون, واعي, قبيلة الموحدون, التعافي, الثبات, مجاهدة النفس, شهر صفر, صفر زلات" />
   <meta name="application-name" content="قبيلة الموحدون - واعي" />
   <meta name="apple-mobile-web-app-title" content="قبيلة الموحدون - واعي" />
   <meta name="theme-color" content="#0c1320" />
@@ -17,28 +20,28 @@
   <meta property="og:url" content="https://ramadan258.github.io/" />
   <meta property="og:title" content="الموحدون – واعي | قبيلة الموحدون" />
   <meta property="og:description" content="مبادرة للثبات، مجاهدة النفس، وتجديد العهد في قبيلة الموحدون." />
-  <meta property="og:image" content="https://ramadan258.github.io/images/site-preview.png?v=3" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
+  <meta property="og:image" content="https://ramadan258.github.io/apple-touch-icon.png?v=20260718shell3" />
+  <meta property="og:image:width" content="180" />
+  <meta property="og:image:height" content="180" />
   <meta property="og:image:alt" content="شعار واعي مع عنوان قبيلة الموحدون" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="الموحدون – واعي | قبيلة الموحدون" />
   <meta name="twitter:description" content="مبادرة للثبات، مجاهدة النفس، وتجديد العهد في قبيلة الموحدون." />
-  <meta name="twitter:image" content="https://ramadan258.github.io/images/site-preview.png?v=3" />
+  <meta name="twitter:image" content="https://ramadan258.github.io/apple-touch-icon.png?v=20260718shell3" />
 
   <!-- CSS -->
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="today.css?v=20260412rescue1" />
+  <link rel="stylesheet" href="style.css?v=20260718shell2" />
+  <link rel="stylesheet" href="today.css?v=20260718shell2" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="shortcut icon" href="favicon.ico" />
-  <link rel="icon" href="favicon.ico" sizes="any" />
-  <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-  <link rel="manifest" href="site.webmanifest" />
+  <link rel="shortcut icon" href="favicon.ico?v=20260718shell2" />
+  <link rel="icon" href="favicon.ico?v=20260718shell2" sizes="any" />
+  <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png?v=20260718shell2" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260718shell2" />
+  <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png?v=20260718shell2" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=20260718shell3" />
+  <link rel="manifest" href="site.webmanifest?v=20260718shell3" />
 
   <script type="application/ld+json">
     {
@@ -55,41 +58,14 @@
       "@type": "Organization",
       "name": "قبيلة الموحدون - واعي",
       "url": "https://ramadan258.github.io/",
-      "logo": "https://ramadan258.github.io/images/site-icon-512.png"
+      "logo": "https://ramadan258.github.io/apple-touch-icon.png?v=20260718shell3"
     }
   </script>
 
   <!-- Firebase (Firestore + Auth) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signInWithEmailAndPassword,
-      signOut,
-      setPersistence,
-      inMemoryPersistence,
-      browserSessionPersistence,
-          signInAnonymously,
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import {
-      getFirestore,
-      collection,
-      doc,
-      
-      getDoc,
-setDoc,
-      deleteDoc,
-      deleteField,
-      serverTimestamp,
-      onSnapshot,
-      getDocs,
-      query,
-      orderBy,
-      limitToLast,
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-    const firebaseConfig = {
+  <script>
+    window.FB = window.FB || null;
+    window.__WA3I_FIREBASE_CONFIG = {
       apiKey: "AIzaSyBYROgGM5ZOSBKNX1cYkJa3s395yf8HDVE",
       authDomain: "tribe-app-e3e9c.firebaseapp.com",
       projectId: "tribe-app-e3e9c",
@@ -97,41 +73,83 @@ setDoc,
       messagingSenderId: "1087669498056",
       appId: "1:1087669498056:web:f04aed42afb4af483eb5fd",
     };
+    window.__wa3iFirebaseLoadPromise = null;
+    window.__wa3iFirebaseWarmupScheduled = false;
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    window.ensureFirebase = async function ensureFirebase() {
+      if (window.FB?.db && window.FB?.auth) return window.FB;
+      if (window.__wa3iFirebaseLoadPromise) return window.__wa3iFirebaseLoadPromise;
 
-    // Expose minimal API to non-module scripts.
-    window.FB = {
-      auth,
-      db,
-      projectId: firebaseConfig.projectId,
-      onAuthStateChanged,
-      signInWithEmailAndPassword,
-      signOut,
-      setPersistence,
-      inMemoryPersistence,
-      browserSessionPersistence,
-      signInAnonymously,
-      collection,
-      doc,
-      
-      getDoc,
-setDoc,
-      deleteDoc,
-      deleteField,
-      serverTimestamp,
-      onSnapshot,
-      getDocs,
-      query,
-      orderBy,
-      limitToLast,
+      window.__wa3iFirebaseLoadPromise = (async () => {
+        const [{ initializeApp }, authMod, firestoreMod] = await Promise.all([
+          import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"),
+          import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js"),
+          import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js"),
+        ]);
+
+        const app = initializeApp(window.__WA3I_FIREBASE_CONFIG);
+        const auth = authMod.getAuth(app);
+        const db = firestoreMod.getFirestore(app);
+
+        window.FB = {
+          auth,
+          db,
+          projectId: window.__WA3I_FIREBASE_CONFIG.projectId,
+          onAuthStateChanged: authMod.onAuthStateChanged,
+          signInWithEmailAndPassword: authMod.signInWithEmailAndPassword,
+          signOut: authMod.signOut,
+          setPersistence: authMod.setPersistence,
+          inMemoryPersistence: authMod.inMemoryPersistence,
+          browserSessionPersistence: authMod.browserSessionPersistence,
+          signInAnonymously: authMod.signInAnonymously,
+          collection: firestoreMod.collection,
+          doc: firestoreMod.doc,
+          getDoc: firestoreMod.getDoc,
+          setDoc: firestoreMod.setDoc,
+          deleteDoc: firestoreMod.deleteDoc,
+          deleteField: firestoreMod.deleteField,
+          serverTimestamp: firestoreMod.serverTimestamp,
+          onSnapshot: firestoreMod.onSnapshot,
+          getDocs: firestoreMod.getDocs,
+          query: firestoreMod.query,
+          orderBy: firestoreMod.orderBy,
+          limitToLast: firestoreMod.limitToLast,
+        };
+
+        window.__wa3iFirebaseWarmupScheduled = false;
+        return window.FB;
+      })();
+
+      try {
+        return await window.__wa3iFirebaseLoadPromise;
+      } catch (error) {
+        window.__wa3iFirebaseLoadPromise = null;
+        window.__wa3iFirebaseWarmupScheduled = false;
+        throw error;
+      }
+    };
+
+    window.scheduleFirebaseWarmup = function scheduleFirebaseWarmup() {
+      if (window.FB?.db && window.FB?.auth) return;
+      if (window.__wa3iFirebaseWarmupScheduled) return;
+      window.__wa3iFirebaseWarmupScheduled = true;
+
+      const warm = () => {
+        window.ensureFirebase?.().catch(() => {
+          window.__wa3iFirebaseWarmupScheduled = false;
+        });
+      };
+
+      if ("requestAnimationFrame" in window) {
+        requestAnimationFrame(() => setTimeout(warm, 120));
+      } else {
+        setTimeout(warm, 220);
+      }
     };
   </script>
 
-  <link rel="stylesheet" href="css/index-page.css?v=20260503memberpin1" />
-  <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260501review1" />
+  <link rel="stylesheet" href="css/index-page.css?v=20260718shell2" />
+  <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260718shell2" />
 </head>
 
 <body class="member-design-canvas-mode">
@@ -229,6 +247,18 @@ setDoc,
       <button class="member-canvas-link is-featured" type="button" data-canvas-page="today">
         <span class="member-canvas-link__label">مهام اليوم</span>
       </button>
+      <a class="member-canvas-link is-relapse" href="slip_report.html?v=20260718shell2">
+        <span class="member-canvas-link__label">سابق ولاحق</span>
+      </a>
+      <a class="member-canvas-link is-plan" href="recovery_plan.html?v=20260718shell2">
+        <span class="member-canvas-link__label">خطة التعافي</span>
+      </a>
+      <a class="member-canvas-link is-pulse48" href="pulse_48.html?v=20260718shell2">
+        <span class="member-canvas-link__label">الثمانية والأربعين</span>
+      </a>
+      <a class="member-canvas-link is-weekly-mirror" href="weekly_mirror.html?v=20260718shell2">
+        <span class="member-canvas-link__label">مرآة الأسبوع</span>
+      </a>
       <button class="member-canvas-link is-feelings" type="button" data-canvas-page="qa">
         <span class="member-canvas-link__label">سؤال وجواب</span>
       </button>
@@ -329,7 +359,7 @@ setDoc,
           <button class="member-command-btn primary" type="button" data-forward-click="#openMorningAzkar">الأذكار</button>
           <button class="member-command-btn" type="button" data-forward-click="#openQaPage">سؤال وجواب</button>
           <button class="member-command-btn" type="button" data-forward-click="#openRescueCenter">النجدة</button>
-          <a class="member-command-btn gold" href="daily_report.html">التقرير</a>
+          <a class="member-command-btn gold" href="daily_report.html?v=20260718shell2">التقرير</a>
         </div>
       </div>
     </div>
@@ -646,7 +676,7 @@ setDoc,
         <div class="today-support-title">إذا شعرت بضغط أو أردت إنهاء اليوم بسرعة</div>
         <div class="today-support-actions">
           <button type="button" class="btn ghost" id="openRescueCenter">فتح النجدة</button>
-          <a class="today-support-report-btn" href="daily_report.html">كتابة التقرير</a>
+          <a class="today-support-report-btn" href="daily_report.html?v=20260718shell2">كتابة التقرير</a>
         </div>
       </div>
     </div>
@@ -662,158 +692,7 @@ setDoc,
     <div class="member-members-basmala">بسم الله الرحمن الرحيم</div>
 
     <div class="slider-container">
-      <div class="slider">
-        
-        <div class="slide-card" data-member-id="member_7">
-          <img src="images/person6.jpg" alt="مؤقد" />
-          <h3>موحد</h3>
-        </div>
-        
-        <div class="slide-card" data-member-id="member_0">
-          <img src="images/person12.jpg" alt="الفقير إلى الله" />
-          <h3>الفقير إلى الله</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_11">
-          <img src="images/person17.jpg" alt="أواب" />
-          <h3>أواب</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_10">
-          <img src="images/person9.jpg" alt="صالح" />
-          <h3>صالح</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_3">
-          <img src="images/person3.jpg" alt="طموح" />
-          <h3>طموح</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_2">
-          <img src="images/person23.jpeg" alt="أحمد عمرو" />
-          <h3>أحمد عمرو</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_4">
-          <img src="images/person4.jpg" alt="الريس" />
-          <h3>الريس</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_9">
-          <img src="images/person8.jpg" alt="أمجد" />
-          <h3>أمجد</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_6">
-          <img src="images/person11.jpg" alt="محمد" />
-          <h3>محمد</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_8">
-          <img src="images/person7.jpg" alt="سيف الدين" />
-          <h3>سيف الدين</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_20">
-          <img src="images/person1.jpg" alt="عبد الله جنيبة" />
-          <h3>عبد الله جنيبة</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_14">
-          <img src="images/person29.jpeg" alt="سعد" />
-          <h3>سعد</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_19">
-          <img src="images/person5.jpg" alt="مجاهد ☝🏻" />
-          <h3>مجاهد ☝🏻</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_15">
-          <img src="images/person30.jpeg" alt="يوسف" />
-          <h3>يوسف</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_16">
-          <img src="images/person15.jpg" alt="أبوبكر" />
-          <h3>أبوبكر</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_12">
-          <img src="images/person27.jpeg" alt="المقداد" />
-          <h3>المقداد</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_13">
-          <img src="images/person16.jpg" alt="أبو يزن" />
-          <h3>أبو يزن</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_18">
-          <img src="images/person20.jpeg" alt="عبدالرحمن" />
-          <h3>عبدالرحمن</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_21">
-          <img src="images/person24.jpeg" alt="أحمد هاني" />
-          <h3>أحمد هاني</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_5">
-          <img src="images/person10.jpg" alt="مجاهد" />
-          <h3>مجاهد</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_22">
-          <img src="images/person25.jpeg" alt="إيهاب سامح" />
-          <h3>إيهاب سامح</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_23">
-          <img src="images/person21.jpeg" alt="علاء" />
-          <h3>علاء</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_24">
-          <img src="images/person10.jpg" alt="راجي لطف الله" />
-          <h3>راجي لطف الله</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_25">
-          <img src="images/person26.jpeg" alt="الأسد الضرغام" />
-          <h3>الأسد الضرغام</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_26">
-          <img src="images/person10.jpg" alt="محمد بفضل الله" />
-          <h3>محمد بفضل الله</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_28">
-          <img src="images/person10.jpg" alt="ميدو علي" />
-          <h3>ميدو علي</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_29">
-          <img src="images/person19.jpg" alt="التحرر 1" />
-          <h3>التحرر 1</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_30">
-          <img src="images/person28.jpeg" alt="عبد الرحمن حامد" />
-          <h3>عبد الرحمن حامد</h3>
-        </div>
-
-        <div class="slide-card" data-member-id="member_17">
-          <img src="images/person32.png" alt="mahmoud" />
-          <h3>mahmoud</h3>
-        </div>
-        
-        <div class="slide-card" data-member-id="member_27">
-          <img src="images/person19.jpg" alt="راج عفو ربه" />
-          <h3>راج عفو ربه</h3>
-        </div>
-      </div>
+      <div class="slider" aria-live="polite"></div>
     </div>
 
     <div id="memberStatusAdminSlot" hidden></div>
@@ -843,13 +722,13 @@ setDoc,
       </div>
 
       <div class="panel-sub" style="margin-top:10px">
-        أضف عضوًا جديدًا، أو عدّل اسم عضو أو صورته، أو احذف عضوًا موجودًا من القبيلة. الحذف يخفي العضو من الواجهة العامة ومن قوائم الإدارة.
+        أضف عضوًا جديدًا، أو عدّل اسم عضو أو صورته، أو احذف عضوًا موجودًا من القبيلة. الصور المضافة من هنا تُخزّن سحابيًا، واستبدالها يستبدل النسخة القديمة، وحذف العضو يزيل صورته المرفوعة معه.
       </div>
 
       <div class="member-manage-grid" style="margin-top:16px">
         <aside class="member-manage-form">
           <div class="panel-title" id="memberManageFormTitle">إضافة عضو جديد</div>
-          <img id="memberManagePreview" class="member-manage-preview" src="images/person1.jpg" alt="معاينة صورة العضو" />
+          <img id="memberManagePreview" class="member-manage-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop stop-color='%23132633'/%3E%3Cstop offset='1' stop-color='%230e2430'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='160' rx='36' fill='url(%23g)'/%3E%3Ccircle cx='80' cy='58' r='28' fill='%23d8e6eb' fill-opacity='.92'/%3E%3Cpath d='M34 132c8-26 31-40 46-40s38 14 46 40' fill='%23d8e6eb' fill-opacity='.92'/%3E%3C/svg%3E" alt="معاينة صورة العضو" />
           <input id="memberManageName" class="text-input" type="text" placeholder="اسم العضو" autocomplete="off" />
           <input id="memberManageAccessPin" class="text-input" type="password" inputmode="numeric" maxlength="5" placeholder="كلمة مرور الدخول (1-5 أرقام)" autocomplete="new-password" style="margin-top:10px" />
           <button id="memberManageClearPinBtn" class="identity-btn ghost" type="button" style="margin-top:10px; display:none">مسح كلمة السر</button>
@@ -924,7 +803,7 @@ setDoc,
     </div>
 
     <article class="ahd-oath-copy">
-      نعاهد الله عز وجل أن نثبت على الحق، وأن نجاهد أنفسنا حتى عيد الأضحى، وأن نتعاضد على البر والتقوى، راجين منه سبحانه دوام الثبات، وصدق العزيمة، وصلاح العمل.
+      إننا نعاهد أنفسنا، ونعاهد الأعضاء، أن نجعل شهر صفر ١٤٤٨هـ شهرًا بصفر زلات، وأن نجاهد أنفسنا فيه بصدق، وأن نتعاضد على البر والتقوى، راجين دوام الثبات، وصدق العزيمة، وصلاح العمل.
     </article>
 
     <div class="slider-container ahd-slider-container">
@@ -973,7 +852,7 @@ setDoc,
     <div class="community-section-head">
       <div>
         <span class="member-kicker">الثبات</span>
-        <h2 class="countdown-title">العدّ حتى عيد الأضحى</h2>
+        <h2 class="countdown-title">العدّ حتى نهاية صفر</h2>
       </div>
       <div class="community-section-note">مؤشر بسيط يبقى في الواجهة بدون ضجيج.</div>
     </div>
@@ -1011,7 +890,7 @@ setDoc,
   <div class="member-mobile-dock" aria-label="شريط الهاتف السفلي">
     <button class="mobile-dock-item qa" type="button" data-forward-click="#openFeelingsPage">مشاعرك</button>
     <button class="mobile-dock-item rescue" type="button" data-forward-click="#openRescueCenter">النجدة</button>
-    <a class="mobile-dock-item report" href="daily_report.html">التقرير</a>
+    <a class="mobile-dock-item report" href="daily_report.html?v=20260718shell2">التقرير</a>
     <button class="mobile-dock-item azkar" type="button" data-forward-click="#openMorningAzkar">الأذكار</button>
     <button class="mobile-dock-item library" type="button" data-forward-click="#openRecoveryLibrary">المكتبة</button>
   </div>
@@ -1389,12 +1268,12 @@ setDoc,
   
   </div>
 
-  <script src="js/main.js?v=20260508securepin1"></script>
-  <script src="js/auth-ui.js?v=20260508securepin1"></script>
-  <script src="js/member-status.js"></script>
-  <script src="js/ahd.js?v=20260501ahdghostfix1"></script>
-  <script src="js/qa.js?v=20260420qaclean2"></script>
-  <script src="js/recovery-tools.js?v=20260412rescue1"></script>
-  <script src="js/hadith.js"></script>
+  <script src="js/main.js?v=20260718shell2"></script>
+  <script src="js/auth-ui.js?v=20260718shell2"></script>
+  <script src="js/member-status.js?v=20260718shell2"></script>
+  <script src="js/ahd.js?v=20260718shell2"></script>
+  <script src="js/qa.js?v=20260718shell2"></script>
+  <script src="js/recovery-tools.js?v=20260718shell2"></script>
+  <script src="js/hadith.js?v=20260718shell2"></script>
 </body>
 </html>

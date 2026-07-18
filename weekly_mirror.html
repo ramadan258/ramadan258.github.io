@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>مرآة الأسبوع — قبيلة الموحدون</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico?v=20260718shell2" type="image/x-icon" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260718shell2" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260718shell3" />
+  <link rel="manifest" href="site.webmanifest?v=20260718shell3" />
+  <style>
+    :root {
+      --primary: #4ecdc4;
+      --gold: #f5c842;
+      --danger: #f87171;
+      --success: #34d399;
+      --dark-bg: #0a0d12;
+      --text-light: #eaecf0;
+      --text-muted: #8892a4;
+      --line: rgba(255, 255, 255, 0.08);
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.42);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Cairo", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(245, 200, 66, 0.06), transparent 24%),
+        radial-gradient(circle at top left, rgba(78, 205, 196, 0.06), transparent 24%),
+        linear-gradient(180deg, #081018 0%, #0b1320 48%, #0c1422 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      line-height: 1.9;
+      padding-bottom: 90px;
+    }
+
+    .back-bar {
+      background: rgba(10, 13, 18, 0.92);
+      backdrop-filter: blur(14px);
+      padding: 12px 24px;
+      border-bottom: 1px solid rgba(78, 205, 196, 0.08);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 700;
+    }
+
+    .back-link:hover { color: var(--primary); }
+
+    .hero {
+      width: min(1120px, calc(100% - 28px));
+      margin: 22px auto 0;
+      padding: 34px 24px;
+      border-radius: 30px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top right, rgba(245, 200, 66, 0.12), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(109, 168, 255, 0.08), transparent 32%),
+        linear-gradient(180deg, rgba(16, 24, 38, 0.96), rgba(9, 14, 24, 0.94));
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "أسبوع";
+      position: absolute;
+      inset-inline-start: 18px;
+      top: 8px;
+      font-size: 92px;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.03);
+      pointer-events: none;
+    }
+
+    .hero-kicker {
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      margin-top: 6px;
+      font-family: "Amiri", serif;
+      font-size: clamp(34px, 5vw, 46px);
+      color: var(--text-light);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      margin-top: 10px;
+      max-width: 780px;
+      color: var(--text-muted);
+      font-size: 15px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-pills {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+      font-size: 12.5px;
+      font-weight: 800;
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 28px));
+      margin: 18px auto 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.16fr) minmax(320px, .84fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .main-stack,
+    .side-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(16, 24, 38, 0.94), rgba(10, 16, 27, 0.92));
+      box-shadow: var(--shadow);
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(245, 200, 66, 0.16), transparent);
+    }
+
+    .card-title {
+      font-size: 19px;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1.7;
+    }
+
+    .question-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-light);
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1.8;
+    }
+
+    .choice-grid,
+    .signal-grid,
+    .thought-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .signal-grid,
+    .thought-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .choice-chip {
+      position: relative;
+      display: inline-flex;
+      cursor: pointer;
+    }
+
+    .choice-chip input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .choice-chip span {
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      text-align: center;
+      transition: border-color .2s, background .2s, color .2s, transform .2s;
+    }
+
+    .choice-chip:hover span {
+      transform: translateY(-1px);
+      border-color: rgba(78, 205, 196, 0.24);
+    }
+
+    .choice-chip input:checked + span {
+      border-color: rgba(78, 205, 196, 0.34);
+      background: rgba(78, 205, 196, 0.14);
+      color: var(--text-light);
+      box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.08);
+    }
+
+    .field {
+      margin-top: 14px;
+    }
+
+    .field small {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+      font-size: 12.5px;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(0, 0, 0, 0.26);
+      color: var(--text-light);
+      font-family: "Cairo", sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    input[type="number"]:focus,
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: rgba(78, 205, 196, 0.45);
+      box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+    }
+
+    textarea {
+      min-height: 105px;
+      resize: vertical;
+      line-height: 1.8;
+    }
+
+    .result-box {
+      border-radius: 22px;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-box.low {
+      background:
+        radial-gradient(circle at top right, rgba(52, 211, 153, 0.12), transparent 34%),
+        linear-gradient(180deg, rgba(15, 29, 24, 0.94), rgba(10, 20, 18, 0.92));
+      border-color: rgba(52, 211, 153, 0.2);
+    }
+
+    .result-box.medium {
+      background:
+        radial-gradient(circle at top right, rgba(245, 200, 66, 0.12), transparent 34%),
+        linear-gradient(180deg, rgba(30, 27, 15, 0.94), rgba(19, 17, 10, 0.92));
+      border-color: rgba(245, 200, 66, 0.2);
+    }
+
+    .result-box.high {
+      background:
+        radial-gradient(circle at top right, rgba(248, 113, 113, 0.12), transparent 34%),
+        linear-gradient(180deg, rgba(29, 16, 18, 0.94), rgba(18, 10, 12, 0.92));
+      border-color: rgba(248, 113, 113, 0.2);
+    }
+
+    .result-pill {
+      width: fit-content;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .result-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--text-light);
+    }
+
+    .result-copy,
+    .result-list,
+    .note {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      line-height: 1.8;
+    }
+
+    .result-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric-card {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .metric-label {
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      color: var(--text-light);
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    button {
+      font-family: "Cairo", sans-serif;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+      padding: 11px 18px;
+      border-radius: 13px;
+      cursor: pointer;
+      font-weight: 900;
+      font-size: 13.5px;
+      transition: transform .15s, border-color .2s, background .2s;
+    }
+
+    button:hover { transform: translateY(-2px); }
+
+    button.primary {
+      background: rgba(78, 205, 196, 0.18);
+      color: var(--primary);
+      border-color: rgba(78, 205, 196, 0.32);
+    }
+
+    button.ghost {
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .report-box {
+      width: 100%;
+      min-height: 360px;
+      white-space: pre-wrap;
+      line-height: 1.8;
+      font-size: 13px;
+      font-family: "Courier New", monospace;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 16px;
+      color: var(--text-light);
+      resize: vertical;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(10, 13, 18, 0.92);
+      border: 1px solid rgba(78, 205, 196, 0.2);
+      color: var(--text-light);
+      padding: 11px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+      z-index: 1000;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 860px) {
+      .wrap {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero,
+      .card {
+        padding: 18px 16px;
+      }
+
+      .signal-grid,
+      .thought-grid,
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="back-bar">
+    <a href="index.html?resume=1&v=20260718shell2" class="back-link">← العودة إلى الصفحة الرئيسية</a>
+  </div>
+
+  <header class="hero">
+    <div class="hero-kicker">فحص أسبوعي هادئ</div>
+    <h1>مرآة الأسبوع</h1>
+    <p>هذا الفحص ليس للحكم على نفسك، بل لرؤية اتجاه أسبوعك بوضوح: أين كنت ثابتًا، وأين بدأ الخطر يقترب دون ضجيج.</p>
+    <div class="hero-pills">
+      <span class="pill">أسبوعي</span>
+      <span class="pill">صريح</span>
+      <span class="pill">وقائي</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="main-stack">
+      <section class="card">
+        <div class="card-title">1️⃣ كيف كان أسبوعك بشكل عام؟</div>
+        <div class="choice-grid">
+          <label class="choice-chip"><input type="radio" name="weekQuality" value="مستقر جدًا"><span>مستقر جدًا</span></label>
+          <label class="choice-chip"><input type="radio" name="weekQuality" value="جيد"><span>جيد</span></label>
+          <label class="choice-chip"><input type="radio" name="weekQuality" value="متوسط"><span>متوسط</span></label>
+          <label class="choice-chip"><input type="radio" name="weekQuality" value="صعب"><span>صعب</span></label>
+          <label class="choice-chip"><input type="radio" name="weekQuality" value="صعب جدًا"><span>صعب جدًا</span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">2️⃣ كيف كانت علاقتك بالتعافي هذا الأسبوع؟</div>
+        <div class="choice-grid">
+          <label class="choice-chip"><input type="radio" name="recoveryRelation" value="كنت واعيًا ومنتبهًا"><span>كنت واعيًا ومنتبهًا</span></label>
+          <label class="choice-chip"><input type="radio" name="recoveryRelation" value="كنت مستقرًا لكن قليل التركيز"><span>كنت مستقرًا لكن قليل التركيز</span></label>
+          <label class="choice-chip"><input type="radio" name="recoveryRelation" value="بدأت أتساهل قليلًا"><span>بدأت أتساهل قليلًا</span></label>
+          <label class="choice-chip"><input type="radio" name="recoveryRelation" value="أشعر أني أفقد البوصلة"><span>أشعر أني أفقد البوصلة</span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">3️⃣ هل لاحظت أي إشارات خطر هذا الأسبوع؟</div>
+        <div class="signal-grid">
+          <label class="choice-chip"><input type="checkbox" name="signals" value="سهر زائد"><span>سهر زائد</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="عزلة"><span>عزلة</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="ضغط نفسي"><span>ضغط نفسي</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="فراغ"><span>فراغ</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="تصفح عشوائي"><span>تصفح عشوائي</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="تساهل بالمحفزات"><span>تساهل بالمحفزات</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="ترك الروتين"><span>ترك الروتين</span></label>
+          <label class="choice-chip"><input type="checkbox" name="signals" value="ضعف التواصل مع الداعمين"><span>ضعف التواصل مع الداعمين</span></label>
+          <label class="choice-chip"><input type="checkbox" id="signalNone" name="signals" value="لا يوجد"><span>لا يوجد</span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="cautionLevel">4️⃣ من 1 إلى 10، كم كان مستوى الحذر لديك هذا الأسبوع؟</label>
+        <div class="field">
+          <input id="cautionLevel" type="number" min="1" max="10" inputmode="numeric" placeholder="7 /10">
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="urgeLevel">5️⃣ من 1 إلى 10، كم كان مستوى الرغبة لديك هذا الأسبوع؟</label>
+        <div class="field">
+          <input id="urgeLevel" type="number" min="1" max="10" inputmode="numeric" placeholder="4 /10">
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">6️⃣ هل ظهرت أفكار مثل:</div>
+        <div class="thought-grid">
+          <label class="choice-chip"><input type="checkbox" name="thoughts" value="أنا خلاص بقيت قوي"><span>أنا خلاص بقيت قوي</span></label>
+          <label class="choice-chip"><input type="checkbox" name="thoughts" value="مش محتاج أطبق الخطة"><span>مش محتاج أطبق الخطة</span></label>
+          <label class="choice-chip"><input type="checkbox" name="thoughts" value="مش مشكلة شوية تساهل"><span>مش مشكلة شوية تساهل</span></label>
+          <label class="choice-chip"><input type="checkbox" name="thoughts" value="مش لازم أتابع التعافي زي الأول"><span>مش لازم أتابع التعافي زي الأول</span></label>
+          <label class="choice-chip"><input type="checkbox" id="thoughtNone" name="thoughts" value="لم تظهر هذه الأفكار"><span>لم تظهر هذه الأفكار</span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="helpedMost">7️⃣ ما أكثر شيء دعم تعافيك هذا الأسبوع؟</label>
+        <div class="field">
+          <textarea id="helpedMost" placeholder="اكتب الشيء الذي دعمك بوضوح هذا الأسبوع..."></textarea>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="threatenedMost">8️⃣ ما أكثر شيء هدد تعافيك هذا الأسبوع؟</label>
+        <div class="field">
+          <textarea id="threatenedMost" placeholder="اكتب الشيء الذي هددك أكثر من غيره..."></textarea>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">9️⃣ هل استخدمت خطة الهروب عندما احتجتها؟</div>
+        <div class="choice-grid">
+          <label class="choice-chip"><input type="radio" name="escapePlan" value="نعم"><span>نعم</span></label>
+          <label class="choice-chip"><input type="radio" name="escapePlan" value="أحيانًا"><span>أحيانًا</span></label>
+          <label class="choice-chip"><input type="radio" name="escapePlan" value="لا"><span>لا</span></label>
+          <label class="choice-chip"><input type="radio" name="escapePlan" value="لم أحتجها"><span>لم أحتجها</span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">🔟 هل ما زلت تتعلم عن التعافي؟</div>
+        <div class="choice-grid">
+          <label class="choice-chip"><input type="radio" name="learning" value="نعم، بشكل منتظم"><span>نعم، بشكل منتظم</span></label>
+          <label class="choice-chip"><input type="radio" name="learning" value="أحيانًا"><span>أحيانًا</span></label>
+          <label class="choice-chip"><input type="radio" name="learning" value="نادرًا"><span>نادرًا</span></label>
+          <label class="choice-chip"><input type="radio" name="learning" value="توقفت تقريبًا"><span>توقفت تقريبًا</span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="allahHelp">1️⃣1️⃣ ما الشيء الذي تشعر أن الله وفقك فيه هذا الأسبوع؟</label>
+        <div class="field">
+          <textarea id="allahHelp" placeholder="اكتب ما ظهر لك من توفيق الله خلال الأسبوع..."></textarea>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="improveNext">1️⃣2️⃣ ما الشيء الذي تحتاج تحسينه الأسبوع القادم؟</label>
+        <div class="field">
+          <textarea id="improveNext" placeholder="اكتب أهم جانب يحتاج تعديلًا أو تقوية..."></textarea>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="preventionStep">1️⃣3️⃣ ما خطوة الوقاية الوحيدة التي ستلتزم بها الأسبوع القادم؟</label>
+        <div class="field">
+          <textarea id="preventionStep" placeholder="اكتب خطوة واحدة واضحة ستلتزم بها..."></textarea>
+        </div>
+      </section>
+    </div>
+
+    <aside class="side-stack">
+      <section class="card">
+        <div class="card-title">📊 تقييم مرآة الأسبوع</div>
+        <div id="resultBox" class="result-box low">
+          <div id="resultPill" class="result-pill">وضع مستقر</div>
+          <div id="resultTitle" class="result-title">🟢 وضعك مستقر</div>
+          <div id="resultCopy" class="result-copy">استمر ولا تغتر بنفسك.</div>
+          <div id="resultList" class="result-list"></div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric-card">
+            <div class="metric-label">إشارات الخطر</div>
+            <div id="dangerCount" class="metric-value">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">الحالة الحالية</div>
+            <div id="dangerLevel" class="metric-value">🟢</div>
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="copyReport">نسخ التقرير</button>
+          <button class="ghost" id="resetForm">إعادة التصفير</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">📝 التقرير الجاهز</div>
+        <textarea id="reportBox" class="report-box" readonly></textarea>
+      </section>
+
+      <section class="card">
+        <div class="card-title">🤍 تذكير أسبوعي</div>
+        <div class="note">
+          الثبات لا يعني أنك لم تعد تحتاج إلى الحذر. كثير من الانتكاسات لا تبدأ برغبة قوية، بل تبدأ بتراخٍ صغير لم ننتبه له. حافظ على بوصلة تعافيك، ولا تعتمد على عدد الأيام وحده.
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast">تم ✅</div>
+
+  <script>
+  (function () {
+    const STORAGE_KEY = "wa3i_weekly_mirror_state_v1";
+    const $ = (q) => document.querySelector(q);
+    const $$ = (q) => Array.from(document.querySelectorAll(q));
+
+    const defaultState = {
+      weekQuality: "",
+      recoveryRelation: "",
+      signals: [],
+      cautionLevel: "",
+      urgeLevel: "",
+      thoughts: [],
+      helpedMost: "",
+      threatenedMost: "",
+      escapePlan: "",
+      learning: "",
+      allahHelp: "",
+      improveNext: "",
+      preventionStep: ""
+    };
+
+    const loadState = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { ...defaultState };
+        const parsed = JSON.parse(raw);
+        return {
+          ...defaultState,
+          ...parsed,
+          signals: Array.isArray(parsed?.signals) ? parsed.signals : [],
+          thoughts: Array.isArray(parsed?.thoughts) ? parsed.thoughts : []
+        };
+      } catch (error) {
+        return { ...defaultState };
+      }
+    };
+
+    const state = loadState();
+
+    const toast = (msg) => {
+      const t = $("#toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1500);
+    };
+
+    const saveState = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    };
+
+    const escapeHtml = (str) => String(str ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+    const formatArabicNumber = (value) => new Intl.NumberFormat("ar-SA").format(value);
+
+    const getDangerSignals = () => state.signals.filter((item) => item !== "لا يوجد");
+    const getThoughts = () => state.thoughts.filter((item) => item !== "لم تظهر هذه الأفكار");
+
+    const evaluate = () => {
+      const count = getDangerSignals().length;
+      if (count >= 6) {
+        return {
+          level: "high",
+          emoji: "🔴",
+          pill: "قريب من الخطر",
+          title: "🔴 أنت قريب من منطقة الخطر",
+          copy: "مطلوب تدخل سريع قبل أن يتحول التراخي إلى سقوط.",
+          actions: [
+            "اخرج من العزلة.",
+            "أغلق المحفزات.",
+            "عد إلى الروتين.",
+            "طبق خطة الهروب.",
+            "تواصل مع شخص داعم."
+          ]
+        };
+      }
+      if (count >= 3) {
+        return {
+          level: "medium",
+          emoji: "🟡",
+          pill: "يحتاج انتباهًا",
+          title: "🟡 بدأت تدخل منطقة تحتاج انتباهًا",
+          copy: "راجع روتينك وارفع مستوى الحذر هذا الأسبوع القادم.",
+          actions: [
+            "راجع روتين النوم والعزلة.",
+            "خفف التساهل مع المحفزات.",
+            "ارجع إلى أساسيات خطتك بقوة."
+          ]
+        };
+      }
+      return {
+        level: "low",
+        emoji: "🟢",
+        pill: "وضع مستقر",
+        title: "🟢 وضعك مستقر",
+        copy: "استمر ولا تغتر بنفسك.",
+        actions: [
+          "حافظ على الوعي الحالي.",
+          "لا تهمل الإشارات الصغيرة.",
+          "استمر في الخطة بهدوء وثبات."
+        ]
+      };
+    };
+
+    const buildReport = () => {
+      const result = evaluate();
+      const signals = getDangerSignals();
+      const thoughts = getThoughts();
+
+      return `🪞 مرآة الأسبوع
+
+1️⃣ كيف كان أسبوعك بشكل عام؟
+${state.weekQuality || "غير محدد"}
+
+2️⃣ كيف كانت علاقتك بالتعافي هذا الأسبوع؟
+${state.recoveryRelation || "غير محدد"}
+
+3️⃣ إشارات الخطر هذا الأسبوع:
+${signals.length ? signals.map((item) => `• ${item}`).join("\n") : "• لا يوجد"}
+
+4️⃣ مستوى الحذر:
+${state.cautionLevel || "—"} /10
+
+5️⃣ مستوى الرغبة:
+${state.urgeLevel || "—"} /10
+
+6️⃣ هل ظهرت أفكار مقلقة؟
+${thoughts.length ? thoughts.map((item) => `• ${item}`).join("\n") : "• لم تظهر هذه الأفكار"}
+
+7️⃣ ما أكثر شيء دعم تعافيك هذا الأسبوع؟
+${state.helpedMost || "—"}
+
+8️⃣ ما أكثر شيء هدد تعافيك هذا الأسبوع؟
+${state.threatenedMost || "—"}
+
+9️⃣ هل استخدمت خطة الهروب عندما احتجتها؟
+${state.escapePlan || "غير محدد"}
+
+🔟 هل ما زلت تتعلم عن التعافي؟
+${state.learning || "غير محدد"}
+
+1️⃣1️⃣ ما الشيء الذي تشعر أن الله وفقك فيه هذا الأسبوع؟
+${state.allahHelp || "—"}
+
+1️⃣2️⃣ ما الشيء الذي تحتاج تحسينه الأسبوع القادم؟
+${state.improveNext || "—"}
+
+1️⃣3️⃣ ما خطوة الوقاية الوحيدة التي ستلتزم بها الأسبوع القادم؟
+${state.preventionStep || "—"}
+
+📊 تقييم مرآة الأسبوع
+عدد إشارات الخطر: ${formatArabicNumber(signals.length)}
+${result.title}
+${result.copy}
+
+${result.actions.map((item) => `• ${item}`).join("\n")}
+
+🤍 تذكير أسبوعي
+الثبات لا يعني أنك لم تعد تحتاج إلى الحذر.
+كثير من الانتكاسات لا تبدأ برغبة قوية...
+بل تبدأ بتراخٍ صغير لم ننتبه له.
+حافظ على بوصلة تعافيك، ولا تعتمد على عدد الأيام وحده.`;
+    };
+
+    const syncFormFromState = () => {
+      $$('input[name="weekQuality"]').forEach((input) => {
+        input.checked = input.value === state.weekQuality;
+      });
+      $$('input[name="recoveryRelation"]').forEach((input) => {
+        input.checked = input.value === state.recoveryRelation;
+      });
+      $$('input[name="signals"]').forEach((input) => {
+        input.checked = state.signals.includes(input.value);
+      });
+      $$('input[name="thoughts"]').forEach((input) => {
+        input.checked = state.thoughts.includes(input.value);
+      });
+      $$('input[name="escapePlan"]').forEach((input) => {
+        input.checked = input.value === state.escapePlan;
+      });
+      $$('input[name="learning"]').forEach((input) => {
+        input.checked = input.value === state.learning;
+      });
+
+      $("#cautionLevel").value = state.cautionLevel;
+      $("#urgeLevel").value = state.urgeLevel;
+      $("#helpedMost").value = state.helpedMost;
+      $("#threatenedMost").value = state.threatenedMost;
+      $("#allahHelp").value = state.allahHelp;
+      $("#improveNext").value = state.improveNext;
+      $("#preventionStep").value = state.preventionStep;
+    };
+
+    const updateView = () => {
+      const result = evaluate();
+      const dangerCount = getDangerSignals().length;
+      const resultBox = $("#resultBox");
+
+      resultBox.className = `result-box ${result.level}`;
+      $("#resultPill").textContent = result.pill;
+      $("#resultTitle").textContent = result.title;
+      $("#resultCopy").textContent = result.copy;
+      $("#resultList").innerHTML = result.actions.map((item) => `<div>• ${escapeHtml(item)}</div>`).join("");
+      $("#dangerCount").textContent = formatArabicNumber(dangerCount);
+      $("#dangerLevel").textContent = result.emoji;
+      $("#reportBox").value = buildReport();
+    };
+
+    const setSignals = (nextSignals) => {
+      state.signals = nextSignals;
+      saveState();
+      updateView();
+    };
+
+    const setThoughts = (nextThoughts) => {
+      state.thoughts = nextThoughts;
+      saveState();
+      updateView();
+    };
+
+    const bindRadioGroup = (name, key) => {
+      $$(`input[name="${name}"]`).forEach((input) => {
+        input.addEventListener("change", () => {
+          state[key] = input.value;
+          saveState();
+          updateView();
+        });
+      });
+    };
+
+    bindRadioGroup("weekQuality", "weekQuality");
+    bindRadioGroup("recoveryRelation", "recoveryRelation");
+    bindRadioGroup("escapePlan", "escapePlan");
+    bindRadioGroup("learning", "learning");
+
+    const signalInputs = $$('input[name="signals"]');
+    const signalNone = $("#signalNone");
+    signalInputs.forEach((input) => {
+      input.addEventListener("change", () => {
+        if (input.value === "لا يوجد" && input.checked) {
+          signalInputs.forEach((item) => {
+            if (item.value !== "لا يوجد") item.checked = false;
+          });
+          setSignals(["لا يوجد"]);
+          return;
+        }
+        if (input.value !== "لا يوجد" && input.checked && signalNone.checked) {
+          signalNone.checked = false;
+        }
+        setSignals(signalInputs.filter((item) => item.checked).map((item) => item.value));
+      });
+    });
+
+    const thoughtInputs = $$('input[name="thoughts"]');
+    const thoughtNone = $("#thoughtNone");
+    thoughtInputs.forEach((input) => {
+      input.addEventListener("change", () => {
+        if (input.value === "لم تظهر هذه الأفكار" && input.checked) {
+          thoughtInputs.forEach((item) => {
+            if (item.value !== "لم تظهر هذه الأفكار") item.checked = false;
+          });
+          setThoughts(["لم تظهر هذه الأفكار"]);
+          return;
+        }
+        if (input.value !== "لم تظهر هذه الأفكار" && input.checked && thoughtNone.checked) {
+          thoughtNone.checked = false;
+        }
+        setThoughts(thoughtInputs.filter((item) => item.checked).map((item) => item.value));
+      });
+    });
+
+    [
+      ["#cautionLevel", "cautionLevel"],
+      ["#urgeLevel", "urgeLevel"],
+      ["#helpedMost", "helpedMost"],
+      ["#threatenedMost", "threatenedMost"],
+      ["#allahHelp", "allahHelp"],
+      ["#improveNext", "improveNext"],
+      ["#preventionStep", "preventionStep"]
+    ].forEach(([selector, key]) => {
+      $(selector).addEventListener("input", (event) => {
+        state[key] = event.target.value;
+        saveState();
+        updateView();
+      });
+    });
+
+    $("#copyReport").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText($("#reportBox").value);
+        toast("تم نسخ مرآة الأسبوع ✅");
+      } catch (error) {
+        const temp = document.createElement("textarea");
+        temp.value = $("#reportBox").value;
+        temp.style.position = "fixed";
+        temp.style.opacity = "0";
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        temp.remove();
+        toast("تم نسخ مرآة الأسبوع ✅");
+      }
+    });
+
+    $("#resetForm").addEventListener("click", () => {
+      if (!confirm("هل تريد تصفير نموذج مرآة الأسبوع من هذا الجهاز؟")) return;
+      Object.assign(state, JSON.parse(JSON.stringify(defaultState)));
+      saveState();
+      syncFormFromState();
+      updateView();
+      toast("تم التصفير ✅");
+    });
+
+    syncFormFromState();
+    updateView();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>خطة التعافي — قبيلة الموحدون</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico?v=20260718shell2" type="image/x-icon" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260718shell2" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260718shell3" />
+  <link rel="manifest" href="site.webmanifest?v=20260718shell3" />
+  <style>
+    :root {
+      --primary: #4ecdc4;
+      --gold: #f5c842;
+      --dark-bg: #0a0d12;
+      --dark-card: #111520;
+      --dark-card2: #161b26;
+      --text-light: #eaecf0;
+      --text-muted: #8892a4;
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(245, 200, 66, 0.2);
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.42);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Cairo", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(78, 205, 196, 0.06), transparent 26%),
+        radial-gradient(circle at top left, rgba(245, 200, 66, 0.06), transparent 22%),
+        linear-gradient(180deg, #081018 0%, #0b1320 48%, #0c1422 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      line-height: 1.95;
+      padding-bottom: 80px;
+    }
+
+    .back-bar {
+      background: rgba(10, 13, 18, 0.92);
+      backdrop-filter: blur(14px);
+      padding: 12px 24px;
+      border-bottom: 1px solid rgba(78, 205, 196, 0.08);
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 700;
+    }
+
+    .back-link:hover { color: var(--primary); }
+
+    .hero {
+      width: min(1100px, calc(100% - 28px));
+      margin: 22px auto 0;
+      padding: 36px 26px;
+      border-radius: 30px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top right, rgba(245, 200, 66, 0.1), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(78, 205, 196, 0.08), transparent 30%),
+        linear-gradient(180deg, rgba(16, 24, 38, 0.96), rgba(9, 14, 24, 0.94));
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "خطة";
+      position: absolute;
+      inset-inline-start: 24px;
+      top: 10px;
+      font-size: 84px;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.03);
+      pointer-events: none;
+    }
+
+    .hero-kicker {
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      margin-top: 8px;
+      font-family: "Amiri", serif;
+      font-size: clamp(34px, 5vw, 46px);
+      color: var(--text-light);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      margin-top: 10px;
+      max-width: 760px;
+      color: var(--text-muted);
+      font-size: 15px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-pills {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+      font-size: 12.5px;
+      font-weight: 800;
+    }
+
+    .layout {
+      width: min(1100px, calc(100% - 28px));
+      margin: 18px auto 0;
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(16, 24, 38, 0.94), rgba(10, 16, 27, 0.92));
+      box-shadow: var(--shadow);
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(245, 200, 66, 0.16), transparent);
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1.7;
+    }
+
+    .card-sub {
+      margin-top: 8px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .rich-list,
+    .plain-list {
+      margin-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .rich-item {
+      padding: 14px 15px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .rich-item strong {
+      display: block;
+      color: var(--text-light);
+      font-size: 14.5px;
+      margin-bottom: 4px;
+    }
+
+    .rich-item span,
+    .plain-list li {
+      color: var(--text-muted);
+      font-size: 13.8px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      margin-bottom: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-light);
+    }
+
+    .section-badge.gold {
+      color: var(--gold);
+      border-color: rgba(245, 200, 66, 0.18);
+      background: rgba(245, 200, 66, 0.08);
+    }
+
+    .section-badge.primary {
+      color: var(--primary);
+      border-color: rgba(78, 205, 196, 0.18);
+      background: rgba(78, 205, 196, 0.08);
+    }
+
+    .mini-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .mini-card {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .mini-card h3 {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--text-light);
+      margin-bottom: 10px;
+    }
+
+    .mini-card ul {
+      display: grid;
+      gap: 7px;
+      padding-inline-start: 18px;
+      color: var(--text-muted);
+      font-size: 13.5px;
+    }
+
+    .callout {
+      border-radius: 22px;
+      border: 1px solid var(--line-strong);
+      background:
+        radial-gradient(circle at top right, rgba(245, 200, 66, 0.08), transparent 34%),
+        linear-gradient(180deg, rgba(26, 23, 15, 0.94), rgba(14, 13, 10, 0.92));
+      padding: 18px;
+    }
+
+    .callout-title {
+      color: var(--gold);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .callout p {
+      margin-top: 8px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 760px) {
+      .two-col,
+      .mini-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding: 28px 18px;
+      }
+
+      .card {
+        padding: 18px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="back-bar">
+    <a href="index.html?resume=1&v=20260718shell2" class="back-link">← العودة إلى الصفحة الرئيسية</a>
+  </div>
+
+  <header class="hero">
+    <div class="hero-kicker">دليل عملي</div>
+    <h1>خطة التعافي</h1>
+    <p>
+      الخطة ليست كلامًا جميلًا فقط، بل هي العمود الفقري لتعافيك، والمرشد الذي ترجع إليه عندما يضعف صوت العقل وتعلو لحظة الاندفاع.
+    </p>
+    <div class="hero-pills">
+      <span class="pill">بسيطة</span>
+      <span class="pill">واقعية</span>
+      <span class="pill">قابلة للتنفيذ</span>
+      <span class="pill">متدرجة</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="card">
+      <div class="card-title">💡 مقدمة</div>
+      <div class="card-sub">
+        كرة القدم تشبه إلى حد كبير رحلة التعافي من إدمان الإباحية. الفوز بالبطولة يشبه الوصول إلى التعافي، والهدف الأول هو مرور يوم واحد دون الإدمان، وكل عادة جديدة أو هواية نافعة تضيفها إلى يومك تزيد فرصة فوزك في هذه الرحلة.
+      </div>
+      <div class="rich-list">
+        <div class="rich-item">
+          <strong>العادات الجديدة هي أهدافك</strong>
+          <span>كلما أحرزت أهدافًا صغيرة ومتكررة، زادت فرصة الثبات والفوز على المدى الطويل.</span>
+        </div>
+        <div class="rich-item">
+          <strong>الخطة هي الموجّه</strong>
+          <span>من هنا تأتي أهمية الخطة، لأنها تحول النية العامة إلى خطوات محددة وواضحة.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">🔘 ما أهمية خطة التعافي؟</div>
+      <div class="rich-list">
+        <div class="rich-item">
+          <strong>العمود الفقري للتعافي</strong>
+          <span>خطة التعافي أشبه ما يكون بالعمود الفقري لتعافيك، فلا تعافٍ حقيقي بلا خطة.</span>
+        </div>
+        <div class="rich-item">
+          <strong>المرشد عند فقد السيطرة</strong>
+          <span>الخطة هي المرشد الأول للمدمن المحارب عندما يضعف أو يفقد توازنه.</span>
+        </div>
+        <div class="rich-item">
+          <strong>صوت العقل وقت الخطر</strong>
+          <span>هي صوت الدماغ الفكري الذي قد لا تسمعه إلا بعد وقوع الكارثة، لذلك يجب كتابته مسبقًا.</span>
+        </div>
+        <div class="rich-item">
+          <strong>وسيلة استعادة السيطرة</strong>
+          <span>خطة التعافي وسيلة سيطرة على النفس من جديد، ومعيار لمعرفة تقدمك في الطريق.</span>
+        </div>
+        <div class="rich-item">
+          <strong>بديل للدوبامين القديم</strong>
+          <span>الالتزام بالخطة يمدك بدوبامين بديل، ويخفف من آثار أعراض الانسحاب التي تعد من أهم أسباب العودة للإدمان.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="two-col">
+      <section class="card">
+        <div class="section-badge gold">الورقة الأولى</div>
+        <div class="card-title">كيف أصنعها؟</div>
+        <div class="plain-list">
+          <li>1. المشاكل</li>
+          <li>2. الأضرار</li>
+          <li>3. الإيجابيات</li>
+          <li>4. خطة هروب</li>
+          <li>5. العلامات التحذيرية</li>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-badge primary">الورقة الثانية</div>
+        <div class="card-title">الجوانب الأربعة</div>
+        <div class="plain-list">
+          <li>1. الجانب الآخروي</li>
+          <li>2. الجانب العقلي</li>
+          <li>3. الجانب البدني</li>
+          <li>4. الجانب الاجتماعي</li>
+        </div>
+      </section>
+    </section>
+
+    <section class="card">
+      <div class="card-title">🔘 شرح الورقة الأولى</div>
+      <div class="rich-list">
+        <div class="rich-item">
+          <strong>المشاكل</strong>
+          <span>المشاكل هي إدمان الإباحية أو العادة أو كلاهما. تحديد المشكلة والاعتراف بها هو نصف التعافي.</span>
+        </div>
+        <div class="rich-item">
+          <strong>الأضرار</strong>
+          <span>لا بد من معرفة أضرار السلوك الذي تريد تركه حتى تقنع نفسك بأهمية البداية. مراجعة الأضرار وقت الضعف والملل أمر محفز جدًا للعقل.</span>
+        </div>
+        <div class="rich-item">
+          <strong>الإيجابيات أو ثمرات الإقلاع</strong>
+          <span>كتابة فوائد التعافي تزيد الشغف بالرحلة، وتمنحك حماسًا مستمرًا، وتساعدك على رؤية أوضح للنسخة الجديدة من نفسك.</span>
+        </div>
+        <div class="rich-item">
+          <strong>العلامات التحذيرية</strong>
+          <span>هي جرس الخطر ومخرج الطوارئ وسفينة النجاة. هي المؤشرات والأفعال التي تنذر باقتراب الانتكاس، ومنعها يسهم في إنقاذك والانتصار.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">⚫️ أمثلة على العلامات التحذيرية</div>
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h3>سلوكيات ومواقف</h3>
+          <ul>
+            <li>الذهاب إلى الكمبيوتر وأنا وحدي.</li>
+            <li>الاندماج في نشاطات على الإنترنت بلا أهمية.</li>
+            <li>البحث في التلفاز عن شيء مثير.</li>
+            <li>قراءة رواية رومانسية مثيرة.</li>
+            <li>عدم حل مشاكلي مع الآخرين.</li>
+            <li>الكذب على نفسي.</li>
+            <li>العزلة.</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h3>مؤشرات داخلية</h3>
+          <ul>
+            <li>العمل تحت ضغط كبير.</li>
+            <li>عدم النوم الكافي.</li>
+            <li>عدم ممارسة الرياضة.</li>
+            <li>التهرب من الأشخاص والأصدقاء الصالحين.</li>
+            <li>تخيلات جنسية كثيفة وعدم قطعها فورًا.</li>
+            <li>الشعور بالغضب أو الضياع أو التشتت.</li>
+            <li>الفراغ والتفكير في علاقات محرمة.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">🔘 شرح الورقة الثانية</div>
+      <div class="rich-list">
+        <div class="rich-item">
+          <strong>الأعمدة الأربعة</strong>
+          <span>الجانب الروحي، والعقلي، والبدني، والاجتماعي. لا استغناء عن أي جانب منها، وأي تقصير في واحد منها يؤثر في البناء كله.</span>
+        </div>
+        <div class="rich-item">
+          <strong>المكافأة مهمة</strong>
+          <span>كافئ نفسك بعد إنجاز عاداتك، لأن استمرار المحفز والمكافأة يقوي بناء العادة.</span>
+        </div>
+        <div class="rich-item">
+          <strong>التدرج لا المثالية</strong>
+          <span>في البداية لا تضع عادات كثيرة أو كبيرة. ابدأ بالقليل حتى لا تمل أو تستثقل الأمر، ثم زد الكمية والعدد مع الوقت.</span>
+        </div>
+        <div class="rich-item">
+          <strong>الاستمرار أهم من الحماس</strong>
+          <span>تقريبًا بناء أي عادة يحتاج إلى 21 يومًا مع الاستمرار، بينما هدم العادة القديمة يحتاج مدة أطول تقارب 90 يومًا.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">💡 أمثلة على الجوانب الأربعة</div>
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h3>الجانب الديني (الآخروي)</h3>
+          <ul>
+            <li>الصلوات الخمس.</li>
+            <li>قراءة صفحة قرآن.</li>
+            <li>صلاة الوتر ركعة مع الدعاء بالتعافي.</li>
+            <li>الذكر.</li>
+            <li>غض البصر.</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h3>الجانب البدني</h3>
+          <ul>
+            <li>شرب لترين من الماء.</li>
+            <li>10 ضغط و10 بطن.</li>
+            <li>تناول أغذية مفيدة مثل الفواكه والخضار.</li>
+            <li>تنظيف الأسنان والاغتسال.</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h3>الجانب العقلي</h3>
+          <ul>
+            <li>سماع درس تعافي صوتي أو قراءة يومية.</li>
+            <li>المشاركة في جروب الدعم في واعي.</li>
+            <li>ممارسة هواية وتنميتها.</li>
+            <li>تقنية التعرض ومنع الاستجابة.</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h3>الجانب الاجتماعي</h3>
+          <ul>
+            <li>اجتناب الوحدة والعزلة قدر الإمكان.</li>
+            <li>بر الوالدين والتواصل مع أفراد العائلة.</li>
+            <li>المداومة على التواصل مع الأقارب والأصدقاء الصالحين.</li>
+            <li>الأعمال التطوعية ومساعدة الآخرين.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">📌 تذكيرات عملية مهمة</div>
+      <div class="plain-list">
+        <li>هذه العادات تصلح للبدء بها في أيامك الأولى، ولا تنس مكافأة نفسك على الإنجاز.</li>
+        <li>بعد مرور الوقت ابدأ بزيادة الكمية والعدد تدريجيًا، مثل زيادة صفحات القرآن أو التمارين أو الذكر.</li>
+        <li>لا تصنع خطة مثالية وإلا ستنتكس، بل اصنع خطة بسيطة وأنجزها لأنها ستكون مصدر الدوبامين لك.</li>
+        <li>لا تتكاسل عن تنفيذ العادات، فالتكاسل عنها من أهم مسببات الانتكاس.</li>
+        <li>مع مرور الوقت ستشعر أن تنفيذها صار أسهل من الأيام الأولى، ثم تصبح تلقائية بإذن الله.</li>
+      </div>
+    </section>
+
+    <section class="callout">
+      <div class="callout-title">⚫️ الآن حان دورك</div>
+      <p>
+        اصنع خطتك البسيطة بنفسك، وابدأ بالقليل الذي تستطيع الاستمرار عليه. النجاح هنا ليس في كثرة البنود، بل في وضوحها وصدقك في تنفيذها.
+      </p>
+      <p>
+        <strong>ملاحظة:</strong> خطة الهروب تحتاج تفصيلاً منفصلاً.
+      </p>
+    </section>
+
+    <div class="footer-note">الثبات أهم من الزخم، والبسيط المنجز خير من المثالي المهجور.</div>
+  </main>
+</body>
+</html>

@@ -18,6 +18,33 @@ function closeAllModals() {
 
 let PENDING_ADMIN_USER = null;
 let ADMIN_MODAL_WIRED = false;
+let SWITCH_USER_WIRED = false;
+let APP_POST_LOGIN_BOOTSTRAP_DONE = false;
+
+function warmFirebaseSoon() {
+  if (typeof window.scheduleFirebaseWarmup === "function") {
+    window.scheduleFirebaseWarmup();
+    return;
+  }
+
+  if (typeof window.ensureFirebase === "function") {
+    window.setTimeout(() => {
+      window.ensureFirebase().catch(() => {});
+    }, 220);
+  }
+}
+
+function bootstrapPostLoginSystems() {
+  if (APP_POST_LOGIN_BOOTSTRAP_DONE) return;
+  APP_POST_LOGIN_BOOTSTRAP_DONE = true;
+
+  if (typeof startSharedStreaksListener === "function") startSharedStreaksListener();
+  if (typeof initMemberStatusSystem === "function") initMemberStatusSystem();
+  if (typeof setupQaPage === "function") setupQaPage();
+  if (typeof setupRecoveryLibrary === "function") setupRecoveryLibrary();
+  if (typeof setupRescuePlanModal === "function") setupRescuePlanModal();
+  if (typeof setupRescueCenterModal === "function") setupRescueCenterModal();
+}
 
 function isAmjadMember(user) {
   const id = String(user?.id || "").trim();
@@ -31,6 +58,7 @@ function isPrivilegedMember(user) {
 
 function openAdminLoginModal(user) {
   PENDING_ADMIN_USER = user;
+  warmFirebaseSoon();
 
   const modal = qs("#adminLoginModal");
   const title = qs("#adminLoginTitle");
@@ -141,6 +169,9 @@ function wireAdminLoginModal() {
 }
 
 function wireSwitchUserButton() {
+  if (SWITCH_USER_WIRED) return;
+  SWITCH_USER_WIRED = true;
+
   const btn = qs("#switchUserBtn");
   if (!btn) return;
 
@@ -162,7 +193,11 @@ function wireSwitchUserButton() {
 }
 
 function startApp() {
+  warmFirebaseSoon();
   restoreLocalAdminAccessForCurrentUser();
+  if (typeof initMemberDirectorySystem === "function") {
+    initMemberDirectorySystem({ activateRemote: true, renderMembers: true });
+  }
   wireSwitchUserButton();
   wireAdminQuickMenu();
   wireMemberCanvasWindows();
@@ -175,6 +210,12 @@ function startApp() {
   setupAzkarModal();
   wireDashboardQuickActions();
   initAhdPage();
+
+  if ("requestAnimationFrame" in window) {
+    requestAnimationFrame(() => bootstrapPostLoginSystems());
+  } else {
+    setTimeout(bootstrapPostLoginSystems, 0);
+  }
 }
 
 function initIdentityGate() {
@@ -184,8 +225,7 @@ function initIdentityGate() {
   const members = IDENTITY_MEMBERS_CACHE;
   resetLocalStreaksForAllMembersOnce();
   renderIdentityGrid(members);
-
-  startSharedStreaksListener();
+  warmFirebaseSoon();
 
   const lastBox = qs("#identityLast");
   if (lastBox) {

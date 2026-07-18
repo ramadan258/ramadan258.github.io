@@ -1,0 +1,1933 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>سابق ولاحق — قبيلة الموحدون</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico?v=20260718shell2" type="image/x-icon" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260718shell2" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260718shell3" />
+  <link rel="manifest" href="site.webmanifest?v=20260718shell3" />
+  <style>
+    :root {
+      --primary: #4ecdc4;
+      --primary-glow: rgba(78, 205, 196, 0.16);
+      --dark-bg: #0a0d12;
+      --dark-card: #111520;
+      --dark-card2: #161b26;
+      --text-light: #eaecf0;
+      --text-muted: #8892a4;
+      --gold: #f5c842;
+      --gold-glow: rgba(245, 200, 66, 0.12);
+      --green: #34d399;
+      --danger: #f87171;
+      --soft-border: rgba(245, 200, 66, 0.13);
+      --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+      --glow-shadow: 0 0 30px rgba(78, 205, 196, 0.06);
+      --radius: 22px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Cairo", Arial, sans-serif;
+      background-color: var(--dark-bg);
+      color: var(--text-light);
+      min-height: 100vh;
+      padding: 0 0 80px;
+      position: relative;
+      overflow-x: hidden;
+      line-height: 1.9;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 15% 10%, rgba(78, 205, 196, 0.05) 0%, transparent 48%),
+        radial-gradient(ellipse at 85% 15%, rgba(245, 200, 66, 0.05) 0%, transparent 42%),
+        radial-gradient(ellipse at 50% 85%, rgba(27, 95, 137, 0.08) 0%, transparent 55%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .back-bar {
+      background: rgba(10, 13, 18, 0.92);
+      backdrop-filter: blur(14px);
+      padding: 12px 24px;
+      border-bottom: 1px solid rgba(78, 205, 196, 0.08);
+      position: relative;
+      z-index: 10;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 700;
+      transition: color .2s;
+    }
+
+    .back-link:hover { color: var(--primary); }
+
+    .page-header {
+      background: radial-gradient(ellipse at 50% 0%, #0d2027 0%, var(--dark-bg) 72%);
+      padding: 48px 20px 38px;
+      text-align: center;
+      border-bottom: 1px solid var(--soft-border);
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .page-header::before {
+      content: "نجاة";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 88px;
+      font-weight: 900;
+      color: rgba(78, 205, 196, 0.025);
+      letter-spacing: .12em;
+      pointer-events: none;
+    }
+
+    .page-header h1 {
+      font-family: "Amiri", serif;
+      font-size: 34px;
+      color: var(--primary);
+      text-shadow: 0 0 40px rgba(78, 205, 196, 0.22);
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-header p {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-header .gold-tag {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--gold);
+      letter-spacing: 1.2px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .report-banner {
+      background: linear-gradient(90deg, #0d3636, #0c1b20, #1b2e18);
+      color: var(--gold);
+      text-align: center;
+      padding: 12px 20px;
+      font-size: 13.5px;
+      letter-spacing: 1.6px;
+      border-bottom: 1px solid rgba(245, 200, 66, 0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .wrap {
+      width: min(920px, calc(100% - 40px));
+      margin: 36px auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card {
+      background: linear-gradient(160deg, var(--dark-card2) 0%, var(--dark-card) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow), var(--glow-shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(78, 205, 196, 0.35), rgba(245, 200, 66, 0.25), transparent);
+    }
+
+    .cardHead {
+      padding: 16px 22px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: linear-gradient(180deg, rgba(78, 205, 196, 0.07) 0%, transparent 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .cardHead .h {
+      font-size: 14.5px;
+      font-weight: 900;
+      color: var(--text-light);
+    }
+
+    .cardHead .sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 160px;
+      justify-content: flex-end;
+    }
+
+    #progText {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--primary);
+      min-width: 36px;
+      text-align: left;
+    }
+
+    .bar {
+      width: 110px;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .bar > div {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--primary), var(--gold));
+      border-radius: 999px;
+      transition: width .5s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .cardBody { padding: 24px 22px; }
+
+    .stepTitle {
+      font-family: "Amiri", serif;
+      font-size: 25px;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .hint {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .mode-card {
+      border-radius: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 18px;
+      background: linear-gradient(155deg, #151e2a, #0f1520);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.34);
+      display: grid;
+      gap: 10px;
+    }
+
+    .mode-card.before {
+      background:
+        radial-gradient(circle at top right, rgba(78, 205, 196, 0.12), transparent 35%),
+        linear-gradient(155deg, #151e2a, #0f1520);
+    }
+
+    .mode-card.after {
+      background:
+        radial-gradient(circle at top right, rgba(245, 200, 66, 0.12), transparent 35%),
+        linear-gradient(155deg, #151e2a, #0f1520);
+    }
+
+    .mode-card-badge {
+      display: inline-flex;
+      width: fit-content;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .mode-card.before .mode-card-badge {
+      color: var(--primary);
+      border-color: rgba(78, 205, 196, 0.22);
+      background: var(--primary-glow);
+    }
+
+    .mode-card.after .mode-card-badge {
+      color: var(--gold);
+      border-color: rgba(245, 200, 66, 0.22);
+      background: var(--gold-glow);
+    }
+
+    .mode-card-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+
+    .mode-card-copy {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      line-height: 1.9;
+    }
+
+    .helper-card,
+    .summary-card,
+    .result-box,
+    .question-card,
+    .section-box {
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: linear-gradient(155deg, #151e2a, #0f1520);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+    }
+
+    .helper-card {
+      padding: 18px;
+      margin-bottom: 18px;
+      background:
+        radial-gradient(circle at top right, rgba(78, 205, 196, 0.08), transparent 38%),
+        linear-gradient(155deg, #151e2a, #0f1520);
+    }
+
+    .helper-card.warm {
+      background:
+        radial-gradient(circle at top right, rgba(245, 200, 66, 0.1), transparent 38%),
+        linear-gradient(155deg, #181922, #101520);
+    }
+
+    .helper-kicker {
+      color: var(--gold);
+      font-size: 11.5px;
+      font-weight: 900;
+      letter-spacing: .6px;
+    }
+
+    .helper-title {
+      margin-top: 8px;
+      font-size: 21px;
+      font-weight: 900;
+      line-height: 1.7;
+      color: var(--text-light);
+    }
+
+    .helper-copy {
+      margin-top: 10px;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      line-height: 1.95;
+    }
+
+    .helper-list {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+      color: var(--text-light);
+      font-size: 13.5px;
+    }
+
+    .section-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .section-box {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1.7;
+    }
+
+    .question-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .question-card {
+      padding: 15px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .question-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .question-num {
+      min-width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      border: 1px solid rgba(78, 205, 196, 0.18);
+      background: rgba(78, 205, 196, 0.08);
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .question-title {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--text-light);
+      line-height: 1.8;
+    }
+
+    .question-hint {
+      margin-top: 4px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    .option-row,
+    .option-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+
+    .option-chip {
+      display: inline-flex;
+      cursor: pointer;
+    }
+
+    .option-chip input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .option-chip span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.22);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 800;
+      transition: border-color .2s, background .2s, color .2s, transform .2s;
+      text-align: center;
+      width: 100%;
+    }
+
+    .option-chip:hover span {
+      transform: translateY(-1px);
+      border-color: rgba(78, 205, 196, 0.25);
+    }
+
+    .option-chip input:checked + span {
+      border-color: rgba(78, 205, 196, 0.35);
+      background: rgba(78, 205, 196, 0.14);
+      color: var(--text-light);
+      box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.08);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 13px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(0, 0, 0, 0.28);
+      color: var(--text-light);
+      font-family: "Cairo", sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus {
+      border-color: rgba(78, 205, 196, 0.45);
+      box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.8;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .summary-card {
+      padding: 16px;
+      margin-bottom: 18px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .summary-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--text-light);
+    }
+
+    .summary-copy {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .result-box {
+      padding: 18px;
+      margin-bottom: 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-box.low {
+      background:
+        radial-gradient(circle at top right, rgba(52, 211, 153, 0.12), transparent 36%),
+        linear-gradient(155deg, #15211f, #0f1716);
+      border-color: rgba(52, 211, 153, 0.16);
+    }
+
+    .result-box.medium {
+      background:
+        radial-gradient(circle at top right, rgba(245, 200, 66, 0.12), transparent 36%),
+        linear-gradient(155deg, #1e1a13, #15120d);
+      border-color: rgba(245, 200, 66, 0.18);
+    }
+
+    .result-box.high {
+      background:
+        radial-gradient(circle at top right, rgba(248, 113, 113, 0.12), transparent 36%),
+        linear-gradient(155deg, #1f1517, #140e10);
+      border-color: rgba(248, 113, 113, 0.18);
+    }
+
+    .result-box.calm {
+      background:
+        radial-gradient(circle at top right, rgba(78, 205, 196, 0.12), transparent 36%),
+        linear-gradient(155deg, #151f22, #0f1718);
+      border-color: rgba(78, 205, 196, 0.18);
+    }
+
+    .result-kicker {
+      font-size: 11.5px;
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: .5px;
+    }
+
+    .result-title {
+      font-size: 23px;
+      font-weight: 900;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    .result-copy {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      line-height: 1.8;
+    }
+
+    .result-list {
+      display: grid;
+      gap: 7px;
+      color: var(--text-light);
+      font-size: 13.5px;
+    }
+
+    .btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    button,
+    .action-link {
+      font-family: "Cairo", sans-serif;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-light);
+      padding: 11px 18px;
+      border-radius: 13px;
+      cursor: pointer;
+      font-weight: 900;
+      font-size: 13.5px;
+      transition: transform .15s, box-shadow .15s, border-color .2s, background .2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button:hover,
+    .action-link:hover { transform: translateY(-2px); }
+    button:active,
+    .action-link:active { transform: scale(.98); }
+
+    button.primary,
+    .action-link.primary {
+      background: rgba(78, 205, 196, 0.18);
+      color: var(--primary);
+      border-color: rgba(78, 205, 196, 0.32);
+    }
+
+    button.ghost,
+    .action-link.ghost {
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    button.ok {
+      background: rgba(52, 211, 153, 0.1);
+      border-color: rgba(52, 211, 153, 0.28);
+      color: var(--green);
+    }
+
+    button.danger {
+      background: rgba(248, 113, 113, 0.1);
+      border-color: rgba(248, 113, 113, 0.24);
+      color: #ffb4b4;
+    }
+
+    .reportBox {
+      width: 100%;
+      min-height: 420px;
+      white-space: pre-wrap;
+      line-height: 1.75;
+      font-size: 13px;
+      font-family: "Courier New", monospace;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 13px;
+      padding: 16px;
+      color: var(--text-light);
+      resize: vertical;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .hr {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.05);
+      margin: 18px 0;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(10, 13, 18, 0.92);
+      border: 1px solid rgba(78, 205, 196, 0.2);
+      color: var(--text-light);
+      padding: 11px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+      z-index: 1000;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .anim-in {
+      animation: slideIn .3s ease both;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(16px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (max-width: 760px) {
+      .mode-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .wrap { width: calc(100% - 28px); margin: 20px auto; }
+      .cardBody { padding: 18px 16px; }
+      .cardHead { padding: 14px 16px; }
+      .stepTitle { font-size: 21px; }
+      .page-header { padding: 36px 16px 30px; }
+      .page-header h1 { font-size: 27px; }
+      .question-head { flex-direction: column; }
+      .question-num { min-width: 38px; height: 38px; }
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(78, 205, 196, 0.2); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(78, 205, 196, 0.35); }
+  </style>
+</head>
+<body>
+  <div class="back-bar">
+    <a href="index.html?resume=1&v=20260718shell2" class="back-link">← العودة إلى الصفحة الرئيسية</a>
+  </div>
+
+  <div class="page-header">
+    <h1>🧭 سابق ولاحق</h1>
+    <p>اختر الأداة المناسبة للحظة الحالية: كشف مبكر قبل السقوط، أو فهم هادئ بعد الزلة.</p>
+    <div class="gold-tag" id="todayPill">📅 جارِ التحميل…</div>
+  </div>
+
+  <div class="report-banner">
+    أداة عملية لاكتشاف الخطر مبكرًا أو النهوض أسرع بعد الزلة
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="cardHead">
+        <div>
+          <div class="h" id="stepHeader">اختيار النموذج</div>
+          <div class="sub" id="stepSub">اختر هل تريد نموذج ما قبل الزلة أم ما بعدها</div>
+        </div>
+        <div class="progress">
+          <div id="progText">0%</div>
+          <div class="bar"><div id="progBar"></div></div>
+        </div>
+      </div>
+      <div class="cardBody" id="app"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">تم ✅</div>
+
+  <script>
+  (function () {
+    const $ = (q) => document.querySelector(q);
+    const clone = (value) => JSON.parse(JSON.stringify(value));
+    const STORAGE_KEY = "wa3i_slip_report_state_v1";
+
+    const beforeQuestions = {
+      q1: { number: 1, section: "السلوكيات", label: "هل بدأت تسهر أكثر من المعتاد؟", type: "boolean" },
+      q2: { number: 2, section: "السلوكيات", label: "هل بدأت تعزل نفسك لفترات طويلة؟", type: "boolean" },
+      q3: { number: 3, section: "السلوكيات", label: "هل أهملت بعض مهمات التعافي؟", type: "boolean" },
+      q4: { number: 4, section: "السلوكيات", label: "هل توقفت عن الجرد أو المتابعة اليومية؟", type: "boolean" },
+      q5: { number: 5, section: "السلوكيات", label: "هل بدأت تتهاون في غض البصر أو المحفزات؟", type: "boolean" },
+      q6: { number: 6, section: "السلوكيات", label: "هل اقتربت من محفزات كنت متجنبها؟", type: "boolean" },
+      q7: { number: 7, section: "المشاعر", label: "هل عندك شعور مستمر بالملل أو الفراغ؟", type: "boolean" },
+      q8: { number: 8, section: "المشاعر", label: "هل تعرضت لضغط نفسي أو مشاكل ولم تتعامل معها؟", type: "boolean" },
+      q9: { number: 9, section: "الجانب الإيماني", label: "هل بدأت تستثقل التعافي أو تشعر أن الالتزام أصبح ثقيلًا؟", type: "boolean" },
+      q10: {
+        number: 10,
+        section: "الجانب الإيماني",
+        label: "الصلاة والعبادات أخبارها إيه الفترة الأخيرة؟",
+        type: "choice",
+        options: [
+          { value: "ملتزم", label: "ملتزم", score: 0 },
+          { value: "فيها تهاون", label: "فيها تهاون", score: 1 },
+          { value: "ضعفت مؤخرًا", label: "ضعفت مؤخرًا", score: 1 }
+        ]
+      },
+      q11: {
+        number: 11,
+        section: "الجانب الإيماني",
+        label: "أذكار الصباح والمساء:",
+        type: "choice",
+        options: [
+          { value: "ثابتة", label: "ثابتة", score: 0 },
+          { value: "متقطعة", label: "متقطعة", score: 1 },
+          { value: "متوقفة", label: "متوقفة", score: 1 }
+        ]
+      },
+      q12: {
+        number: 12,
+        section: "الجانب الإيماني",
+        label: "ورد القرآن:",
+        type: "choice",
+        options: [
+          { value: "ثابت", label: "ثابت", score: 0 },
+          { value: "أقل من المعتاد", label: "أقل من المعتاد", score: 1 },
+          { value: "متوقف", label: "متوقف", score: 1 }
+        ]
+      },
+      q13: {
+        number: 13,
+        section: "الجانب الإيماني",
+        label: "ورد الذكر:",
+        type: "choice",
+        options: [
+          { value: "ثابت", label: "ثابت", score: 0 },
+          { value: "متقطع", label: "متقطع", score: 1 },
+          { value: "متوقف", label: "متوقف", score: 1 }
+        ]
+      },
+      q14: {
+        number: 14,
+        section: "الجانب الإيماني",
+        label: "هل صمت أي صيام تطوعي مؤخرًا؟",
+        type: "choice",
+        options: [
+          { value: "نعم", label: "نعم", score: 0 },
+          { value: "لا", label: "لا", score: 1 },
+          { value: "لا ألتزم به أصلًا", label: "لا ألتزم به أصلًا", score: 0 }
+        ]
+      },
+      q15: { number: 15, section: "الجسد والصحة", label: "هل نومك مضطرب أو غير منتظم؟", type: "boolean" },
+      q16: { number: 16, section: "الجسد والصحة", label: "هل أهملت الرياضة أو الحركة؟", type: "boolean" },
+      q17: { number: 17, section: "الجسد والصحة", label: "هل تشعر بإرهاق أو خمول مستمر؟", type: "boolean" },
+      q18: { number: 18, section: "البيئة", label: "هل زاد وقتك مع أشخاص أو محتوى يضعف تعافيك؟", type: "boolean" },
+      q19: { number: 19, section: "البيئة", label: "هل تقضي وقتًا طويلًا على الهاتف بدون هدف؟", type: "boolean" },
+      q20: { number: 20, section: "التغذية والمكافآت السريعة", label: "هل بدأت تعتمد على السكريات أو الحلويات أكثر من المعتاد؟", type: "boolean" },
+      q21: {
+        number: 21,
+        section: "التغذية والمكافآت السريعة",
+        label: "هل تلجأ لمكافآت سريعة عند الملل أو الضغط؟",
+        hint: "مثل: أكل زائد، أو تصفح عشوائي، أو محتوى طويل بلا هدف.",
+        type: "boolean"
+      },
+      q22: {
+        number: 22,
+        section: "التفكير والسلوك الداخلي",
+        label: "هل بدأت تقول لنفسك عبارات مثل: مش هتفرق، أنا بقيت قوي، مرة واحدة بس، أنا محتاج أرتاح؟",
+        type: "boolean"
+      },
+      q23: { number: 23, section: "التفكير والسلوك الداخلي", label: "هل بدأت تعتمد على الإرادة فقط بدون نظام أو حماية؟", type: "boolean" }
+    };
+
+    const afterFeelingsOptions = ["ملل", "وحدة", "ضغط", "حزن", "فراغ", "توتر", "فضول", "رغبة قوية", "يأس", "خنقة"];
+    const afterCausesOptions = ["سهر", "موبايل", "عزلة", "تصفح عشوائي", "خيالات", "ترك الحذر", "ضغط نفسي", "تساهل"];
+    const afterNeglectedOptions = ["النوم", "الصلاة أو الورد", "الحذر", "استخدام الموبايل", "العزلة", "الروتين", "الرياضة أو الحركة", "الانشغال بشيء مفيد"];
+    const afterActionsOptions = ["صلاة ركعتين", "غلق المحفزات", "حذف سبب السقوط", "الرجوع للروتين", "النوم بدري", "الخروج من العزلة", "التواصل مع شخص داعم", "قراءة ورد أو قرآن"];
+
+    const defaultState = {
+      mode: "",
+      before: {
+        q1: "", q2: "", q3: "", q4: "", q5: "", q6: "", q7: "", q8: "", q9: "",
+        q10: "", q11: "", q12: "", q13: "", q14: "", q15: "", q16: "", q17: "",
+        q18: "", q19: "", q20: "", q21: "", q22: "", q23: "",
+        honestyAnswer: "",
+        cautionLevel: ""
+      },
+      after: {
+        fallType: "",
+        whatHappened: "",
+        whenStarted: "",
+        feelings: [],
+        feelingsNote: "",
+        causes: [],
+        causesNote: "",
+        neglected: [],
+        neglectedNote: "",
+        weaknessDiscovered: "",
+        noRepeat: "",
+        shouldDoInstead: "",
+        actions: [],
+        actionsNote: ""
+      }
+    };
+
+    const beforeSteps = [
+      { id: "choose", title: "اختيار النموذج", sub: "اختر النموذج الأنسب لهذه اللحظة" },
+      { id: "before_behaviors", title: "قبل الزلة", sub: "ابدأ بإشارات السلوك الظاهرة قبل أن تكبر" },
+      { id: "before_emotions_faith", title: "قبل الزلة", sub: "المشاعر والجانب الإيماني يكشفان ما يحدث تحت السطح" },
+      { id: "before_body_env", title: "قبل الزلة", sub: "الجسد والبيئة يسهّلان السقوط إن تُركا بلا انتباه" },
+      { id: "before_food_thoughts", title: "قبل الزلة", sub: "لاحظ المكافآت السريعة وحديث النفس قبل أن يجرّك" },
+      { id: "before_honesty", title: "قبل الزلة", sub: "أجب بصراحة قبل أن تبني النتيجة النهائية" },
+      { id: "before_report", title: "التقرير النهائي", sub: "انسخ النتيجة وارجع بها إلى نفسك أو شاركها إذا احتجت" }
+    ];
+
+    const afterSteps = [
+      { id: "choose", title: "اختيار النموذج", sub: "اختر النموذج الأنسب لهذه اللحظة" },
+      { id: "after_what", title: "بعد الزلة", sub: "اهدأ أولًا، ثم اكتب ما حدث بصدق" },
+      { id: "after_feelings", title: "بعد الزلة", sub: "سمِّ مشاعرك الحقيقية قبل السقوط" },
+      { id: "after_causes", title: "بعد الزلة", sub: "ابحث عن السبب الحقيقي والتقصير الذي سبق السقوط" },
+      { id: "after_lessons", title: "بعد الزلة", sub: "استخرج الدرس بدل البقاء في جلد الذات" },
+      { id: "after_actions", title: "بعد الزلة", sub: "اختر ما ستفعله الآن لتقوم أسرع" },
+      { id: "after_report", title: "التقرير النهائي", sub: "انسخ مراجعتك النهائية وابدأ الخطوة التالية" }
+    ];
+
+    const todayPill = document.getElementById("todayPill");
+    if (todayPill) {
+      todayPill.textContent = "📅 " + new Date().toLocaleDateString("ar-SA", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+    }
+
+    const toast = (msg) => {
+      const t = $("#toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1500);
+    };
+
+    const loadState = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return clone(defaultState);
+        const parsed = JSON.parse(raw);
+        return {
+          mode: parsed?.mode === "before" || parsed?.mode === "after" ? parsed.mode : "",
+          before: { ...clone(defaultState.before), ...(parsed?.before || {}) },
+          after: {
+            ...clone(defaultState.after),
+            ...(parsed?.after || {}),
+            feelings: Array.isArray(parsed?.after?.feelings) ? parsed.after.feelings : [],
+            causes: Array.isArray(parsed?.after?.causes) ? parsed.after.causes : [],
+            neglected: Array.isArray(parsed?.after?.neglected) ? parsed.after.neglected : [],
+            actions: Array.isArray(parsed?.after?.actions) ? parsed.after.actions : []
+          }
+        };
+      } catch (error) {
+        return clone(defaultState);
+      }
+    };
+
+    let state = loadState();
+    let stepIndex = 0;
+
+    const saveState = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    };
+
+    const getSteps = () => {
+      if (state.mode === "before") return beforeSteps;
+      if (state.mode === "after") return afterSteps;
+      return [{ id: "choose", title: "اختيار النموذج", sub: "اختر النموذج الأنسب لهذه اللحظة" }];
+    };
+
+    const formatArabicNumber = (value) => new Intl.NumberFormat("ar-SA").format(value);
+
+    const escapeHtml = (str) => {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    };
+
+    const copyText = async (text, successMessage) => {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast(successMessage || "تم النسخ ✅");
+      } catch (error) {
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        temp.setAttribute("readonly", "readonly");
+        temp.style.position = "fixed";
+        temp.style.opacity = "0";
+        document.body.appendChild(temp);
+        temp.focus();
+        temp.select();
+        document.execCommand("copy");
+        temp.remove();
+        toast(successMessage || "تم النسخ ✅");
+      }
+    };
+
+    const setProgress = () => {
+      const steps = getSteps();
+      const pct = steps.length > 1 ? Math.round((stepIndex / (steps.length - 1)) * 100) : 0;
+      $("#progText").textContent = pct + "%";
+      $("#progBar").style.width = pct + "%";
+      $("#stepHeader").textContent = `الخطوة ${formatArabicNumber(stepIndex + 1)} من ${formatArabicNumber(steps.length)}: ${steps[stepIndex].title}`;
+      $("#stepSub").textContent = steps[stepIndex].sub;
+    };
+
+    const go = (dir) => {
+      const steps = getSteps();
+      stepIndex = Math.max(0, Math.min(steps.length - 1, stepIndex + dir));
+      render();
+    };
+
+    const pickMode = (mode) => {
+      state.mode = mode;
+      saveState();
+      stepIndex = 1;
+      render();
+    };
+
+    const resetCurrentMode = () => {
+      if (state.mode === "before") state.before = clone(defaultState.before);
+      if (state.mode === "after") state.after = clone(defaultState.after);
+      saveState();
+      toast("تمت إعادة ضبط هذا النموذج ✅");
+      stepIndex = state.mode ? 1 : 0;
+      render();
+    };
+
+    const switchMode = () => {
+      stepIndex = 0;
+      render();
+    };
+
+    const toggleArrayItem = (listName, value) => {
+      const list = Array.isArray(state.after[listName]) ? [...state.after[listName]] : [];
+      const index = list.indexOf(value);
+      if (index >= 0) list.splice(index, 1);
+      else list.push(value);
+      state.after[listName] = list;
+      saveState();
+    };
+
+    const optionChip = (inputType, inputName, value, label, checked, dataAttr) => `
+      <label class="option-chip">
+        <input type="${inputType}" name="${escapeHtml(inputName)}" value="${escapeHtml(value)}" ${checked ? "checked" : ""} ${dataAttr} />
+        <span>${escapeHtml(label)}</span>
+      </label>
+    `;
+
+    const renderBeforeQuestion = (id) => {
+      const q = beforeQuestions[id];
+      const value = state.before[id];
+      const options = q.type === "boolean"
+        ? [
+            { value: "yes", label: "نعم" },
+            { value: "no", label: "لا" }
+          ]
+        : q.options;
+
+      return `
+        <div class="question-card">
+          <div class="question-head">
+            <div class="question-num">${formatArabicNumber(q.number)}</div>
+            <div>
+              <div class="question-title">${escapeHtml(q.label)}</div>
+              ${q.hint ? `<div class="question-hint">${escapeHtml(q.hint)}</div>` : ""}
+            </div>
+          </div>
+          <div class="${q.type === "choice" && q.options.length > 2 ? "option-grid" : "option-row"}">
+            ${options.map((option) => optionChip(
+              "radio",
+              `before_${id}`,
+              option.value,
+              option.label,
+              value === option.value,
+              `data-before-field="${id}"`
+            )).join("")}
+          </div>
+        </div>
+      `;
+    };
+
+    const renderMultiChoiceSet = (title, kicker, listName, options, noteName, notePlaceholder) => `
+      <div class="section-box">
+        <div class="section-title">${escapeHtml(title)}</div>
+        <div class="summary-copy">${escapeHtml(kicker)}</div>
+        <div class="option-grid">
+          ${options.map((option) => optionChip(
+            "checkbox",
+            `${listName}_${option}`,
+            option,
+            option,
+            state.after[listName].includes(option),
+            `data-after-list="${listName}"`
+          )).join("")}
+        </div>
+        <div class="field-grid">
+          <div>
+            <label>${escapeHtml(title)}</label>
+            <textarea data-after-field="${noteName}" placeholder="${escapeHtml(notePlaceholder)}">${escapeHtml(state.after[noteName] || "")}</textarea>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const beforeGroupAnswered = (ids) => ids.every((id) => String(state.before[id] || "").trim() !== "");
+
+    const validateStep = () => {
+      const step = getSteps()[stepIndex]?.id;
+      if (!step || step === "choose" || step.endsWith("report")) return true;
+
+      if (step === "before_behaviors" && !beforeGroupAnswered(["q1", "q2", "q3", "q4", "q5", "q6"])) {
+        toast("أجب عن أسئلة السلوكيات أولًا.");
+        return false;
+      }
+
+      if (step === "before_emotions_faith" && !beforeGroupAnswered(["q7", "q8", "q9", "q10", "q11", "q12", "q13", "q14"])) {
+        toast("أكمل المشاعر والجانب الإيماني أولًا.");
+        return false;
+      }
+
+      if (step === "before_body_env" && !beforeGroupAnswered(["q15", "q16", "q17", "q18", "q19"])) {
+        toast("أكمل هذا الجزء أولًا.");
+        return false;
+      }
+
+      if (step === "before_food_thoughts" && !beforeGroupAnswered(["q20", "q21", "q22", "q23"])) {
+        toast("أجب عن الأسئلة المتبقية أولًا.");
+        return false;
+      }
+
+      if (step === "before_honesty") {
+        const level = Number.parseInt(state.before.cautionLevel, 10);
+        if (!String(state.before.honestyAnswer || "").trim()) {
+          toast("اكتب إجابتك في سؤال الصراحة.");
+          return false;
+        }
+        if (!Number.isFinite(level) || level < 1 || level > 10) {
+          toast("قيّم مستوى حذرك من ١ إلى ١٠.");
+          return false;
+        }
+      }
+
+      if (step === "after_what") {
+        if (!state.after.fallType || !String(state.after.whatHappened || "").trim() || !String(state.after.whenStarted || "").trim()) {
+          toast("أكمل وصف ما حدث أولًا.");
+          return false;
+        }
+      }
+
+      if (step === "after_feelings") {
+        if (!state.after.feelings.length && !String(state.after.feelingsNote || "").trim()) {
+          toast("حدّد شعورًا واحدًا على الأقل أو اكتب وصفك.");
+          return false;
+        }
+      }
+
+      if (step === "after_causes") {
+        const hasCause = state.after.causes.length || String(state.after.causesNote || "").trim();
+        const hasNeglect = state.after.neglected.length || String(state.after.neglectedNote || "").trim();
+        if (!hasCause || !hasNeglect) {
+          toast("أكمل السبب الحقيقي وجانب التقصير أولًا.");
+          return false;
+        }
+      }
+
+      if (step === "after_lessons") {
+        if (!String(state.after.weaknessDiscovered || "").trim() || !String(state.after.noRepeat || "").trim() || !String(state.after.shouldDoInstead || "").trim()) {
+          toast("أكمل أسئلة التعلّم من الزلة أولًا.");
+          return false;
+        }
+      }
+
+      if (step === "after_actions") {
+        if (!state.after.actions.length && !String(state.after.actionsNote || "").trim()) {
+          toast("اختر خطوة عملية الآن أو اكتبها بنفسك.");
+          return false;
+        }
+      }
+
+      return true;
+    };
+
+    const nextStep = () => {
+      if (!validateStep()) return;
+      go(+1);
+    };
+
+    const beforeAnswerLabel = (id) => {
+      const q = beforeQuestions[id];
+      const value = state.before[id];
+      if (q.type === "boolean") return value === "yes" ? "نعم" : value === "no" ? "لا" : "غير محدد";
+      const found = q.options.find((option) => option.value === value);
+      return found ? found.label : "غير محدد";
+    };
+
+    const evaluateBefore = () => {
+      const groupedSignals = {
+        "السلوكيات": [],
+        "المشاعر": [],
+        "الجانب الإيماني": [],
+        "الجسد والصحة": [],
+        "البيئة": [],
+        "التغذية والمكافآت السريعة": [],
+        "التفكير والسلوك الداخلي": []
+      };
+
+      Object.entries(beforeQuestions).forEach(([id, question]) => {
+        const value = state.before[id];
+        if (question.type === "boolean" && value === "yes") {
+          groupedSignals[question.section].push(question.label);
+        }
+        if (question.type === "choice") {
+          const selected = question.options.find((option) => option.value === value);
+          if (selected && Number(selected.score || 0) > 0) {
+            groupedSignals[question.section].push(`${question.label} ${selected.label}`);
+          }
+        }
+      });
+
+      const signalGroups = Object.entries(groupedSignals)
+        .map(([title, items]) => ({ title, items }))
+        .filter((group) => group.items.length);
+
+      const warningCount = signalGroups.reduce((sum, group) => sum + group.items.length, 0);
+
+      let level = "low";
+      let title = "🟢 الوضع مستقر";
+      let copy = "الإشارات الحالية قليلة، فاستمر في خطتك ولا تهمل التفاصيل الصغيرة.";
+      let actions = [
+        "استمر في أساسياتك اليومية كما هي.",
+        "راقب الإشارات الصغيرة مبكرًا ولا تؤجل الانتباه لها.",
+        "حافظ على الحماية الحالية لأنها تعمل."
+      ];
+
+      if (warningCount >= 8) {
+        level = "high";
+        title = "🔴 أنت في منطقة خطر";
+        copy = "عدد الإشارات مرتفع الآن، والمطلوب تدخل سريع لا تأجيله.";
+        actions = [
+          "ارجع للمهمات الأساسية فورًا.",
+          "قلل العزلة وغيّر المكان أو الوضع الحالي.",
+          "ارفع مستوى الحماية على الهاتف والمحتوى.",
+          "راجع سبب الانحراف الأقرب اليوم.",
+          "تواصل مع شخص داعم إن أمكن."
+        ];
+      } else if (warningCount >= 4) {
+        level = "medium";
+        title = "🟡 بدأت تظهر إشارات خطر";
+        copy = "الوضع ليس سقوطًا بعد، لكنه يحتاج شدًّا للحماية قبل أن يتفاقم.";
+        actions = [
+          "راجع ما قصّرت فيه اليوم قبل أن يتكرر غدًا.",
+          "لا تترك الهاتف مع الفراغ أو السهر.",
+          "ارجع إلى الصلاة والورد ومهماتك الأساسية.",
+          "خفف المحفزات وابتعد عن العزلة."
+        ];
+      }
+
+      const worshipSummary = [
+        `الصلاة والعبادات: ${beforeAnswerLabel("q10")}`,
+        `أذكار الصباح والمساء: ${beforeAnswerLabel("q11")}`,
+        `ورد القرآن: ${beforeAnswerLabel("q12")}`,
+        `ورد الذكر: ${beforeAnswerLabel("q13")}`,
+        `الصيام التطوعي: ${beforeAnswerLabel("q14")}`
+      ];
+
+      return {
+        warningCount,
+        level,
+        title,
+        copy,
+        actions,
+        signalGroups,
+        worshipSummary
+      };
+    };
+
+    const buildBeforeReport = () => {
+      const evaluation = evaluateBefore();
+      const signalSection = evaluation.signalGroups.length
+        ? evaluation.signalGroups.map((group) => {
+            return `• ${group.title}:\n${group.items.map((item) => `- ${item}`).join("\n")}`;
+          }).join("\n\n")
+        : "• لا توجد إشارات خطر واضحة الآن، لكن الاستمرار في المراقبة ضروري.";
+
+      return `🧭 نموذج ما قبل الزلة
+
+⚠️ قبل أن تبدأ...
+السقوط لا يحدث فجأة، بل يبدأ حين نتجاهل الإشارات الصغيرة.
+
+📌 الإشارات الظاهرة الآن:
+${signalSection}
+
+📿 ملخص الجانب الإيماني:
+${evaluation.worshipSummary.map((line) => `- ${line}`).join("\n")}
+
+✍️ سؤال الصراحة:
+${String(state.before.honestyAnswer || "").trim()}
+
+🛡️ مستوى حذري الآن: ${formatArabicNumber(Number.parseInt(state.before.cautionLevel || "0", 10) || 0)}/١٠
+
+📊 عدد علامات الخطر: ${formatArabicNumber(evaluation.warningCount)}
+${evaluation.title}
+${evaluation.copy}
+
+🚨 التدخل المطلوب الآن:
+${evaluation.actions.map((item) => `• ${item}`).join("\n")}
+
+📌 تذكير مهم:
+المتعافي الذكي ليس الذي لا يقع...
+بل الذي يلتقط الخطر قبل أن يتحول إلى سقوط. ❤️🔥`;
+    };
+
+    const buildAfterReport = () => {
+      const feelingsText = state.after.feelings.length ? state.after.feelings.join("، ") : "لم أحدد من القائمة";
+      const causesText = state.after.causes.length ? state.after.causes.join("، ") : "لم أحدد من القائمة";
+      const neglectedText = state.after.neglected.length ? state.after.neglected.join("، ") : "لم أحدد من القائمة";
+      const actionsText = state.after.actions.length ? state.after.actions.join("، ") : "لم أحدد من القائمة";
+
+      return `🧭 نموذج ما بعد الزلة
+
+( علشان تهدى… وتفهم نفسك… وتقوم أسرع )
+
+1- ماذا حدث؟
+- هل كانت زلة أم انتكاسة؟ ${state.after.fallType || "غير محدد"}
+- ماذا حدث بالضبط؟ ${String(state.after.whatHappened || "").trim() || "—"}
+- متى بدأت لحظة السقوط؟ ${String(state.after.whenStarted || "").trim() || "—"}
+
+2- ماذا كنت أشعر قبل السقوط؟
+- المشاعر: ${feelingsText}
+- توضيح إضافي: ${String(state.after.feelingsNote || "").trim() || "—"}
+
+3- ما السبب الحقيقي؟
+- الأسباب الأقرب: ${causesText}
+- توضيح إضافي: ${String(state.after.causesNote || "").trim() || "—"}
+
+4- ما الأشياء التي قصرت فيها اليوم وقربتك من السقوط؟
+- جوانب التقصير: ${neglectedText}
+- توضيح إضافي: ${String(state.after.neglectedNote || "").trim() || "—"}
+
+5- ماذا تعلمت من الزلة؟
+- نقطة الضعف التي اكتشفتها: ${String(state.after.weaknessDiscovered || "").trim() || "—"}
+- الخطأ الذي لن تكرره بإذن الله: ${String(state.after.noRepeat || "").trim() || "—"}
+- الشيء الذي كان يجب أن تفعله بدل السقوط: ${String(state.after.shouldDoInstead || "").trim() || "—"}
+
+6- ماذا ستفعل الآن؟
+- الخطوات العملية الآن: ${actionsText}
+- خطوة إضافية أو التزام فوري: ${String(state.after.actionsNote || "").trim() || "—"}
+
+تذكير مهم ❤️
+الزلة ليست النهاية…
+النهاية الحقيقية هي الاستسلام.
+
+أنت مريض تتعافى…
+ولست شخصًا فاسدًا بلا أمل.
+
+قوم مرة أخرى…
+فكم من شخص نجا لأنه لم يستسلم.`;
+    };
+
+    const bindCommonFields = () => {
+      document.querySelectorAll("[data-before-field]").forEach((input) => {
+        input.addEventListener("change", (event) => {
+          state.before[event.target.getAttribute("data-before-field")] = event.target.value;
+          saveState();
+        });
+      });
+
+      document.querySelectorAll("[data-before-text]").forEach((input) => {
+        input.addEventListener("input", (event) => {
+          state.before[event.target.getAttribute("data-before-text")] = event.target.value;
+          saveState();
+        });
+      });
+
+      document.querySelectorAll("[data-after-field]").forEach((input) => {
+        input.addEventListener("input", (event) => {
+          state.after[event.target.getAttribute("data-after-field")] = event.target.value;
+          saveState();
+        });
+      });
+
+      document.querySelectorAll("[data-after-radio]").forEach((input) => {
+        input.addEventListener("change", (event) => {
+          state.after[event.target.getAttribute("data-after-radio")] = event.target.value;
+          saveState();
+        });
+      });
+
+      document.querySelectorAll("[data-after-list]").forEach((input) => {
+        input.addEventListener("change", (event) => {
+          toggleArrayItem(event.target.getAttribute("data-after-list"), event.target.value);
+        });
+      });
+    };
+
+    const renderChoose = () => {
+      const hasSavedMode = state.mode === "before" || state.mode === "after";
+      const savedLabel = state.mode === "before" ? "نموذج ما قبل الزلة" : state.mode === "after" ? "نموذج ما بعد الزلة" : "";
+
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          <div class="helper-card">
+            <div class="helper-kicker">اختيار واضح</div>
+            <div class="helper-title">ما الذي تحتاجه الآن؟</div>
+            <div class="helper-copy">
+              إذا كنت تشعر أن الخطر يقترب فابدأ بـ <strong>ما قبل الزلة</strong>.
+              وإذا حدثت زلة بالفعل وتريد أن تفهمها وتقوم أسرع فابدأ بـ <strong>ما بعد الزلة</strong>.
+            </div>
+          </div>
+
+          <div class="mode-grid">
+            <div class="mode-card before">
+              <div class="mode-card-badge">قبل الزلة</div>
+              <div class="mode-card-title">اكتشف الإشارات قبل أن تتحول إلى سقوط</div>
+              <div class="mode-card-copy">
+                هذا النموذج يراجع السلوكيات والمشاعر والبيئة والجانب الإيماني، ثم يعطيك نتيجة واضحة عن مستوى الخطر وما الذي يجب فعله الآن.
+              </div>
+              <div class="btns">
+                <button class="primary" id="pickBefore">ابدأ الآن</button>
+              </div>
+            </div>
+
+            <div class="mode-card after">
+              <div class="mode-card-badge">بعد الزلة</div>
+              <div class="mode-card-title">افهم ما حدث بدل أن تغرق في جلد الذات</div>
+              <div class="mode-card-copy">
+                هذا النموذج يساعدك على فهم ما حدث، واكتشاف السبب الحقيقي، واستخراج درس عملي، ثم تحديد أول خطوة تقوم بها فورًا.
+              </div>
+              <div class="btns">
+                <button class="primary" id="pickAfter">ابدأ الآن</button>
+              </div>
+            </div>
+          </div>
+
+          ${hasSavedMode ? `
+            <div class="summary-card" style="margin-top:18px">
+              <div class="summary-title">يوجد نموذج محفوظ على هذا الجهاز</div>
+              <div class="summary-copy">آخر نموذج محفوظ: ${escapeHtml(savedLabel)}. يمكنك متابعته أو اختيار نموذج آخر.</div>
+              <div class="btns">
+                <button class="ok" id="resumeSaved">متابعة النموذج المحفوظ</button>
+                <button class="danger" id="clearSaved">مسح بيانات هذه الأداة</button>
+              </div>
+            </div>
+          ` : ""}
+        </div>
+      `;
+
+      $("#pickBefore").onclick = () => pickMode("before");
+      $("#pickAfter").onclick = () => pickMode("after");
+
+      $("#resumeSaved")?.addEventListener("click", () => {
+        if (!state.mode) return;
+        stepIndex = 1;
+        render();
+      });
+
+      $("#clearSaved")?.addEventListener("click", () => {
+        if (!confirm("هل تريد مسح بيانات أداة سابق ولاحق من هذا الجهاز؟")) return;
+        state = clone(defaultState);
+        saveState();
+        toast("تم المسح ✅");
+        stepIndex = 0;
+        render();
+      });
+    };
+
+    const renderBeforeBehaviors = () => {
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          <div class="helper-card">
+            <div class="helper-kicker">⚠️ قبل أن تبدأ</div>
+            <div class="helper-title">هل تستحق لحظة ضعف مؤقتة أن تعيدك إلى أيام من الندم؟</div>
+            <div class="helper-copy">
+              خذ دقيقة مع نفسك، وتذكر أن السقوط لا يبدأ يوم الزلة، بل يبدأ عندما نتجاهل الإشارات الصغيرة التي كانت تحذرنا.
+            </div>
+            <div class="helper-list">
+              <div>• أجب على الأسئلة بصدق، فربما تكون هذه الدقائق سببًا في اكتشاف الخطر قبل أن يتحول إلى سقوط.</div>
+              <div>• أغلب الناس تكتشف أنها كانت في خطر بعد الزلة، بينما الهدف هنا أن تراه قبلها.</div>
+            </div>
+          </div>
+
+          <div class="section-stack">
+            <div class="section-box">
+              <div class="section-title">📌 أولًا: السلوكيات</div>
+              <div class="question-list">
+                ${["q1", "q2", "q3", "q4", "q5", "q6"].map(renderBeforeQuestion).join("")}
+              </div>
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="primary" id="next">التالي ←</button>
+          </div>
+        </div>
+      `;
+
+      bindCommonFields();
+      $("#changeMode").onclick = switchMode;
+      $("#next").onclick = nextStep;
+    };
+
+    const renderBeforeEmotionsFaith = () => {
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          <div class="section-stack">
+            <div class="section-box">
+              <div class="section-title">📌 ثانيًا: المشاعر</div>
+              <div class="question-list">
+                ${["q7", "q8"].map(renderBeforeQuestion).join("")}
+              </div>
+            </div>
+
+            <div class="section-box">
+              <div class="section-title">📌 ثالثًا: الجانب الإيماني</div>
+              <div class="question-list">
+                ${["q9", "q10", "q11", "q12", "q13", "q14"].map(renderBeforeQuestion).join("")}
+              </div>
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="ghost" id="prev">← السابق</button>
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="primary" id="next">التالي ←</button>
+          </div>
+        </div>
+      `;
+
+      bindCommonFields();
+      $("#prev").onclick = () => go(-1);
+      $("#changeMode").onclick = switchMode;
+      $("#next").onclick = nextStep;
+    };
+
+    const renderBeforeBodyEnv = () => {
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          <div class="section-stack">
+            <div class="section-box">
+              <div class="section-title">📌 رابعًا: الجسد والصحة</div>
+              <div class="question-list">
+                ${["q15", "q16", "q17"].map(renderBeforeQuestion).join("")}
+              </div>
+            </div>
+
+            <div class="section-box">
+              <div class="section-title">📌 خامسًا: البيئة</div>
+              <div class="question-list">
+                ${["q18", "q19"].map(renderBeforeQuestion).join("")}
+              </div>
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="ghost" id="prev">← السابق</button>
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="primary" id="next">التالي ←</button>
+          </div>
+        </div>
+      `;
+
+      bindCommonFields();
+      $("#prev").onclick = () => go(-1);
+      $("#changeMode").onclick = switchMode;
+      $("#next").onclick = nextStep;
+    };
+
+    const renderBeforeFoodThoughts = () => {
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          <div class="section-stack">
+            <div class="section-box">
+              <div class="section-title">📌 سادسًا: التغذية والمكافآت السريعة</div>
+              <div class="question-list">
+                ${["q20", "q21"].map(renderBeforeQuestion).join("")}
+              </div>
+            </div>
+
+            <div class="section-box">
+              <div class="section-title">📌 سابعًا: التفكير والسلوك الداخلي</div>
+              <div class="question-list">
+                ${["q22", "q23"].map(renderBeforeQuestion).join("")}
+              </div>
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="ghost" id="prev">← السابق</button>
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="primary" id="next">التالي ←</button>
+          </div>
+        </div>
+      `;
+
+      bindCommonFields();
+      $("#prev").onclick = () => go(-1);
+      $("#changeMode").onclick = switchMode;
+      $("#next").onclick = nextStep;
+    };
+
+    const renderBeforeHonesty = () => {
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          <div class="helper-card">
+            <div class="helper-kicker">سؤال الصراحة</div>
+            <div class="helper-title">لو استمر يومك بنفس الشكل أسبوعًا كاملًا، هل تقترب من التعافي أم من الزلة؟</div>
+            <div class="helper-copy">
+              لا تبحث عن جواب جميل. اكتب الجواب الحقيقي الذي تحتاج أن تسمعه الآن.
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div>
+              <label>✍️ اكتب إجابتك بصراحة</label>
+              <textarea data-before-text="honestyAnswer" placeholder="اكتب ما تتوقعه إذا استمر الوضع كما هو...">${escapeHtml(state.before.honestyAnswer || "")}</textarea>
+            </div>
+            <div>
+              <label>🛡️ من ١ إلى ١٠ كم تقيّم مستوى حذرك الآن؟</label>
+              <input data-before-text="cautionLevel" type="number" min="1" max="10" inputmode="numeric" value="${escapeHtml(state.before.cautionLevel || "")}" placeholder="مثال: ٧" />
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="ghost" id="prev">← السابق</button>
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="primary" id="next">عرض النتيجة ✨</button>
+          </div>
+        </div>
+      `;
+
+      bindCommonFields();
+      $("#prev").onclick = () => go(-1);
+      $("#changeMode").onclick = switchMode;
+      $("#next").onclick = nextStep;
+    };
+
+    const renderBeforeReport = () => {
+      const evaluation = evaluateBefore();
+      const report = buildBeforeReport();
+
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          <div class="result-box ${evaluation.level}">
+            <div class="result-kicker">النتيجة</div>
+            <div class="result-title">${evaluation.title}</div>
+            <div class="result-copy">${evaluation.copy}</div>
+            <div class="result-list">
+              <div>• عدد علامات الخطر الحالية: ${formatArabicNumber(evaluation.warningCount)}</div>
+              ${evaluation.actions.map((item) => `<div>• ${escapeHtml(item)}</div>`).join("")}
+            </div>
+          </div>
+
+          <label>التقرير النهائي</label>
+          <textarea class="reportBox" readonly>${escapeHtml(report)}</textarea>
+
+          <div class="btns">
+            <button class="primary" id="copy">📋 نسخ التقرير</button>
+            <button class="ok" id="restart">↺ إعادة تعبئة النموذج</button>
+            <button class="ghost" id="prev">← السابق</button>
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="danger" id="clearMode">🗑 مسح هذا النموذج</button>
+          </div>
+
+          <div class="hr"></div>
+          <div class="small">يمكنك نسخ هذا النص والرجوع إليه مباشرة حين تشعر أن الخطر بدأ يقترب.</div>
+        </div>
+      `;
+
+      $("#copy").onclick = () => copyText(report, "تم نسخ تقرير ما قبل الزلة ✅");
+      $("#restart").onclick = () => {
+        state.before = clone(defaultState.before);
+        saveState();
+        stepIndex = 1;
+        render();
+      };
+      $("#prev").onclick = () => go(-1);
+      $("#changeMode").onclick = switchMode;
+      $("#clearMode").onclick = () => {
+        if (!confirm("هل تريد مسح نموذج ما قبل الزلة؟")) return;
+        resetCurrentMode();
+      };
+    };
+
+    const renderAfterWhat = () => {
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          <div class="helper-card warm">
+            <div class="helper-kicker">اهدأ أولًا</div>
+            <div class="helper-title">أنت الآن لا تحتاج جلد الذات، بل فهم ما حدث والقيام بسرعة.</div>
+            <div class="helper-copy">
+              خذ نفسًا واهدأ. أنت لست مطالبًا أن تكون كاملًا. المطلوب الآن أن تفهم ما الذي حدث بدل أن تغرق في لوم نفسك.
+            </div>
+          </div>
+
+          <div class="section-box">
+            <div class="section-title">1- ماذا حدث؟</div>
+            <div class="field-grid">
+              <div>
+                <label>هل كانت زلة أم انتكاسة؟</label>
+                <div class="option-row">
+                  ${[
+                    { value: "زلة", label: "زلة" },
+                    { value: "انتكاسة", label: "انتكاسة" },
+                    { value: "غير متأكد", label: "غير متأكد" }
+                  ].map((option) => optionChip(
+                    "radio",
+                    "after_fallType",
+                    option.value,
+                    option.label,
+                    state.after.fallType === option.value,
+                    `data-after-radio="fallType"`
+                  )).join("")}
+                </div>
+              </div>
+              <div>
+                <label>ماذا فعلت بالضبط؟</label>
+                <textarea data-after-field="whatHappened" placeholder="اكتب بدون كذب على نفسك وبدون تهويل...">${escapeHtml(state.after.whatHappened || "")}</textarea>
+              </div>
+              <div>
+                <label>متى بدأت لحظة السقوط؟</label>
+                <textarea data-after-field="whenStarted" placeholder="ما اللحظة التي بدأ عندها الانزلاق فعليًا؟">${escapeHtml(state.after.whenStarted || "")}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="primary" id="next">التالي ←</button>
+          </div>
+        </div>
+      `;
+
+      bindCommonFields();
+      $("#changeMode").onclick = switchMode;
+      $("#next").onclick = nextStep;
+    };
+
+    const renderAfterFeelings = () => {
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          ${renderMultiChoiceSet(
+            "2- ماذا كنت أشعر قبل السقوط؟",
+            "اختر ما يصفك الآن، ثم أضف وصفك الحقيقي إن احتجت.",
+            "feelings",
+            afterFeelingsOptions,
+            "feelingsNote",
+            "اكتب مشاعرك الحقيقية أو ما لم تذكره الخيارات..."
+          )}
+
+          <div class="btns">
+            <button class="ghost" id="prev">← السابق</button>
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="primary" id="next">التالي ←</button>
+          </div>
+        </div>
+      `;
+
+      bindCommonFields();
+      $("#prev").onclick = () => go(-1);
+      $("#changeMode").onclick = switchMode;
+      $("#next").onclick = nextStep;
+    };
+
+    const renderAfterCauses = () => {
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          <div class="section-stack">
+            ${renderMultiChoiceSet(
+              "3- ما السبب الحقيقي؟",
+              "غالبًا السقوط يبدأ قبلها بوقت طويل. اختر الأقرب ثم اكتب ما تراه أنت.",
+              "causes",
+              afterCausesOptions,
+              "causesNote",
+              "ما الذي قربك من السقوط؟"
+            )}
+
+            ${renderMultiChoiceSet(
+              "4- ما الأشياء التي قصرت فيها اليوم وقربتك من السقوط؟",
+              "أحيانًا السقوط لا يبدأ من الرغبة، بل من التراخي الصغير الذي سبقها.",
+              "neglected",
+              afterNeglectedOptions,
+              "neglectedNote",
+              "ما الذي قصرت فيه اليوم وكان له أثر؟"
+            )}
+          </div>
+
+          <div class="btns">
+            <button class="ghost" id="prev">← السابق</button>
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="primary" id="next">التالي ←</button>
+          </div>
+        </div>
+      `;
+
+      bindCommonFields();
+      $("#prev").onclick = () => go(-1);
+      $("#changeMode").onclick = switchMode;
+      $("#next").onclick = nextStep;
+    };
+
+    const renderAfterLessons = () => {
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          <div class="section-box">
+            <div class="section-title">5- ماذا تعلمت من الزلة؟</div>
+            <div class="field-grid">
+              <div>
+                <label>ما نقطة ضعفك التي اكتشفتها؟</label>
+                <textarea data-after-field="weaknessDiscovered" placeholder="اكتب نقطة الضعف التي ظهرت لك بوضوح...">${escapeHtml(state.after.weaknessDiscovered || "")}</textarea>
+              </div>
+              <div>
+                <label>ما الخطأ الذي لن تكرره بإذن الله؟</label>
+                <textarea data-after-field="noRepeat" placeholder="ما الذي يجب أن تقطعه من الآن؟">${escapeHtml(state.after.noRepeat || "")}</textarea>
+              </div>
+              <div>
+                <label>ما الشيء الذي كان يجب أن تفعله بدل السقوط؟</label>
+                <textarea data-after-field="shouldDoInstead" placeholder="ما البديل العملي الذي كان يجب أن تبدأ به؟">${escapeHtml(state.after.shouldDoInstead || "")}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="ghost" id="prev">← السابق</button>
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="primary" id="next">التالي ←</button>
+          </div>
+        </div>
+      `;
+
+      bindCommonFields();
+      $("#prev").onclick = () => go(-1);
+      $("#changeMode").onclick = switchMode;
+      $("#next").onclick = nextStep;
+    };
+
+    const renderAfterActions = () => {
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          ${renderMultiChoiceSet(
+            "6- ماذا ستفعل الآن؟",
+            "المهم أن تقوم بسرعة، لا أن تبقى على الأرض. اختر خطوة أو أكثر، ثم اكتب التزامك الفوري.",
+            "actions",
+            afterActionsOptions,
+            "actionsNote",
+            "ما الخطوة العملية الصغيرة التي ستفعلها فورًا؟"
+          )}
+
+          <div class="btns">
+            <button class="ghost" id="prev">← السابق</button>
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="primary" id="next">عرض التقرير ✨</button>
+          </div>
+        </div>
+      `;
+
+      bindCommonFields();
+      $("#prev").onclick = () => go(-1);
+      $("#changeMode").onclick = switchMode;
+      $("#next").onclick = nextStep;
+    };
+
+    const renderAfterReport = () => {
+      const report = buildAfterReport();
+
+      $("#app").innerHTML = `
+        <div class="anim-in">
+          <div class="result-box calm">
+            <div class="result-kicker">تذكير مهم</div>
+            <div class="result-title">الزلة ليست النهاية</div>
+            <div class="result-copy">النهاية الحقيقية هي الاستسلام. الآن عندك فهم أوضح وخطوة عملية أقرب، وهذا هو المهم.</div>
+            <div class="result-list">
+              <div>• افهم ما حدث بدل تضخيمه.</div>
+              <div>• التقط السبب الحقيقي قبل أن يتكرر.</div>
+              <div>• قم بخطوة عملية الآن، ولو كانت صغيرة.</div>
+            </div>
+          </div>
+
+          <label>التقرير النهائي</label>
+          <textarea class="reportBox" readonly>${escapeHtml(report)}</textarea>
+
+          <div class="btns">
+            <button class="primary" id="copy">📋 نسخ التقرير</button>
+            <button class="ok" id="restart">↺ إعادة تعبئة النموذج</button>
+            <button class="ghost" id="prev">← السابق</button>
+            <button class="ghost" id="changeMode">اختيار نموذج آخر</button>
+            <button class="danger" id="clearMode">🗑 مسح هذا النموذج</button>
+          </div>
+
+          <div class="hr"></div>
+          <div class="small">إذا أردت، انسخ هذا النص وارجع إليه بعد الهدوء حتى ترى نمطك بوضوح أكبر مع الوقت.</div>
+        </div>
+      `;
+
+      $("#copy").onclick = () => copyText(report, "تم نسخ نموذج ما بعد الزلة ✅");
+      $("#restart").onclick = () => {
+        state.after = clone(defaultState.after);
+        saveState();
+        stepIndex = 1;
+        render();
+      };
+      $("#prev").onclick = () => go(-1);
+      $("#changeMode").onclick = switchMode;
+      $("#clearMode").onclick = () => {
+        if (!confirm("هل تريد مسح نموذج ما بعد الزلة؟")) return;
+        resetCurrentMode();
+      };
+    };
+
+    function render() {
+      const steps = getSteps();
+      if (stepIndex > steps.length - 1) stepIndex = steps.length - 1;
+      if (stepIndex < 0) stepIndex = 0;
+
+      setProgress();
+
+      const step = steps[stepIndex].id;
+      if (step === "choose") return renderChoose();
+      if (step === "before_behaviors") return renderBeforeBehaviors();
+      if (step === "before_emotions_faith") return renderBeforeEmotionsFaith();
+      if (step === "before_body_env") return renderBeforeBodyEnv();
+      if (step === "before_food_thoughts") return renderBeforeFoodThoughts();
+      if (step === "before_honesty") return renderBeforeHonesty();
+      if (step === "before_report") return renderBeforeReport();
+      if (step === "after_what") return renderAfterWhat();
+      if (step === "after_feelings") return renderAfterFeelings();
+      if (step === "after_causes") return renderAfterCauses();
+      if (step === "after_lessons") return renderAfterLessons();
+      if (step === "after_actions") return renderAfterActions();
+      if (step === "after_report") return renderAfterReport();
+    }
+
+    render();
+  })();
+  </script>
+</body>
+</html>
