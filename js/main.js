@@ -1453,7 +1453,7 @@ function getHomePageUrl() {
 
 function openStandalonePage(viewKey) {
   const nextUrl = getStandalonePageUrl(viewKey);
-  window.open(nextUrl, "_blank", "noopener,noreferrer");
+  window.location.assign(nextUrl);
 }
 
 function mountStandalonePageTopbar() {
