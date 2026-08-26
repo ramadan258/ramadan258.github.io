@@ -20,6 +20,7 @@ let PENDING_ADMIN_USER = null;
 let ADMIN_MODAL_WIRED = false;
 let SWITCH_USER_WIRED = false;
 let APP_POST_LOGIN_BOOTSTRAP_DONE = false;
+let APP_HOME_BOOTSTRAP_TIMER = null;
 
 function warmFirebaseSoon() {
   if (typeof window.scheduleFirebaseWarmup === "function") {
@@ -207,18 +208,26 @@ function startApp() {
   applyStandaloneViewMode();
   mountMemberCanvasMembersSection();
   hideGate();
-  initCountdown();
-  initDailyFlow();
-  if (typeof initQaPage === "function") initQaPage();
-  setupAzkarModal();
-  wireDashboardQuickActions();
-  initAhdPage();
 
-  if ("requestAnimationFrame" in window) {
-    requestAnimationFrame(() => bootstrapPostLoginSystems());
-  } else {
-    setTimeout(bootstrapPostLoginSystems, 0);
+  // Let the member cards paint first; the rest of the dashboard can initialize immediately after.
+  if (APP_HOME_BOOTSTRAP_TIMER) {
+    clearTimeout(APP_HOME_BOOTSTRAP_TIMER);
   }
+  APP_HOME_BOOTSTRAP_TIMER = setTimeout(() => {
+    APP_HOME_BOOTSTRAP_TIMER = null;
+    initCountdown();
+    initDailyFlow();
+    if (typeof initQaPage === "function") initQaPage();
+    setupAzkarModal();
+    wireDashboardQuickActions();
+    initAhdPage();
+
+    if ("requestAnimationFrame" in window) {
+      requestAnimationFrame(() => bootstrapPostLoginSystems());
+    } else {
+      setTimeout(bootstrapPostLoginSystems, 0);
+    }
+  }, 0);
 }
 
 function initIdentityGate() {

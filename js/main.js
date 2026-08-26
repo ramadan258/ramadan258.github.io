@@ -377,6 +377,8 @@ const FIRESTORE_HIDDEN_MEMBERS = "featuredMembers";
 const FIRESTORE_MEMBER_ACCESS = "featuredMembers";
 const LOCAL_MEMBER_DIRECTORY_CUSTOM_KEY = "wa3i_member_directory_custom_v1";
 const LOCAL_MEMBER_DIRECTORY_HIDDEN_KEY = "wa3i_member_directory_hidden_v1";
+const LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY = "wa3i_member_directory_remote_cache_v1";
+const REMOTE_MEMBER_DIRECTORY_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 const LOCAL_LEGACY_MEMBER_CLEANUP_KEY = "wa3i_legacy_member_cleanup_v1";
 const MEMBER_DIRECTORY_STATE = {
   baseMembers: [],
@@ -638,6 +640,59 @@ function loadLocalMemberDirectoryState() {
   }
 }
 
+function saveRemoteMemberDirectoryCache() {
+  try {
+    const custom = Array.from(MEMBER_DIRECTORY_STATE.remoteCustomMembers.values()).map((member) => ({
+      id: String(member?.id || "").trim(),
+      name: String(member?.name || "").trim(),
+      src: String(member?.src || "").trim(),
+      source: "custom",
+    })).filter((member) => member.id && member.name && member.src);
+    const hidden = Array.from(MEMBER_DIRECTORY_STATE.remoteHiddenMemberIds)
+      .map((id) => String(id || "").trim())
+      .filter(Boolean);
+
+    localStorage.setItem(LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY, JSON.stringify({
+      updatedAt: Date.now(),
+      custom,
+      hidden,
+    }));
+  } catch {}
+}
+
+function loadRemoteMemberDirectoryCache() {
+  try {
+    const raw = localStorage.getItem(LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY);
+    const cached = raw ? JSON.parse(raw) : null;
+    const updatedAt = Number(cached?.updatedAt || 0);
+    if (!cached || !updatedAt || Date.now() - updatedAt > REMOTE_MEMBER_DIRECTORY_CACHE_MAX_AGE_MS) {
+      return;
+    }
+
+    const custom = new Map();
+    if (Array.isArray(cached.custom)) {
+      cached.custom.forEach((member) => {
+        const id = String(member?.id || "").trim();
+        const name = String(member?.name || "").trim();
+        const src = String(member?.src || "").trim();
+        if (!id || !name || !src || isLegacyRemovedStaticMemberId(id)) return;
+        custom.set(id, { id, name, src, source: "custom" });
+      });
+    }
+
+    const hidden = new Set();
+    if (Array.isArray(cached.hidden)) {
+      cached.hidden.forEach((id) => {
+        const value = String(id || "").trim();
+        if (value) hidden.add(value);
+      });
+    }
+
+    MEMBER_DIRECTORY_STATE.remoteCustomMembers = custom;
+    MEMBER_DIRECTORY_STATE.remoteHiddenMemberIds = hidden;
+  } catch {}
+}
+
 function getMergedCustomMembersMap() {
   const merged = new Map(MEMBER_DIRECTORY_STATE.remoteCustomMembers);
   MEMBER_DIRECTORY_STATE.localCustomMembers.forEach((value, key) => {
@@ -709,14 +764,21 @@ function refreshMemberDirectoryUI(options = {}) {
     renderMembersSection();
   }
   IDENTITY_MEMBERS_CACHE = readMembersFromDOM();
-  rebuildTribeMapFromDOM();
   if (renderMembers) {
     try { decorateMemberCardsWithStreaks(); } catch {}
   }
-  try {
-    const q = qs("#identitySearch")?.value || "";
-    renderIdentityGrid(IDENTITY_MEMBERS_CACHE, q);
-  } catch {}
+
+  const gateVisible = !qs("#identityGate")?.classList.contains("is-hidden");
+  if (gateVisible) {
+    try {
+      const q = qs("#identitySearch")?.value || "";
+      renderIdentityGrid(IDENTITY_MEMBERS_CACHE, q);
+    } catch {}
+  }
+
+  if (!shouldRenderMembersSectionUI()) return;
+
+  rebuildTribeMapFromDOM();
   try { renderAhdPublicList(); } catch {}
   if (FB_STATE.isAdmin) {
     cleanupLegacyRemovedMembersCloudOnce().catch((error) => {
@@ -2131,6 +2193,7 @@ function initMemberDirectorySystem(options = {}) {
   }
 
   loadLocalMemberDirectoryState();
+  loadRemoteMemberDirectoryCache();
   wireMemberManageAdminControls();
   refreshMemberDirectoryUI({ renderMembers });
 
@@ -2143,48 +2206,49 @@ function initMemberDirectorySystem(options = {}) {
     const { db, onSnapshot, collection } = window.FB;
 
     onSnapshot(collection(db, FIRESTORE_CUSTOM_MEMBERS), (snap) => {
-      const next = new Map();
-      snap.forEach((docSnap) => {
-        if (!String(docSnap.id || "").startsWith("custom__")) return;
-        const data = docSnap.data() || {};
-        const memberId = String(data.memberId || docSnap.id.replace(/^custom__/, "")).trim();
-        const name = String(data.name || "").trim();
-        const src = String(data.src || "").trim();
-        if (!memberId || !name || !src || isLegacyRemovedStaticMemberId(memberId)) return;
-        next.set(memberId, { id: memberId, name, src, source: "custom" });
-      });
-      MEMBER_DIRECTORY_STATE.pendingDeletedCustomMemberIds.forEach((id) => {
-        if (!next.has(id)) MEMBER_DIRECTORY_STATE.pendingDeletedCustomMemberIds.delete(id);
-      });
-      MEMBER_DIRECTORY_STATE.remoteCustomMembers = next;
-      refreshMemberDirectoryUI();
-    });
+      const customMembers = new Map();
+      const hiddenMemberIds = new Set();
+      const accessById = new Map();
 
-    onSnapshot(collection(db, FIRESTORE_HIDDEN_MEMBERS), (snap) => {
-      const next = new Set();
       snap.forEach((docSnap) => {
-        if (!String(docSnap.id || "").startsWith("hidden__")) return;
+        const docId = String(docSnap.id || "");
         const data = docSnap.data() || {};
-        const memberId = String(data.memberId || docSnap.id.replace(/^hidden__/, "")).trim();
-        if (memberId) next.add(memberId);
+
+        if (docId.startsWith("custom__")) {
+          const memberId = String(data.memberId || docId.replace(/^custom__/, "")).trim();
+          const name = String(data.name || "").trim();
+          const src = String(data.src || "").trim();
+          if (memberId && name && src && !isLegacyRemovedStaticMemberId(memberId)) {
+            customMembers.set(memberId, { id: memberId, name, src, source: "custom" });
+          }
+          return;
+        }
+
+        if (docId.startsWith("hidden__")) {
+          const memberId = String(data.memberId || docId.replace(/^hidden__/, "")).trim();
+          if (memberId) hiddenMemberIds.add(memberId);
+          return;
+        }
+
+        if (docId.startsWith("access__")) {
+          const record = memberAccessRecordFromData(docId, data);
+          if (!record || !record.passwordHash) return;
+          accessById.set(record.memberId, record);
+          if (record.hasLegacyPlaintext) queueLegacyMemberAccessCleanup(record.memberId);
+        }
+      });
+
+      MEMBER_DIRECTORY_STATE.pendingDeletedCustomMemberIds.forEach((id) => {
+        if (!customMembers.has(id)) MEMBER_DIRECTORY_STATE.pendingDeletedCustomMemberIds.delete(id);
       });
       MEMBER_DIRECTORY_STATE.pendingHiddenMemberIds.forEach((id) => {
-        if (next.has(id)) MEMBER_DIRECTORY_STATE.pendingHiddenMemberIds.delete(id);
+        if (hiddenMemberIds.has(id)) MEMBER_DIRECTORY_STATE.pendingHiddenMemberIds.delete(id);
       });
-      MEMBER_DIRECTORY_STATE.remoteHiddenMemberIds = next;
-      refreshMemberDirectoryUI();
-    });
 
-    onSnapshot(collection(db, FIRESTORE_MEMBER_ACCESS), (snap) => {
-      const next = new Map();
-      snap.forEach((docSnap) => {
-        if (!String(docSnap.id || "").startsWith("access__")) return;
-        const record = memberAccessRecordFromData(docSnap.id, docSnap.data() || {});
-        if (!record || !record.passwordHash) return;
-        next.set(record.memberId, record);
-        if (record.hasLegacyPlaintext) queueLegacyMemberAccessCleanup(record.memberId);
-      });
-      MEMBER_DIRECTORY_STATE.remoteAccessById = next;
+      MEMBER_DIRECTORY_STATE.remoteCustomMembers = customMembers;
+      MEMBER_DIRECTORY_STATE.remoteHiddenMemberIds = hiddenMemberIds;
+      MEMBER_DIRECTORY_STATE.remoteAccessById = accessById;
+      saveRemoteMemberDirectoryCache();
       refreshMemberDirectoryUI();
     });
   };
