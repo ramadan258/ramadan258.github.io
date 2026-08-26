@@ -3144,6 +3144,11 @@ function previousISODate(isoDate) {
         return;
       }
 
+      // Start loading interaction bands while the member picker is visible.
+      if (typeof initMemberStatusSystem === "function") {
+        initMemberStatusSystem();
+      }
+
       if (shouldResumeToHome || getStandaloneView()) {
         const rememberedUser = readCurrentUser();
         if (rememberedUser) {

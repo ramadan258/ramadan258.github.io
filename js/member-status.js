@@ -66,12 +66,49 @@ function compareMembersByStatusThenName(a, b) {
 }
 
 const FIRESTORE_MEMBER_STATUS = "featuredMembers";
+const LOCAL_MEMBER_STATUS_CACHE_KEY = "wa3i_member_status_cache_v1";
+const MEMBER_STATUS_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 let MEMBER_STATUS_STATE = {
   map: new Map(), // memberId -> elite | active | lazy
   unsubscribers: [],
+  cacheLoaded: false,
 };
 const PENDING_MEMBER_STATUS = new Map(); // memberId -> elite | active | lazy | "__CLEAR__"
+
+function saveMemberStatusCache() {
+  try {
+    const statuses = Array.from(MEMBER_STATUS_STATE.map.entries())
+      .filter(([memberId, status]) => memberId && (status === "elite" || status === "active" || status === "lazy"));
+    localStorage.setItem(LOCAL_MEMBER_STATUS_CACHE_KEY, JSON.stringify({
+      updatedAt: Date.now(),
+      statuses,
+    }));
+  } catch {}
+}
+
+function loadMemberStatusCache() {
+  if (MEMBER_STATUS_STATE.cacheLoaded) return;
+  MEMBER_STATUS_STATE.cacheLoaded = true;
+
+  try {
+    const raw = localStorage.getItem(LOCAL_MEMBER_STATUS_CACHE_KEY);
+    const cached = raw ? JSON.parse(raw) : null;
+    const updatedAt = Number(cached?.updatedAt || 0);
+    if (!cached || !updatedAt || Date.now() - updatedAt > MEMBER_STATUS_CACHE_MAX_AGE_MS || !Array.isArray(cached.statuses)) {
+      return;
+    }
+
+    const next = new Map();
+    cached.statuses.forEach(([memberId, status]) => {
+      const id = String(memberId || "").trim();
+      if (id && (status === "elite" || status === "active" || status === "lazy")) {
+        next.set(id, status);
+      }
+    });
+    MEMBER_STATUS_STATE.map = next;
+  } catch {}
+}
 
 function getMemberStatus(memberId) {
   const id = String(memberId);
@@ -241,6 +278,7 @@ function attachMemberStatusFirestoreListeners() {
         PENDING_MEMBER_STATUS.delete(id);
       }
     }
+    saveMemberStatusCache();
     refreshMemberStatusUI();
   });
 
@@ -248,6 +286,9 @@ function attachMemberStatusFirestoreListeners() {
 }
 
 function initMemberStatusSystem() {
+  loadMemberStatusCache();
+  refreshMemberStatusUI();
+
   const tryInit = () => {
     if (!fbAvailable()) return setTimeout(tryInit, 80);
 
