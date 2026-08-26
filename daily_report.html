@@ -7,10 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="icon" href="favicon.ico?v=20260826speed3" type="image/x-icon" />
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260826speed3" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260826speed3" />
-  <link rel="manifest" href="site.webmanifest?v=20260826speed3" />
+  <link rel="icon" href="favicon.ico?v=20260827daily1" type="image/x-icon" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260827daily1" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260827daily1" />
+  <link rel="manifest" href="site.webmanifest?v=20260827daily1" />
   <style>
     /* ── Site design tokens (mirrors style.css) ── */
     :root {
@@ -428,30 +428,6 @@
       border-radius: 10px;
     }
 
-    /* ── Score badge ── */
-    .scoreBadge {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      background: linear-gradient(155deg, rgba(245,200,66,.06), rgba(245,200,66,.02));
-      border: 1px solid rgba(245,200,66,.16);
-      border-radius: 18px;
-      padding: 18px 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,.3);
-    }
-    .scoreNum {
-      font-family: "Amiri", serif;
-      font-size: 48px;
-      font-weight: 700;
-      color: var(--gold);
-      line-height: 1;
-      text-shadow: 0 0 30px rgba(245,200,66,.3);
-    }
-    .scoreLabel { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-    .scoreStats { font-size: 13px; color: var(--text-muted); line-height: 2; }
-    .scoreStats span { color: var(--text-light); font-weight: 900; }
-
     /* ── Progress dots for habit questions ── */
     .qDots { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; }
     .qDot {
@@ -762,7 +738,7 @@
 
 <!-- Back nav -->
   <div class="back-bar">
-    <a href="index.html?resume=1&v=20260826speed3" class="back-link">← العودة إلى الصفحة الرئيسية</a>
+    <a href="index.html?resume=1&v=20260827daily1" class="back-link">← العودة إلى الصفحة الرئيسية</a>
   </div>
 
 <!-- Page Header -->
@@ -773,7 +749,7 @@
 
 <!-- Covenant Banner -->
 <div class="report-banner">
-  🏆 تقرير يومي بالنقاط لمتابعة الثبات والتعافي داخل قبيلة الموحدون
+  🧭 تقرير يومي لمتابعة الثبات والتعافي داخل قبيلة الموحدون
 </div>
 
 <div class="wrap">
@@ -911,8 +887,6 @@
     const activeTitle = formatSavedDayTitle(active, selectedArchiveIndex);
     const completed = Number(active?.completedHabits || 0);
     const totalHabits = Number(active?.totalHabits || recoveryHabits.length);
-    const points = Number(active?.points || 0);
-
     panel.innerHTML = `
       <div class="saved-days-head">
         <div>
@@ -928,11 +902,10 @@
             const dateLine = String(entry?.dateISO || "").trim() || "بدون تاريخ";
             const entryCompleted = Number(entry?.completedHabits || 0);
             const entryTotalHabits = Number(entry?.totalHabits || recoveryHabits.length);
-            const entryPoints = Number(entry?.points || 0);
             return `
               <div class="saved-day-item${index === selectedArchiveIndex ? " active" : ""}">
                 <div class="saved-day-name">${escapeHtml(title)}</div>
-                <div class="saved-day-meta">التاريخ: ${escapeHtml(dateLine)}<br>النقاط: ${formatPoints(entryPoints)} • العادات: ${entryCompleted}/${entryTotalHabits}</div>
+                <div class="saved-day-meta">التاريخ: ${escapeHtml(dateLine)}<br>العادات المنجزة: ${entryCompleted}/${entryTotalHabits}</div>
                 <div class="saved-day-actions">
                   <button class="saved-day-btn primary" type="button" data-archive-view="${index}">عرض</button>
                   <button class="saved-day-btn" type="button" data-archive-copy="${index}">نسخ</button>
@@ -946,7 +919,7 @@
           <div class="saved-day-preview-head">
             <div>
               <h3 class="saved-day-preview-title">${escapeHtml(activeTitle)}</h3>
-              <p class="saved-day-preview-sub">النقاط: ${formatPoints(points)} • العادات المنجزة: ${completed}/${totalHabits} • محفوظ على هذا الجهاز داخل المتصفح الحالي.</p>
+              <p class="saved-day-preview-sub">العادات المنجزة: ${completed}/${totalHabits} • محفوظ على هذا الجهاز داخل المتصفح الحالي.</p>
             </div>
             <button class="saved-day-btn primary" type="button" id="copyActiveSavedDay">نسخ هذا التقرير</button>
           </div>
@@ -1013,7 +986,6 @@
       "",
       ""
     ],
-    previousPointsTotal: "",
   };
 
   let state = loadState();
@@ -1022,8 +994,6 @@
   if(typeof state.motivation === "string") state.motivation = state.motivation ? [state.motivation] : [""];
   if(!Array.isArray(state.motivation)) state.motivation = [""];
   if(!Array.isArray(state.notes)) state.notes = ["","",""];
-  if(typeof state.previousPointsTotal === "number") state.previousPointsTotal = String(state.previousPointsTotal);
-  if(typeof state.previousPointsTotal !== "string") state.previousPointsTotal = "";
   if(!Array.isArray(state.avoided) || !state.avoided.length) state.avoided = structuredClone(defaultState.avoided);
   if(!Array.isArray(state.gratitude) || !state.gratitude.length) state.gratitude = structuredClone(defaultState.gratitude);
   while(state.gratitude.length < 4) state.gratitude.push("");
@@ -1031,19 +1001,21 @@
 
   // ---------- Habits Definition ----------
   const recoveryHabits = [
-    { id:"habit_lower_gaze", name:"حصار العين والمدخلات (غض البصر التام)", points:250, type:"bool" },
-    { id:"habit_clean_day", name:"يوم نظيف بلا إباحية أو استمناء", points:200, type:"bool" },
-    { id:"habit_prayers", name:"حصانة اليوم (أداء خمس صلوات فريضة في أول الوقت 🕌)", points:50, type:"bool" },
-    { id:"habit_adhkar", name:"شحن الروح (قراءة أذكار الصباح والمساء)", points:40, type:"bool" },
-    { id:"habit_dua", name:"الدعاء لنفسي وللمسلمين 🤲", points:20, type:"bool" },
-    { id:"habit_commitments", name:"القيام بالالتزامات اليومية وجميع تحديات واعي 🏆", points:80, type:"bool" },
-    { id:"habit_learning", name:"تغذية الوعي (مشاهدة أو قراءة موضوع عن التعافي)", points:40, type:"bool" },
-    { id:"habit_support", name:"دعم وتفاعل (إرسال التقرير والتفاعل مع أعضاء القبيلة بإخلاص 🫂)", points:40, type:"bool" },
-    { id:"habit_exercise", name:"تفريغ الطاقة السلبية (ممارسة التمارين الرياضية والتنفس العميق)", points:60, type:"bool" },
-    { id:"habit_journal", name:"كتابة اليوميات ✍️", points:50, type:"bool" },
-    { id:"habit_cold_shower", name:"إطفاء الإلحاح (الاستحمام بالماء البارد ❄️)", points:30, type:"bool" },
-    { id:"habit_tomorrow_tasks", name:"كتابة 3 مهام راح تسويها غداً 📝", points:30, type:"bool" },
-    { id:"habit_digital_protection", name:"الحماية الرقمية (تجنب التصفح العشوائي وتجنب استخدام الجوال على السرير 📱📵)", points:250, type:"bool" },
+    { id:"habit_prayers_mosque", name:"أداء صلوات الفريضة جماعة في المسجد 🕌" },
+    { id:"habit_good_sleep", name:"النوم الجيد 😪" },
+    { id:"habit_adhkar", name:"قراءة أذكار الصباح والمساء 📿" },
+    { id:"habit_quran", name:"قراءة الورد اليومي من القرآن الكريم 🌱" },
+    { id:"habit_lower_gaze", name:"غض البصر ✋🏻" },
+    { id:"habit_commitments", name:"أداء الالتزامات اليومية 🏆" },
+    { id:"habit_healthy_food", name:"تجنب الطعام الضار 🚫" },
+    { id:"habit_learning", name:"التثقف عن التعافي 🧗🏻" },
+    { id:"habit_exercise", name:"ممارسة الرياضة 💪🏻" },
+    { id:"habit_teeth", name:"تفريش الأسنان 🪥" },
+    { id:"habit_cold_shower", name:"الاستحمام بالماء البارد ❄️" },
+    { id:"habit_journal", name:"كتابة اليوميات ✍🏻" },
+    { id:"habit_book", name:"قراءة كتاب لمدة ٥ دقائق 📚" },
+    { id:"habit_clean_porn", name:"يوم نظيف بلا إباحية 👑" },
+    { id:"habit_clean_masturbation", name:"يوم نظيف بلا استمناء 👑" },
   ];
 
   // init default answers if missing
@@ -1068,7 +1040,6 @@
     { id:"summary", title:"🗒️ ملخص اليوم", sub:"اكتب ملخصًا مختصرًا" },
     { id:"motivation", title:"🚀 التحفيز الذاتي", sub:"اكتب سطورًا تحفيزية لنفسك" },
     { id:"notes", title:"📎 ملاحظات مهمة", sub:"اكتب الملاحظات التي تريدها في آخر التقرير" },
-    { id:"points", title:"🏆 نقاطك اليوم", sub:"كم عدد نقاطك التي تريد اعتمادها لهذا اليوم؟" },
     { id:"report", title:"📌 التقرير النهائي", sub:"انسخ التقرير وأرسله" },
   ];
 
@@ -1092,60 +1063,38 @@
     return h.name;
   }
 
-  const formatPoints = (value)=>{
+  const formatArabicNumber = (value)=>{
     const number = Number(value || 0);
     return Number.isFinite(number) ? new Intl.NumberFormat("ar-SA").format(number) : "0";
   };
 
-  const computeScores = ()=>{
+  const computeHabits = ()=>{
     let doneTotal = 0;
     let totalTotal = 0;
-    let pointsTotal = 0;
-    let possiblePoints = 0;
 
-    const habitsDone = [];
-    const habitsNot = [];
+    const habitLines = [];
 
     recoveryHabits.forEach((h, index)=>{
       totalTotal++;
-      possiblePoints += Number(h.points || 0);
       const a = state.answers[h.id] || {done:false, count:0};
       const achieved = !!a.done;
-      const line = `${index + 1}✅ ${h.name}`;
       if(achieved){
         doneTotal++;
-        pointsTotal += Number(h.points || 0);
-        habitsDone.push(line);
+        habitLines.push(`✅ ${h.name}`);
       }else{
-        habitsNot.push(`${index + 1}❌ ${h.name}`);
+        habitLines.push(`⬜ ${h.name}`);
       }
     });
 
     return {
       doneTotal,
       totalTotal,
-      pointsTotal,
-      possiblePoints,
-      habitsDone,
-      habitsNot
+      habitLines
     };
   };
 
-  const resolvePreviousPointsTotal = ()=>{
-    const raw = String(state.previousPointsTotal ?? "").trim();
-    const parsed = Number.parseInt(raw, 10);
-    if(Number.isFinite(parsed) && parsed >= 0) return parsed;
-    return 0;
-  };
-
-  const computeCumulativePoints = ()=>{
-    return resolvePreviousPointsTotal() + computeScores().pointsTotal;
-  };
-
   const buildReport = ()=>{
-    const S = computeScores();
-    const todayPoints = S.pointsTotal;
-    const cumulativePoints = computeCumulativePoints();
+    const S = computeHabits();
 
     const hijri = (state.hijriDate||"—").trim();
     const dayNo = (state.recoveryDay||"—").trim();
@@ -1156,7 +1105,7 @@
 
     const avoidedLines = (state.avoided||[])
       .map(x=>String(x||"").trim()).filter(Boolean)
-      .map(x=>`🚫 ${x}`).join("\n") || "🚫 —";
+      .map(x=>`❌ ${x}`).join("\n") || "❌ —";
 
     const gratitudeLines = (state.gratitude||[])
       .map(x=>String(x||"").trim()).filter(Boolean)
@@ -1165,46 +1114,32 @@
     const summary = (state.summary||"").trim() || "—";
     const motivationText = (state.motivation||[])
       .map(x=>String(x||"").trim()).filter(Boolean)
-      .join("\n") || "—";
+      .map(x=>`⚡️${x}`).join("\n") || "⚡️ —";
 
-    const notePrefixes = ["🛑", "🛑", "🔴"];
     const notesLines = (state.notes||[])
       .map(x=>String(x||"").trim())
       .filter(Boolean)
-      .map((x, index)=>`${notePrefixes[index] || "📌"} ${x}`)
-      .join("\n") || "🛑 —";
+      .map(x=>`📌 ${x}`)
+      .join("\n") || "📌 —";
 
-    const habitsDoneText = S.habitsDone.length
-      ? S.habitsDone.join("\n\n")
-      : "لا توجد عادات منجزة مسجلة اليوم.";
-
-    const habitsNotText = S.habitsNot.length
-      ? S.habitsNot.join("\n")
-      : "✅ الحمد لله، التزمت بكل العادات اليوم.";
+    const habitsText = S.habitLines.join("\n") || "⬜ لا توجد عادات مسجلة اليوم.";
 
     return `🧭 تقرير التعافي اليومي
 
-📆 اليوم: ${hijri}
-🕰️ اليوم رقم ${dayNo} إلى التعافي إن شاء الله🤍
-——————————
+🗓️ اليوم: ${hijri}
+🕰️ اليوم رقم: ${dayNo} في حياة التعافي بفضل الله
 
-🗓️ نقاط تقرير اليوم-(${formatPoints(todayPoints)}) والمجموع الكلي(${formatPoints(cumulativePoints)})
+---
 
-🌿 جوانب التعافي
+🌿 عادات التعافي:
 
-العادات التي التزمت بها اليوم:
-${habitsDoneText}
+${habitsText}
 
-العادات التي لم التزم بها:
-${habitsNotText}
-
-——————————————-
-
-📈 عدد العادات المنجزة من أصل ${S.totalTotal}: ${S.doneTotal}
+---
 
 🚫 جانب "لا تَقربوا"
 
-العادات السلبية التي تجنبتها اليوم:
+العادات السيئة التي تجنبتها اليوم:
 ${avoidedLines}
 
 ---
@@ -1218,15 +1153,19 @@ ${gratitudeLines}
 
 ⭐️ التقييم اليومي:
 
-شعوري العام: ${feeling}
+📈 عدد العادات المنجزة: ${formatArabicNumber(S.doneTotal)} من ${formatArabicNumber(S.totalTotal)}
+🔍 شعوري العام: ${feeling}
 
-🗒️ ملخص يومي :
-${summary}
+🗒️ ملخص يومي: ${summary}
+
+---
 
 🚀 التحفيز الذاتي:
 ${motivationText}
 
-ملاحظات مهمة:
+---
+
+📎 ملاحظات مهمة:
 ${notesLines}
 
 #قبيلة_الموحدون`;
@@ -1740,40 +1679,13 @@ ${notesLines}
     $("#next").onclick = ()=>go(+1);
   };
 
-  const renderPoints = ()=>{
-    app.innerHTML = `
-      <h2 class="stepTitle">🏆 كم عدد نقاطك؟</h2>
-      <p class="hint">اكتب مجموع نقاطك الحالي قبل إضافة نقاط تقرير اليوم، وسيتم جمعها تلقائيًا في التقرير النهائي.</p>
-
-      <label>مجموع نقاطك الحالي</label>
-      <input id="dailyPointsInput" type="number" min="0" inputmode="numeric" value="${escapeHtml(state.previousPointsTotal || "")}" />
-
-      <div class="btns">
-        <button class="ghost" id="prev">← السابق</button>
-        <button class="primary" id="next">التالي →</button>
-      </div>
-    `;
-
-    const input = $("#dailyPointsInput");
-    input.addEventListener("input", (e)=>{
-      const value = String(e.target.value || "").replace(/[^\d]/g, "");
-      e.target.value = value;
-      state.previousPointsTotal = value;
-      saveState();
-    });
-
-    $("#prev").onclick = ()=>go(-1);
-    $("#next").onclick = ()=>go(+1);
-  };
-
   const renderReport = ()=>{
     const report = buildReport();
-    const scores = computeScores();
-    const todayPoints = scores.pointsTotal;
+    const habits = computeHabits();
 
     app.innerHTML = `
       <h2 class="stepTitle">📌 التقرير النهائي</h2>
-      <p class="hint">اضغط "نسخ التقرير" ثم أرسله للقبيلة. النقاط اليومية والمجموع الكلي محدثان داخل النص مباشرة.</p>
+      <p class="hint">اضغط "نسخ التقرير" ثم أرسله للقبيلة.</p>
 
       <label>التقرير</label>
       <textarea class="reportBox" id="reportText" readonly>${escapeHtml(report)}</textarea>
@@ -1800,9 +1712,8 @@ ${notesLines}
       archive.unshift({
         dateISO: state.dateISO || todayISO,
         hijriDate: state.hijriDate,
-        completedHabits: scores.doneTotal,
-        totalHabits: scores.totalTotal,
-        points: todayPoints,
+        completedHabits: habits.doneTotal,
+        totalHabits: habits.totalTotal,
         report
       });
       selectedArchiveIndex = 0;
@@ -1835,7 +1746,6 @@ ${notesLines}
     if(id==="summary") return renderSummary();
     if(id==="motivation") return renderMotivation();
     if(id==="notes") return renderNotes();
-    if(id==="points") return renderPoints();
     if(id==="report") return renderReport();
   }
 
@@ -1844,4 +1754,3 @@ ${notesLines}
 </script>
 </body>
 </html>
-
