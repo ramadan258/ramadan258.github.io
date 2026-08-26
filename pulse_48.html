@@ -7,10 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="icon" href="favicon.ico?v=20260826speed2" type="image/x-icon" />
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260826speed2" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260826speed2" />
-  <link rel="manifest" href="site.webmanifest?v=20260826speed2" />
+  <link rel="icon" href="favicon.ico?v=20260826speed3" type="image/x-icon" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260826speed3" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260826speed3" />
+  <link rel="manifest" href="site.webmanifest?v=20260826speed3" />
   <style>
     :root {
       --primary: #4ecdc4;
@@ -464,7 +464,7 @@
 </head>
 <body>
   <div class="back-bar">
-    <a href="index.html?resume=1&v=20260826speed2" class="back-link">← العودة إلى الصفحة الرئيسية</a>
+    <a href="index.html?resume=1&v=20260826speed3" class="back-link">← العودة إلى الصفحة الرئيسية</a>
   </div>
 
   <header class="hero">
@@ -512,7 +512,7 @@
         <label class="question-label" for="planCommitment">3️⃣ كيف كان التزامك بخطة التعافي؟</label>
         <div class="field">
           <small>من 1 إلى 10</small>
-          <input id="planCommitment" type="number" min="1" max="10" inputmode="numeric" placeholder="__ /10">
+          <input id="planCommitment" type="number" min="1" max="10" step="0.5" inputmode="decimal" placeholder="__ /10">
         </div>
       </section>
 
@@ -520,7 +520,7 @@
         <label class="question-label" for="urgeLevel">4️⃣ كيف كان مستوى الرغبة أو الإلحاح؟</label>
         <div class="field">
           <small>من 1 إلى 10</small>
-          <input id="urgeLevel" type="number" min="1" max="10" inputmode="numeric" placeholder="__ /10">
+          <input id="urgeLevel" type="number" min="1" max="10" step="0.5" inputmode="decimal" placeholder="__ /10">
         </div>
       </section>
 
@@ -534,7 +534,14 @@
       </section>
 
       <section class="card">
-        <label class="question-label" for="dangerPattern">6️⃣ هل لاحظت نمط الخطر المعتاد لديك؟</label>
+        <label class="question-label" for="drainedMost">6️⃣ ما أكثر شيء استنزف طاقتك خلال آخر يومين؟</label>
+        <div class="field">
+          <textarea id="drainedMost" placeholder="اكتب بوضوح ما الذي استنزفك أو أثقل عليك..."></textarea>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="dangerPattern">7️⃣ هل لاحظت نمط الخطر المعتاد لديك؟</label>
         <div class="field">
           <small>مثل: بعد الشغل، بعد السهر، أثناء الفراغ، بعد الضغط، بعد الاستيقاظ.</small>
           <input id="dangerPattern" type="text" placeholder="اكتب النمط الذي لاحظته...">
@@ -542,21 +549,30 @@
       </section>
 
       <section class="card">
-        <label class="question-label" for="helpedMost">7️⃣ ما أكثر شيء ساعد تعافيك خلال اليومين الماضيين؟</label>
+        <label class="question-label" for="helpedMost">8️⃣ ما أكثر شيء ساعد تعافيك خلال اليومين الماضيين؟</label>
         <div class="field">
           <textarea id="helpedMost" placeholder="اكتب الشيء الأوضح الذي نفعك..."></textarea>
         </div>
       </section>
 
       <section class="card">
-        <label class="question-label" for="threatenedMost">8️⃣ ما أكثر شيء هدد تعافيك خلال اليومين الماضيين؟</label>
+        <label class="question-label" for="threatenedMost">9️⃣ ما أكثر شيء هدد تعافيك خلال اليومين الماضيين؟</label>
         <div class="field">
           <textarea id="threatenedMost" placeholder="اكتب الشيء الأوضح الذي هددك..."></textarea>
         </div>
       </section>
 
       <section class="card">
-        <label class="question-label" for="protectionStep">9️⃣ ما خطوة الحماية الوحيدة التي ستلتزم بها خلال الـ 24 ساعة القادمة؟</label>
+        <div class="card-title">🔟 هل طلبت دعمًا عندما احتجته؟</div>
+        <div class="choice-grid">
+          <label class="choice-chip"><input type="radio" name="supportRequested" value="نعم"><span>نعم</span></label>
+          <label class="choice-chip"><input type="radio" name="supportRequested" value="لا"><span>لا</span></label>
+          <label class="choice-chip"><input type="radio" name="supportRequested" value="لم أحتج"><span>لم أحتج</span></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="question-label" for="protectionStep">1️⃣1️⃣ ما خطوة الحماية الوحيدة التي ستلتزم بها خلال الـ 24 ساعة القادمة؟</label>
         <div class="field">
           <textarea id="protectionStep" placeholder="اكتب خطوة واحدة واضحة ومحددة..."></textarea>
         </div>
@@ -598,7 +614,8 @@
       <section class="card">
         <div class="card-title">🤍 تذكر</div>
         <div class="note">
-          الزلة لا تبدأ لحظة السقوط... بل تبدأ عندما يتغير نبض التعافي ولا ننتبه له.
+          الزلة لا تبدأ لحظة السقوط... بل تبدأ عندما يتغير نبض التعافي ولا ننتبه له.<br>
+          وكلما اكتشفت التغير مبكرًا، كان الرجوع أسهل والثبات أقوى. 🧭🤍
         </div>
       </section>
     </aside>
@@ -618,9 +635,11 @@
       planCommitment: "",
       urgeLevel: "",
       closeToSlip: "",
+      drainedMost: "",
       dangerPattern: "",
       helpedMost: "",
       threatenedMost: "",
+      supportRequested: "",
       protectionStep: ""
     };
 
@@ -730,16 +749,22 @@ ${state.urgeLevel || "—"} /10
 5️⃣ هل شعرت أنك قريب من الزلة؟
 ${state.closeToSlip || "غير محدد"}
 
-6️⃣ نمط الخطر المعتاد:
+6️⃣ ما أكثر شيء استنزف طاقتي خلال آخر يومين؟
+${state.drainedMost || "—"}
+
+7️⃣ نمط الخطر المعتاد:
 ${state.dangerPattern || "—"}
 
-7️⃣ أكثر شيء ساعد تعافيي:
+8️⃣ أكثر شيء ساعد تعافيي:
 ${state.helpedMost || "—"}
 
-8️⃣ أكثر شيء هدد تعافيي:
+9️⃣ أكثر شيء هدد تعافيي:
 ${state.threatenedMost || "—"}
 
-9️⃣ خطوة الحماية خلال الـ 24 ساعة القادمة:
+🔟 هل طلبت دعمًا عندما احتجته؟
+${state.supportRequested || "غير محدد"}
+
+1️⃣1️⃣ خطوة الحماية خلال الـ 24 ساعة القادمة:
 ${state.protectionStep || "—"}
 
 📊 تقييم نبض التعافي
@@ -751,7 +776,8 @@ ${result.actions.map((item) => `• ${item}`).join("\n")}
 
 🤍 تذكر:
 الزلة لا تبدأ لحظة السقوط...
-بل تبدأ عندما يتغير "نبض التعافي" ولا ننتبه له.`;
+بل تبدأ عندما يتغير "نبض التعافي" ولا ننتبه له.
+وكلما اكتشفت التغير مبكرًا، كان الرجوع أسهل والثبات أقوى. 🧭🤍`;
     };
 
     const syncFormFromState = () => {
@@ -767,8 +793,13 @@ ${result.actions.map((item) => `• ${item}`).join("\n")}
         input.checked = input.value === state.closeToSlip;
       });
 
+      $$('input[name="supportRequested"]').forEach((input) => {
+        input.checked = input.value === state.supportRequested;
+      });
+
       $("#planCommitment").value = state.planCommitment;
       $("#urgeLevel").value = state.urgeLevel;
+      $("#drainedMost").value = state.drainedMost;
       $("#dangerPattern").value = state.dangerPattern;
       $("#helpedMost").value = state.helpedMost;
       $("#threatenedMost").value = state.threatenedMost;
@@ -832,9 +863,18 @@ ${result.actions.map((item) => `• ${item}`).join("\n")}
         });
       });
 
+      $$('input[name="supportRequested"]').forEach((input) => {
+        input.addEventListener("change", () => {
+          state.supportRequested = input.value;
+          saveState();
+          updateView();
+        });
+      });
+
       [
         ["#planCommitment", "planCommitment"],
         ["#urgeLevel", "urgeLevel"],
+        ["#drainedMost", "drainedMost"],
         ["#dangerPattern", "dangerPattern"],
         ["#helpedMost", "helpedMost"],
         ["#threatenedMost", "threatenedMost"],
