@@ -7,10 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="icon" href="favicon.ico?v=20260827daily1" type="image/x-icon" />
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260827daily1" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260827daily1" />
-  <link rel="manifest" href="site.webmanifest?v=20260827daily1" />
+  <link rel="icon" href="favicon.ico?v=20260829daily2" type="image/x-icon" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260829daily2" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260829daily2" />
+  <link rel="manifest" href="site.webmanifest?v=20260829daily2" />
   <style>
     /* ── Site design tokens (mirrors style.css) ── */
     :root {
@@ -738,7 +738,7 @@
 
 <!-- Back nav -->
   <div class="back-bar">
-    <a href="index.html?resume=1&v=20260827daily1" class="back-link">← العودة إلى الصفحة الرئيسية</a>
+    <a href="index.html?resume=1&v=20260829daily2" class="back-link">← العودة إلى الصفحة الرئيسية</a>
   </div>
 
 <!-- Page Header -->
@@ -1001,12 +1001,12 @@
 
   // ---------- Habits Definition ----------
   const recoveryHabits = [
-    { id:"habit_prayers_mosque", name:"أداء صلوات الفريضة جماعة في المسجد 🕌" },
-    { id:"habit_good_sleep", name:"النوم الجيد 😪" },
-    { id:"habit_adhkar", name:"قراءة أذكار الصباح والمساء 📿" },
+    { id:"habit_prayers_mosque", name:"أداء صلوات الفريضة جماعة فالمسجد 🕌" },
+    { id:"habit_good_sleep", name:"النوم الجيد 💤" },
+    { id:"habit_adhkar", name:"قراءة اذكار الصباح والمساء 📿" },
     { id:"habit_quran", name:"قراءة الورد اليومي من القرآن الكريم 🌱" },
     { id:"habit_lower_gaze", name:"غض البصر ✋🏻" },
-    { id:"habit_commitments", name:"أداء الالتزامات اليومية 🏆" },
+    { id:"habit_commitments", name:"أداء الإلتزامات اليومية 🏆" },
     { id:"habit_healthy_food", name:"تجنب الطعام الضار 🚫" },
     { id:"habit_learning", name:"التثقف عن التعافي 🧗🏻" },
     { id:"habit_exercise", name:"ممارسة الرياضة 💪🏻" },
@@ -1015,7 +1015,7 @@
     { id:"habit_journal", name:"كتابة اليوميات ✍🏻" },
     { id:"habit_book", name:"قراءة كتاب لمدة ٥ دقائق 📚" },
     { id:"habit_clean_porn", name:"يوم نظيف بلا إباحية 👑" },
-    { id:"habit_clean_masturbation", name:"يوم نظيف بلا استمناء 👑" },
+    { id:"habit_clean_masturbation", name:"يوم نظيف بلا إستمناء 👑" },
   ];
 
   // init default answers if missing
@@ -1033,13 +1033,13 @@
   // ---------- Wizard Steps ----------
   const steps = [
     { id:"intro", title:"بيانات التقرير", sub:"اكتب التاريخ الهجري ورقم يومك في حياة التعافي" },
-    { id:"habits_recovery", title:"🌿 عادات التعافي", sub:"سؤال وراء سؤال — بنفس الأسلوب" },
+    { id:"habits_recovery", title:"🌿 جوانب التعافي", sub:"سؤال وراء سؤال — بنفس الأسلوب" },
     { id:"avoided", title:"🚫 جانب (لا تقربوا)", sub:"اكتب الأشياء التي تجنبتها اليوم" },
     { id:"gratitude", title:"🤲 الحمد", sub:"اكتب نعم تشكر الله عليها" },
     { id:"feeling", title:"⭐ التقييم اليومي", sub:"كيف شعورك اليوم؟" },
     { id:"summary", title:"🗒️ ملخص اليوم", sub:"اكتب ملخصًا مختصرًا" },
-    { id:"motivation", title:"🚀 التحفيز الذاتي", sub:"اكتب سطورًا تحفيزية لنفسك" },
-    { id:"notes", title:"📎 ملاحظات مهمة", sub:"اكتب الملاحظات التي تريدها في آخر التقرير" },
+    { id:"motivation", title:"🎁 التحفيز الذاتي", sub:"اكتب سطورًا تحفيزية لنفسك" },
+    { id:"notes", title:"📌 ملاحظات مهمة", sub:"اكتب الملاحظات التي تريدها في آخر التقرير" },
     { id:"report", title:"📌 التقرير النهائي", sub:"انسخ التقرير وأرسله" },
   ];
 
@@ -1072,7 +1072,8 @@
     let doneTotal = 0;
     let totalTotal = 0;
 
-    const habitLines = [];
+    const habitsDone = [];
+    const habitsNotDone = [];
 
     recoveryHabits.forEach((h, index)=>{
       totalTotal++;
@@ -1080,16 +1081,17 @@
       const achieved = !!a.done;
       if(achieved){
         doneTotal++;
-        habitLines.push(`✅ ${h.name}`);
+        habitsDone.push(`✅ ${h.name}`);
       }else{
-        habitLines.push(`⬜ ${h.name}`);
+        habitsNotDone.push(`❌ ${h.name}`);
       }
     });
 
     return {
       doneTotal,
       totalTotal,
-      habitLines
+      habitsDone,
+      habitsNotDone
     };
   };
 
@@ -1105,7 +1107,7 @@
 
     const avoidedLines = (state.avoided||[])
       .map(x=>String(x||"").trim()).filter(Boolean)
-      .map(x=>`❌ ${x}`).join("\n") || "❌ —";
+      .map(x=>`🚫 ${x}`).join("\n") || "🚫 —";
 
     const gratitudeLines = (state.gratitude||[])
       .map(x=>String(x||"").trim()).filter(Boolean)
@@ -1122,50 +1124,58 @@
       .map(x=>`📌 ${x}`)
       .join("\n") || "📌 —";
 
-    const habitsText = S.habitLines.join("\n") || "⬜ لا توجد عادات مسجلة اليوم.";
+    const habitsDoneText = S.habitsDone.join("\n") || "✅ —";
+    const habitsNotDoneText = S.habitsNotDone.join("\n") || "❌ —";
 
     return `🧭 تقرير التعافي اليومي
 
-🗓️ اليوم: ${hijri}
-🕰️ اليوم رقم: ${dayNo} في حياة التعافي بفضل الله
+📆 اليوم: ${hijri}
+🕰️ اليوم رقم: ${dayNo} في رحلة التعافي
+
+🌿 جوانب التعافي
+
+✅العادات التي التزمت بها اليوم:
+
+${habitsDoneText}
 
 ---
 
-🌿 عادات التعافي:
+❌العادات التي لم التزم بها:
 
-${habitsText}
+${habitsNotDoneText}
 
 ---
 
 🚫 جانب "لا تَقربوا"
 
-العادات السيئة التي تجنبتها اليوم:
+العادات السلبية التي تجنبتها اليوم بفضل الله:
 ${avoidedLines}
 
 ---
 
-🤲🏻 الحمد:
+🤲🏻 الحمد
 
-نعم أحمد الله عليها اليوم:
+ثلاث نعم أحمد الله عليها اليوم:
 ${gratitudeLines}
 
 ---
 
-⭐️ التقييم اليومي:
+⭐️ التقييم اليومي
 
-📈 عدد العادات المنجزة: ${formatArabicNumber(S.doneTotal)} من ${formatArabicNumber(S.totalTotal)}
-🔍 شعوري العام: ${feeling}
+📈 عدد العادات المنجزة: ${formatArabicNumber(S.doneTotal)} من أصل ${formatArabicNumber(S.totalTotal)}
+
+😌 شعوري العام: ${feeling}
 
 🗒️ ملخص يومي: ${summary}
 
 ---
 
-🚀 التحفيز الذاتي:
+🎁 التحفيز الذاتي
 ${motivationText}
 
 ---
 
-📎 ملاحظات مهمة:
+📌 ملاحظات مهمة
 ${notesLines}
 
 #قبيلة_الموحدون`;
@@ -1285,7 +1295,7 @@ ${notesLines}
 
     app.innerHTML = `
       <div class="anim-in">
-      <div class="sectionBadge daily">🌿 عادات التعافي</div>
+      <div class="sectionBadge daily">🌿 جوانب التعافي</div>
       <h2 class="stepTitle">سؤال ${habitFlow.index+1} من ${total}</h2>
       <p class="hint">أجب بصدق، وسيظهر الناتج مباشرة في قالب التقرير النهائي.</p>
 
@@ -1552,7 +1562,7 @@ ${notesLines}
   const renderMotivation = ()=>{
     app.innerHTML = `
       <div class="anim-in">
-      <h2 class="stepTitle">🚀 التحفيز الذاتي</h2>
+      <h2 class="stepTitle">🎁 التحفيز الذاتي</h2>
       <p class="hint">اكتب سطرًا أو أكثر لتحفّز نفسك في نهاية التقرير.</p>
 
       <div id="motList" class="list"></div>
@@ -1618,7 +1628,7 @@ ${notesLines}
   const renderNotes = ()=>{
     app.innerHTML = `
       <div class="anim-in">
-      <h2 class="stepTitle">📎 ملاحظات مهمة</h2>
+      <h2 class="stepTitle">📌 ملاحظات مهمة</h2>
       <p class="hint">اكتب الملاحظات أو التنبيهات المهمة التي تريد ظهورها في آخر التقرير.</p>
 
       <div id="notesList" class="list"></div>
