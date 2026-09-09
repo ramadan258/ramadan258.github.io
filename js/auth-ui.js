@@ -73,7 +73,7 @@ function openAdminLoginModal(user) {
   if (pass) pass.value = "";
 
   if (title) title.textContent = "دخول أمجد";
-  if (sub) sub.textContent = "أدخل البريد وكلمة المرور للدخول الكامل إلى لوحات الإدارة.";
+  if (sub) sub.textContent = "أدخل بريد حساب Firebase وكلمة مروره. كلمة مرور العضو القصيرة لا تعمل هنا.";
   if (email) {
     email.type = "email";
     email.setAttribute("inputmode", "email");
@@ -104,7 +104,7 @@ async function submitAdminLogin() {
   const pending = PENDING_ADMIN_USER;
   const status = qs("#adminLoginStatus");
   const email = (qs("#adminLoginEmail")?.value || "").trim();
-  const password = (qs("#adminLoginPassword")?.value || "").trim();
+  const password = String(qs("#adminLoginPassword")?.value || "");
 
   if (!email || !password) {
     if (status) status.textContent = "اكتب البريد وكلمة المرور.";
@@ -146,7 +146,32 @@ async function submitAdminLogin() {
       setTimeout(submitAdminLogin, 250);
       return;
     }
-    if (status) status.textContent = "بيانات الدخول غير صحيحة أو لا يوجد اتصال.";
+    const code = String(e?.code || e?.message || "").toLowerCase();
+    if (code.includes("invalid-credential") || code.includes("wrong-password") || code.includes("user-not-found")) {
+      if (status) status.textContent = "البريد أو كلمة مرور حساب Firebase غير صحيحين.";
+      return;
+    }
+    if (code.includes("network") || code.includes("offline") || code.includes("unavailable")) {
+      if (status) status.textContent = "تعذّر الاتصال بـ Firebase. تحقق من الإنترنت ثم أعد المحاولة.";
+      return;
+    }
+    if (code.includes("unauthorized-domain")) {
+      if (status) status.textContent = "نطاق الموقع غير مسموح له في Firebase. أعد تحميل الصفحة ثم جرّب.";
+      return;
+    }
+    if (code.includes("too-many-requests")) {
+      if (status) status.textContent = "تم إيقاف المحاولات مؤقتًا. انتظر قليلًا ثم جرّب مرة أخرى.";
+      return;
+    }
+    if (code.includes("user-disabled")) {
+      if (status) status.textContent = "حساب Firebase هذا موقوف حاليًا.";
+      return;
+    }
+    if (code.includes("bound_to_other_member")) {
+      if (status) status.textContent = "هذا الحساب مربوط بعضو آخر داخل الموقع. تواصل مع أمجد لتصحيح الربط.";
+      return;
+    }
+    if (status) status.textContent = "تعذّر تسجيل الدخول الآن. أعد تحميل الصفحة ثم جرّب مرة أخرى.";
   }
 }
 
