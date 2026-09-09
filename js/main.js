@@ -1207,52 +1207,35 @@ async function updateMemberStatusViaRest(memberId, status) {
   const id = String(memberId || "").trim();
   if (!id) return;
 
-  const docIds = ["elite", "active", "lazy"].map((tier) => memberStatusDocId(id, tier));
-  docIds.push(id);
-
-  for (const docId of docIds) {
-    await firestoreRestRequest(
-      firestoreRestDocUrl(FIRESTORE_MEMBER_STATUS, docId),
-      { method: "DELETE" }
-    );
-  }
-
-  if (!status) return;
-
   await firestoreRestRequest(
-    firestoreRestDocUrl(FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, status)),
+    firestoreRestDocUrl(FIRESTORE_MEMBER_STATUS, memberStatusOverrideDocId(id)),
     {
       method: "PATCH",
       body: JSON.stringify({
         fields: {
-          addedAt: { timestampValue: new Date().toISOString() },
+          type: { stringValue: "member_status" },
+          memberId: { stringValue: id },
+          tier: { stringValue: status || "none" },
+          updatedAt: { timestampValue: new Date().toISOString() },
         },
       }),
     }
   );
 }
 
-async function updateMemberStatusViaSdk(memberId, status, options = {}) {
-  const { strictDeletes = false } = options || {};
+async function updateMemberStatusViaSdk(memberId, status) {
   const id = String(memberId || "").trim();
   if (!id) return;
 
-  const { db, doc, setDoc, deleteDoc, serverTimestamp } = window.FB;
-  const deleteTargets = ["elite", "active", "lazy"]
-    .map((tier) => deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, tier))));
-  deleteTargets.push(deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, id)));
-
-  const deleteResults = await Promise.allSettled(deleteTargets);
-  if (strictDeletes) {
-    const rejected = deleteResults.find((result) => result.status === "rejected");
-    if (rejected?.reason) throw rejected.reason;
-  }
-
-  if (!status) return;
-
+  const { db, doc, setDoc, serverTimestamp } = window.FB;
   await setDoc(
-    doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, status)),
-    { addedAt: serverTimestamp() },
+    doc(db, FIRESTORE_MEMBER_STATUS, memberStatusOverrideDocId(id)),
+    {
+      type: "member_status",
+      memberId: id,
+      tier: status || "none",
+      updatedAt: serverTimestamp(),
+    },
     { merge: true }
   );
 }
@@ -2232,6 +2215,7 @@ async function deleteManagedMember(memberId) {
       deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "elite"))),
       deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "active"))),
       deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "lazy"))),
+      deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusOverrideDocId(id))),
       deleteDoc(doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id))),
     ];
 

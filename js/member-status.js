@@ -22,6 +22,10 @@ function parseMemberStatusDocId(docId) {
   if (match) {
     return { status: match[1], memberId: match[2] };
   }
+  const overrideMatch = id.match(/^status__(.+)$/);
+  if (overrideMatch) {
+    return { status: null, memberId: overrideMatch[1], usesStoredStatus: true };
+  }
   if (!id.includes("__")) {
     return { status: "elite", memberId: id };
   }
@@ -30,6 +34,10 @@ function parseMemberStatusDocId(docId) {
 
 function memberStatusDocId(memberId, status) {
   return `${status}__${String(memberId || "").trim()}`;
+}
+
+function memberStatusOverrideDocId(memberId) {
+  return `status__${String(memberId || "").trim()}`;
 }
 
 function isStandardMemberId(memberId) {
@@ -232,7 +240,7 @@ async function updateMemberStatus(memberId, status) {
   try {
     if (isLimitedAdmin) {
       try {
-        await updateMemberStatusViaSdk(id, status, { strictDeletes: true });
+        await updateMemberStatusViaSdk(id, status);
       } catch (sdkError) {
         if (!isPermissionDeniedError(sdkError)) throw sdkError;
         await updateMemberStatusViaRest(id, status);
@@ -261,16 +269,27 @@ function attachMemberStatusFirestoreListeners() {
 
   const { db, onSnapshot, collection } = window.FB;
   const unsub = onSnapshot(collection(db, FIRESTORE_MEMBER_STATUS), (snap) => {
-    MEMBER_STATUS_STATE.map = new Map();
+    const nextStatuses = new Map();
+    const overrides = new Map();
     snap.forEach((d) => {
       const parsed = parseMemberStatusDocId(d.id);
-      if (parsed?.status && parsed?.memberId) {
-        MEMBER_STATUS_STATE.map.set(parsed.memberId, parsed.status);
+      const data = d.data() || {};
+      if (parsed?.usesStoredStatus && parsed.memberId) {
+        overrides.set(parsed.memberId, normalizeMemberStatus(data));
         return;
       }
-      const status = normalizeMemberStatus(d.data() || {});
-      if (status) MEMBER_STATUS_STATE.map.set(d.id, status);
+      if (parsed?.status && parsed?.memberId) {
+        nextStatuses.set(parsed.memberId, parsed.status);
+        return;
+      }
+      const status = normalizeMemberStatus(data);
+      if (status) nextStatuses.set(d.id, status);
     });
+    overrides.forEach((status, memberId) => {
+      if (status) nextStatuses.set(memberId, status);
+      else nextStatuses.delete(memberId);
+    });
+    MEMBER_STATUS_STATE.map = nextStatuses;
     for (const [id, pending] of Array.from(PENDING_MEMBER_STATUS.entries())) {
       const serverStatus = MEMBER_STATUS_STATE.map.get(id) || null;
       const wanted = pending === "__CLEAR__" ? null : pending;
