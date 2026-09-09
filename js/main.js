@@ -1654,7 +1654,6 @@ function applyStandaloneViewMode() {
     quran: "#qa",
     qa: "#qa",
     rescue: "#rescue",
-    today: "#today",
   };
   const target = qs(standaloneTargets[view] || "");
   if (target) {
@@ -2678,7 +2677,7 @@ function toLocalISODate(d) {
         title: "وضعك الحالي مطمئن، حافظ على الإيقاع.",
         description: "المؤشر مطمئن الآن، لكن الأفضل أن تبدأ مهمة نافعة مباشرة حتى لا يعود الفراغ ويتغير مزاجك لاحقًا.",
         advices: [
-          "ادخل في أول مهمة من مهام اليوم مباشرة ولا تؤجل البداية.",
+          "اختر خطوة وقائية نافعة الآن ولا تؤجل البداية.",
           "إذا أحسست بتغير مفاجئ خلال اليوم فأعد الفحص في أقل من 30 ثانية.",
         ],
         score,
@@ -3199,10 +3198,14 @@ function previousISODate(isoDate) {
         };
       });
 
-      qs("#breathStart").onclick = () => startBreathTimer(todayISO, state);
-      qs("#breathReset").onclick = () => resetBreathTimer(todayISO, state);
+      const breathStart = qs("#breathStart");
+      if (breathStart) breathStart.onclick = () => startBreathTimer(todayISO, state);
 
-      qs("#resetToday").onclick = () => {
+      const breathReset = qs("#breathReset");
+      if (breathReset) breathReset.onclick = () => resetBreathTimer(todayISO, state);
+
+      const resetToday = qs("#resetToday");
+      if (resetToday) resetToday.onclick = () => {
         stopBreathTimer(state);
         state = defaultDailyState();
         state = normalizeDailyState(state);

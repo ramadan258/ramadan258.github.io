@@ -178,13 +178,6 @@ body.member-standalone-view #appRoot.member-design-canvas > section.member-stand
   outline-offset: 3px;
 }
 
-.member-canvas-link.is-featured {
-  background:
-    radial-gradient(circle at top right, rgba(78, 205, 196, 0.12), transparent 40%),
-    linear-gradient(180deg, rgba(12, 28, 34, 0.98), rgba(8, 16, 24, 0.96));
-  border-color: rgba(78, 205, 196, 0.22);
-}
-
 .member-canvas-link.is-feelings {
   background:
     radial-gradient(circle at top right, rgba(109, 168, 255, 0.16), transparent 42%),
