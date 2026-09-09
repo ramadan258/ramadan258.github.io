@@ -93,7 +93,7 @@ function renderAhdPublicList() {
       : "";
   }
 
-  if (FB_STATE.isAdmin) {
+  if (hasAhdAdminAccess()) {
     renderAhdAdminLists(qs("#ahdAdminSearch")?.value || "", orphanIds);
   }
 }
@@ -189,7 +189,7 @@ function renderAhdAdminLists(filterText = "", orphanIdsArg = null) {
 }
 
 async function addMemberToAhd(memberId) {
-  if (!FB_STATE.isAdmin) return;
+  if (!hasAhdAdminAccess()) return;
   const id = String(memberId || "").trim();
   if (!id) return;
   if (!FB_STATE.tribe.has(id)) {
@@ -204,7 +204,7 @@ async function addMemberToAhd(memberId) {
 }
 
 async function removeMemberFromAhd(memberId) {
-  if (!FB_STATE.isAdmin) return;
+  if (!hasAhdAdminAccess()) return;
   const id = String(memberId || "").trim();
   if (!id) return;
 

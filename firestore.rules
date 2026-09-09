@@ -42,6 +42,18 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/memberPermissions/$(boundMemberId())).data.qa == true;
     }
 
+    function canManageAhd() {
+      return hasBinding()
+        && exists(/databases/$(database)/documents/memberPermissions/$(boundMemberId()))
+        && get(/databases/$(database)/documents/memberPermissions/$(boundMemberId())).data.ahd == true;
+    }
+
+    function isValidAhdMembership(memberId) {
+      return isValidMemberId(memberId)
+        && request.resource.data.keys().hasOnly(['joinedAt'])
+        && request.resource.data.joinedAt is timestamp;
+    }
+
     function isMemberStatusOverrideDocId(docId) {
       return docId is string
         && docId.matches('^status__(member_[0-9]+|custom_member_[^/]+)$');
@@ -207,7 +219,10 @@ service cloud.firestore {
 
     match /ahdMembers/{id} {
       allow read: if true;
-      allow write: if isAmjad();
+      allow create, update: if isAmjad()
+        || (canManageAhd() && isValidAhdMembership(id));
+      allow delete: if isAmjad()
+        || (canManageAhd() && isValidMemberId(id));
     }
 
     match /featuredMembers/{id} {
@@ -255,10 +270,11 @@ service cloud.firestore {
 
     match /memberPermissions/{memberId} {
       allow create, update: if isAmjad()
-        && request.resource.data.keys().hasOnly(['memberId', 'memberStatus', 'qa', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['memberId', 'memberStatus', 'ahd', 'qa', 'updatedAt'])
         && request.resource.data.memberId == memberId
         && isValidMemberId(memberId)
         && request.resource.data.memberStatus is bool
+        && request.resource.data.ahd is bool
         && request.resource.data.qa is bool
         && request.resource.data.updatedAt is timestamp;
       allow delete: if isAmjad();

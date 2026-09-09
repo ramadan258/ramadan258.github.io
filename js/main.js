@@ -485,12 +485,14 @@ function memberPermissionsDocId(memberId) {
 
 const ASSIGNABLE_MEMBER_PERMISSIONS = Object.freeze({
   memberStatus: "تقييم الأعضاء",
+  ahd: "إدارة عهد الثبات",
   qa: "سؤال وجواب",
 });
 
 function normalizeMemberPermissions(value = {}) {
   return {
     memberStatus: Boolean(value?.memberStatus),
+    ahd: Boolean(value?.ahd),
     qa: Boolean(value?.qa),
   };
 }
@@ -814,6 +816,8 @@ function refreshMemberDirectoryUI(options = {}) {
     cleanupLegacyRemovedMembersCloudOnce().catch((error) => {
       console.warn("Legacy member cleanup did not finish", error);
     });
+  }
+  if (hasAhdAdminAccess()) {
     try { renderAhdAdminLists(qs("#ahdAdminSearch")?.value || ""); } catch {}
   }
   if (hasMemberStatusAdminAccess()) {
@@ -854,6 +858,7 @@ async function cleanupLegacyRemovedMembersCloudOnce() {
       ops.push(deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "active"))));
       ops.push(deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "lazy"))));
       ops.push(deleteDoc(doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id))));
+      ops.push(deleteDoc(doc(db, FIRESTORE_MEMBER_PERMISSIONS, memberPermissionsDocId(id))));
     });
 
     const results = await Promise.allSettled(ops);
@@ -1424,7 +1429,7 @@ function syncStoredPermissionsForCurrentUser() {
   grantLocalAdminAccess({
     owner: memberId,
     memberStatus: permissions.memberStatus,
-    ahd: false,
+    ahd: permissions.ahd,
     memberManage: false,
     qa: permissions.qa,
   });
@@ -1974,6 +1979,7 @@ async function updateManagedMemberPermission(memberId, permissionKey, enabled) {
         {
           memberId: id,
           memberStatus: permissions.memberStatus,
+          ahd: permissions.ahd,
           qa: permissions.qa,
           updatedAt: serverTimestamp(),
         },
