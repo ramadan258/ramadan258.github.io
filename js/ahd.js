@@ -52,7 +52,7 @@ function renderAhdPublicList() {
   const extraCanvasCount = Math.max(0, publicMembers.length - visibleCanvasMembers.length);
 
   if (count) {
-    count.textContent = `${formatArabicNumber(publicMembers.length)} عضو`;
+    count.textContent = `${formatArabicNumber(publicMembers.length)} مشارك`;
   }
 
   if (el) {
@@ -71,7 +71,7 @@ function renderAhdPublicList() {
       `;
           })
           .join("")
-      : `<div class="identity-empty ahd-public-empty">لا يوجد أعضاء في العهد بعد.</div>`;
+      : `<div class="identity-empty ahd-public-empty">لا يوجد مشاركون في عهد الثبات بعد.</div>`;
   }
 
   if (canvasEl) {
@@ -146,14 +146,14 @@ function renderAhdAdminLists(filterText = "", orphanIdsArg = null) {
       `;
         })
         .join("")
-    : `<div class="identity-empty">لا يوجد أعضاء في العهد.</div>`;
+    : `<div class="identity-empty">لا يوجد مشاركون في عهد الثبات.</div>`;
 
   if (orphanWrap && orphanEl) {
     orphanWrap.style.display = orphanIds.length ? "block" : "none";
     orphanEl.innerHTML = orphanIds.length
       ? orphanIds
           .map((id) => `
-        <button class="identity-item" type="button" data-remove-ahd-orphan="${escapeHtml(id)}" aria-label="حذف ${escapeHtml(id)} من العهد">
+        <button class="identity-item" type="button" data-remove-ahd-orphan="${escapeHtml(id)}" aria-label="حذف ${escapeHtml(id)} من عهد الثبات">
           <img class="identity-avatar member-avatar" loading="lazy" decoding="async" src="${window.WA3I_DEFAULT_MEMBER_AVATAR_SRC || ""}" alt="${escapeHtml(id)}" />
           <div class="identity-name">${escapeHtml(id)}</div>
         </button>
@@ -172,7 +172,7 @@ function renderAhdAdminLists(filterText = "", orphanIdsArg = null) {
   ahdEl.querySelectorAll("[data-remove-ahd]").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const id = btn.getAttribute("data-remove-ahd");
-      const ok = confirm("هل تريد حذف هذا العضو من العهد؟");
+      const ok = confirm("هل تريد حذف هذا العضو من عهد الثبات؟");
       if (!ok) return;
       await removeMemberFromAhd(id);
     });
@@ -181,7 +181,7 @@ function renderAhdAdminLists(filterText = "", orphanIdsArg = null) {
   orphanEl?.querySelectorAll("[data-remove-ahd-orphan]").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const id = btn.getAttribute("data-remove-ahd-orphan");
-      const ok = confirm("هذا المعرّف غير موجود بين الأعضاء الظاهرين. هل تريد حذفه من قائمة العهد؟");
+      const ok = confirm("هذا المعرّف غير موجود بين الأعضاء الظاهرين. هل تريد حذفه من قائمة المشاركين؟");
       if (!ok) return;
       await removeMemberFromAhd(id);
     });

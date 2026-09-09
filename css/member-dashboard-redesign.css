@@ -1345,6 +1345,92 @@ body.member-standalone-view #ahd.member-standalone-active #countdown.ahd-embedde
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
 }
 
+#ahd .steadfastness-challenge {
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid rgba(245, 200, 66, 0.22);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(245, 200, 66, 0.15), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(78, 205, 196, 0.12), transparent 38%),
+    linear-gradient(135deg, rgba(30, 26, 15, 0.98), rgba(10, 20, 25, 0.96));
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.22);
+}
+
+#ahd .steadfastness-challenge-head {
+  max-width: 720px;
+}
+
+#ahd .steadfastness-challenge-kicker {
+  display: inline-flex;
+  padding: 6px 11px;
+  border: 1px solid rgba(245, 200, 66, 0.25);
+  border-radius: 999px;
+  background: rgba(245, 200, 66, 0.12);
+  color: #f5c842;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+#ahd .steadfastness-challenge h3 {
+  margin: 10px 0 4px;
+  color: #f8f1d2;
+  font-family: "Amiri", serif;
+  font-size: 32px;
+  line-height: 1.3;
+}
+
+#ahd .steadfastness-challenge p {
+  margin: 0;
+  color: #cbd3dd;
+  font-size: 14px;
+  line-height: 2;
+}
+
+#ahd .steadfastness-challenge-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+#ahd .steadfastness-challenge-fact {
+  display: grid;
+  gap: 3px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+#ahd .steadfastness-challenge-fact span {
+  color: #9aa7b6;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+#ahd .steadfastness-challenge-fact strong {
+  color: #f1f4f8;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+#ahd .steadfastness-challenge-fact.prize {
+  border-color: rgba(245, 200, 66, 0.24);
+  background: rgba(245, 200, 66, 0.08);
+}
+
+#ahd .steadfastness-challenge-fact.prize strong {
+  color: #f5c842;
+}
+
+#ahd .ahd-participants-title {
+  margin: 22px 2px 10px;
+  color: #e7edf4;
+  font-size: 15px;
+  font-weight: 900;
+}
+
 #ahd .ahd-slider {
   padding: 4px 0 10px;
 }
@@ -1637,6 +1723,19 @@ footer.member-footer p {
     font-size: 15px;
   }
 
+  #ahd .steadfastness-challenge {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  #ahd .steadfastness-challenge h3 {
+    font-size: 27px;
+  }
+
+  #ahd .steadfastness-challenge-facts {
+    grid-template-columns: 1fr;
+  }
+
   .member-canvas-link__label {
     font-size: 19px;
   }
@@ -1885,6 +1984,15 @@ footer.member-footer p {
     border-radius: 20px;
     font-size: 14px;
     line-height: 2;
+  }
+
+  #ahd .steadfastness-challenge {
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  #ahd .steadfastness-challenge h3 {
+    font-size: 24px;
   }
 
   .member-canvas-link__label {

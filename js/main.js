@@ -1,5 +1,5 @@
 ﻿    const CONFIG = {
-      AHD_TARGET_DATE_ISO: "2026-08-14T00:00:00",
+      AHD_TARGET_DATE_ISO: "2026-11-01T00:00:00+01:00",
       FORCE_HIZB_NUMBER: null,
 
       LINKS: {
@@ -1683,8 +1683,8 @@ function getAdminPanelConfig(panelKey) {
 
   if (panelKey === "ahd") {
     return {
-      title: "إدارة قائمة العهد",
-      sub: "إضافة الأعضاء إلى العهد أو حذفهم من نافذة مستقلة.",
+      title: "إدارة عهد الثبات",
+      sub: "إضافة المشاركين إلى المسابقة أو حذفهم من نافذة مستقلة.",
       wrap: "#ahdAdminWrap",
       slot: "#ahdAdminSlot",
     };
@@ -2840,7 +2840,7 @@ function previousISODate(isoDate) {
 
         if (diff <= 0) {
           const el = document.querySelector(".countdown");
-          if (el) el.innerHTML = "<p style='color:#7cf2a4;font-size:22px'>🤍 تم عهد صفر بحمد الله 🤍</p>";
+          if (el) el.innerHTML = "<p style='color:#7cf2a4;font-size:22px'>تم عهد الثبات بحمد الله</p>";
           return;
         }
 
