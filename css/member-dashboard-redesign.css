@@ -1345,6 +1345,24 @@ body.member-standalone-view #ahd.member-standalone-active #countdown.ahd-embedde
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
 }
 
+#ahd .ahd-oath-verse {
+  margin: 12px 0 0;
+  color: #f5c842;
+  font-family: "Amiri", serif;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.8;
+  text-align: center;
+}
+
+#ahd .ahd-oath-verse span {
+  color: #aebbc7;
+  font-family: "Cairo", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 #ahd .steadfastness-challenge {
   margin-top: 18px;
   padding: 20px;
