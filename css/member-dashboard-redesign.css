@@ -1379,17 +1379,6 @@ body.member-standalone-view #ahd.member-standalone-active #countdown.ahd-embedde
   max-width: 720px;
 }
 
-#ahd .steadfastness-challenge-kicker {
-  display: inline-flex;
-  padding: 6px 11px;
-  border: 1px solid rgba(245, 200, 66, 0.25);
-  border-radius: 999px;
-  background: rgba(245, 200, 66, 0.12);
-  color: #f5c842;
-  font-size: 12px;
-  font-weight: 900;
-}
-
 #ahd .steadfastness-challenge h3 {
   margin: 10px 0 4px;
   color: #f8f1d2;
