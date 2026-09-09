@@ -270,6 +270,15 @@ function setQaAdminItemStatus(message, isError = false) {
   el.style.color = isError ? "#ffb4b4" : "";
 }
 
+async function ensureQaAdminWriteAccess() {
+  if (!hasQaAdminAccess()) throw new Error("QA_ACCESS_DENIED");
+  if (FB_STATE.isAdmin) return;
+
+  const binding = await ensureMemberBinding(currentUserId());
+  if (binding?.localOnly) throw new Error("QA_BINDING_UNAVAILABLE");
+  await getFreshFirebaseIdToken();
+}
+
 function refreshQaAdminFormState() {
   const categoryAddBtn = qs("#qaAdminAddCategoryBtn");
   const categoryResetBtn = qs("#qaAdminResetCategoryBtn");
@@ -471,6 +480,7 @@ async function addQaCategory() {
   const existingCategory = QA_STATE.categories.find((category) => category.id === QA_STATE.editingCategoryId);
   const id = QA_STATE.editingCategoryId || createQaCategoryId(name);
   try {
+    await ensureQaAdminWriteAccess();
     await setDoc(doc(db, FIRESTORE_QA_BUCKET, qaCategoryDocId(id)), {
       type: "qa_category",
       categoryId: id,
@@ -509,6 +519,7 @@ async function deleteQaCategory(categoryId) {
 
   const { db, doc, deleteDoc } = window.FB;
   try {
+    await ensureQaAdminWriteAccess();
     const jobs = [
       deleteDoc(doc(db, FIRESTORE_QA_BUCKET, qaCategoryDocId(id))),
       ...linkedItems.map((item) => deleteDoc(doc(db, FIRESTORE_QA_BUCKET, qaItemDocId(item.id)))),
@@ -556,6 +567,7 @@ async function addQaItem() {
   const existingItem = QA_STATE.items.find((item) => item.id === QA_STATE.editingItemId);
   const id = QA_STATE.editingItemId || createQaItemId(categoryId);
   try {
+    await ensureQaAdminWriteAccess();
     await setDoc(doc(db, FIRESTORE_QA_BUCKET, qaItemDocId(id)), {
       type: "qa_item",
       itemId: id,
@@ -592,6 +604,7 @@ async function deleteQaItem(itemId) {
 
   const { db, doc, deleteDoc } = window.FB;
   try {
+    await ensureQaAdminWriteAccess();
     await deleteDoc(doc(db, FIRESTORE_QA_BUCKET, qaItemDocId(id)));
     if (QA_STATE.editingItemId === id) QA_STATE.editingItemId = "";
     setQaAdminItemStatus("تم حذف السؤال والجواب.");

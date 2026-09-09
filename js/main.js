@@ -478,6 +478,26 @@ function memberAccessDocId(memberId) {
   return `access__${String(memberId || "").trim()}`;
 }
 
+const ASSIGNABLE_MEMBER_PERMISSIONS = Object.freeze({
+  memberStatus: "تقييم الأعضاء",
+  qa: "سؤال وجواب",
+});
+
+function normalizeMemberPermissions(value = {}) {
+  return {
+    memberStatus: Boolean(value?.memberStatus),
+    qa: Boolean(value?.qa),
+  };
+}
+
+function memberPermissionsSummary(value = {}) {
+  const permissions = normalizeMemberPermissions(value);
+  const labels = Object.entries(ASSIGNABLE_MEMBER_PERMISSIONS)
+    .filter(([key]) => permissions[key])
+    .map(([, label]) => label);
+  return labels.length ? labels.join("، ") : "لا توجد صلاحيات إضافية";
+}
+
 function normalizeMemberAccessPin(value) {
   return String(value || "").replace(/\D/g, "").slice(0, 5);
 }
@@ -495,6 +515,7 @@ function memberAccessRecordFromData(docId, data = {}) {
     memberId,
     passwordHash,
     hasLegacyPlaintext,
+    permissions: normalizeMemberPermissions(data.permissions),
     type: String(data.type || "member_access").trim(),
   };
 }
@@ -507,6 +528,10 @@ function getMemberAccessRecord(memberId) {
 
 function memberHasAccessPin(memberId) {
   return Boolean(getMemberAccessRecord(memberId)?.passwordHash);
+}
+
+function getMemberPermissions(memberId) {
+  return normalizeMemberPermissions(getMemberAccessRecord(memberId)?.permissions);
 }
 
 async function sha256Hex(value) {
@@ -785,7 +810,11 @@ function refreshMemberDirectoryUI(options = {}) {
       console.warn("Legacy member cleanup did not finish", error);
     });
     try { renderAhdAdminLists(qs("#ahdAdminSearch")?.value || ""); } catch {}
+  }
+  if (hasMemberStatusAdminAccess()) {
     try { renderMemberStatusAdminList(); } catch {}
+  }
+  if (hasMemberManageAdminAccess()) {
     try { renderMemberManageAdminList(); } catch {}
   }
 }
@@ -1395,6 +1424,24 @@ function grantLocalAdminAccess(nextAccess = {}) {
   if (typeof setQaAdminVisibility === "function") setQaAdminVisibility();
 }
 
+function syncStoredPermissionsForCurrentUser() {
+  const user = WA3I_USER || readCurrentUser();
+  const memberId = String(user?.id || "").trim();
+  if (!memberId || FB_STATE.isAdmin || LOCAL_ADMIN_ACCESS.memberManage) return;
+
+  const accessRecord = getMemberAccessRecord(memberId);
+  const permissions = accessRecord?.passwordHash
+    ? getMemberPermissions(memberId)
+    : normalizeMemberPermissions();
+  grantLocalAdminAccess({
+    owner: memberId,
+    memberStatus: permissions.memberStatus,
+    ahd: false,
+    memberManage: false,
+    qa: permissions.qa,
+  });
+}
+
 function resetLocalAdminAccess() {
   grantLocalAdminAccess();
 }
@@ -1756,7 +1803,7 @@ function refreshMemberManageFormState() {
   if (hint) {
     if (editing) {
       hint.textContent = pendingPinRemoval
-        ? "سيتم حذف كلمة السر الحالية عند حفظ التعديل، إلا إذا كتبت كلمة مرور جديدة قبل الحفظ."
+        ? "سيتم حذف كلمة السر الحالية والصلاحيات الممنوحة عند حفظ التعديل، إلا إذا كتبت كلمة مرور جديدة قبل الحفظ."
         : "يمكنك تعديل الاسم أو الصورة، وترك كلمة المرور فارغة للإبقاء على الحالية، أو كتابة كلمة مرور جديدة من 1 إلى 5 أرقام. تُحفظ كلمة المرور بشكل آمن ولا يمكن عرضها لاحقًا.";
     } else {
       hint.textContent = "تُضغط الصورة تلقائيًا بقوة لتناسب الرفع والعرض داخل الموقع. ويمكنك أيضًا ضبط كلمة مرور دخول من 1 إلى 5 أرقام، وتُحفظ بشكل آمن.";
@@ -1823,12 +1870,12 @@ function markManagedMemberPinForRemoval() {
     setMemberManageStatus("هذا العضو لا يملك كلمة سر محفوظة أصلًا.", true);
     return;
   }
-  const ok = confirm(`هل تريد مسح كلمة السر عن العضو “${editingMember.name}”؟`);
+  const ok = confirm(`هل تريد مسح كلمة السر والصلاحيات الممنوحة عن العضو “${editingMember.name}”؟`);
   if (!ok) return;
   MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval = true;
   const pin = qs("#memberManageAccessPin");
   if (pin) pin.value = "";
-  setMemberManageStatus("سيتم مسح كلمة السر عند حفظ التعديل.");
+  setMemberManageStatus("سيتم مسح كلمة السر والصلاحيات الممنوحة عند حفظ التعديل.");
   refreshMemberManageFormState();
 }
 
@@ -1899,6 +1946,51 @@ function readImageAsOptimizedDataUrl(file) {
   });
 }
 
+async function updateManagedMemberPermission(memberId, permissionKey, enabled) {
+  if (!FB_STATE.isAdmin) return;
+
+  const id = String(memberId || "").trim();
+  const key = String(permissionKey || "").trim();
+  if (!id || !Object.prototype.hasOwnProperty.call(ASSIGNABLE_MEMBER_PERMISSIONS, key)) return;
+
+  const member = getAllMembersList({ includeHidden: true }).find((item) => String(item.id || "").trim() === id);
+  if (!member || isAmjadMember(member)) return;
+
+  const accessRecord = getMemberAccessRecord(id);
+  if (!accessRecord?.passwordHash) {
+    setMemberManageStatus("ضع كلمة مرور للعضو أولًا، ثم امنحه الصلاحية المطلوبة.", true);
+    showIdentityToast("لا يمكن منح صلاحية بدون كلمة مرور للعضو.");
+    return;
+  }
+
+  const permissions = {
+    ...getMemberPermissions(id),
+    [key]: Boolean(enabled),
+  };
+
+  try {
+    const { db, doc, setDoc, serverTimestamp } = window.FB;
+    await setDoc(
+      doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id)),
+      {
+        type: "member_access",
+        memberId: id,
+        permissions,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    setMemberManageStatus(
+      enabled
+        ? `تم منح ${member.name} صلاحية ${ASSIGNABLE_MEMBER_PERMISSIONS[key]}.`
+        : `تم سحب صلاحية ${ASSIGNABLE_MEMBER_PERMISSIONS[key]} من ${member.name}.`
+    );
+  } catch (error) {
+    console.error("Failed to update member permission", error);
+    setMemberManageStatus("تعذّر حفظ الصلاحية الآن. تحقق من الاتصال ثم أعد المحاولة.", true);
+  }
+}
+
 function renderMemberManageAdminList() {
   const el = qs("#memberManageList");
   if (!el) return;
@@ -1914,6 +2006,7 @@ function renderMemberManageAdminList() {
         const status = getMemberStatus(member.id);
         const accessRecord = getMemberAccessRecord(member.id);
         const hasPin = Boolean(accessRecord?.passwordHash);
+        const permissions = getMemberPermissions(member.id);
         const isEditing = String(MEMBER_DIRECTORY_STATE.editingMemberId || "").trim() === String(member.id || "").trim();
         return `
           <div class="member-manage-card${isEditing ? " is-editing" : ""}">
@@ -1934,6 +2027,24 @@ function renderMemberManageAdminList() {
                 hasPin
                   ? `كلمة المرور محفوظة بشكل آمن. إذا نسيتها، اكتب كلمة جديدة بدل الحالية.`
                   : `لا توجد كلمة مرور مضبوطة لهذا العضو.`
+              }
+            </div>
+            <div class="member-manage-permission-box">
+              <div class="member-manage-permission-head">
+                <span>صلاحيات الإدارة</span>
+                <span>${locked ? "كاملة" : escapeHtml(memberPermissionsSummary(permissions))}</span>
+              </div>
+              ${
+                locked
+                  ? `<div class="member-manage-permission-note">أمجد يدير الأعضاء والصلاحيات كاملة.</div>`
+                  : !hasPin
+                    ? `<div class="member-manage-permission-note">ضع كلمة مرور للعضو أولًا لحماية صلاحياته.</div>`
+                    : `<div class="member-manage-permission-actions">
+                        ${Object.entries(ASSIGNABLE_MEMBER_PERMISSIONS).map(([key, label]) => {
+                          const granted = Boolean(permissions[key]);
+                          return `<button class="member-manage-permission-btn${granted ? " is-granted" : ""}" type="button" data-member-permission="${escapeHtml(member.id)}" data-member-permission-key="${escapeHtml(key)}" data-member-permission-enabled="${granted ? "true" : "false"}" aria-pressed="${granted ? "true" : "false"}">${granted ? "مسموح" : "منح"}: ${escapeHtml(label)}</button>`;
+                        }).join("")}
+                      </div>`
               }
             </div>
             <div class="member-manage-card-actions">
@@ -1960,6 +2071,15 @@ function renderMemberManageAdminList() {
     btn.addEventListener("click", async () => {
       const memberId = btn.getAttribute("data-member-remove");
       await deleteManagedMember(memberId);
+    });
+  });
+
+  el.querySelectorAll("[data-member-permission]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const memberId = btn.getAttribute("data-member-permission");
+      const permissionKey = btn.getAttribute("data-member-permission-key");
+      const granted = btn.getAttribute("data-member-permission-enabled") === "true";
+      await updateManagedMemberPermission(memberId, permissionKey, !granted);
     });
   });
 }
@@ -2232,7 +2352,7 @@ function initMemberDirectorySystem(options = {}) {
 
         if (docId.startsWith("access__")) {
           const record = memberAccessRecordFromData(docId, data);
-          if (!record || !record.passwordHash) return;
+          if (!record) return;
           accessById.set(record.memberId, record);
           if (record.hasLegacyPlaintext) queueLegacyMemberAccessCleanup(record.memberId);
         }
@@ -2248,6 +2368,7 @@ function initMemberDirectorySystem(options = {}) {
       MEMBER_DIRECTORY_STATE.remoteCustomMembers = customMembers;
       MEMBER_DIRECTORY_STATE.remoteHiddenMemberIds = hiddenMemberIds;
       MEMBER_DIRECTORY_STATE.remoteAccessById = accessById;
+      syncStoredPermissionsForCurrentUser();
       saveRemoteMemberDirectoryCache();
       refreshMemberDirectoryUI();
     });
