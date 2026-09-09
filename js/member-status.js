@@ -154,6 +154,13 @@ function refreshMemberStatusUI() {
   }
 }
 
+function setMemberStatusAdminFeedback(message, isError = false) {
+  const el = qs("#memberStatusAdminFeedback");
+  if (!el) return;
+  el.textContent = String(message || "").trim();
+  el.style.color = isError ? "#ffb4b4" : "";
+}
+
 function renderMemberStatusAdminList() {
   const el = qs("#memberStatusAdminList");
   if (!el) return;
@@ -188,8 +195,10 @@ function renderMemberStatusAdminList() {
     btn.addEventListener("click", async () => {
       const memberId = btn.getAttribute("data-member-status");
       const status = btn.getAttribute("data-status-value") || null;
+      setMemberStatusAdminFeedback("جارٍ حفظ السوار...");
       try {
         await updateMemberStatus(memberId, status);
+        setMemberStatusAdminFeedback("تم الحفظ بنجاح. سيظهر السوار للجميع فور وصول التحديث.");
       } catch (e) {
         console.error("Failed to update member status", e);
         const code = String(e?.code || e?.message || "UNKNOWN");
@@ -198,7 +207,9 @@ function renderMemberStatusAdminList() {
           ? "صلاحية أمجد مفعلة"
           : (hasMemberStatusAdminAccess() ? "صلاحية محلية مفعلة" : "لا توجد صلاحية مفعلة");
         if (code === "LOCAL_MEMBER_STATUS_BINDING_ONLY") {
-          showIdentityToast("تعذّر الحفظ: الربط المحلي موجود فقط، ولم يكتمل الربط السحابي بعد.");
+          const message = "تعذّر الحفظ: الجلسة لم تكتمل مزامنتها مع Firebase بعد. أعد تسجيل الدخول ثم جرّب مرة واحدة.";
+          setMemberStatusAdminFeedback(message, true);
+          showIdentityToast(message);
           return;
         }
         if (!FB_STATE.isAdmin && hasMemberStatusAdminAccess() && (
@@ -207,13 +218,19 @@ function renderMemberStatusAdminList() {
           normalizedCode.includes("MISSING OR INSUFFICIENT PERMISSIONS")
         )) {
           if (isCustomManagedMemberId(memberId)) {
-            showIdentityToast("تعذّر الحفظ: هذا عضو مضاف يدويًا، وقواعد Firebase الحالية لا تسمح للحساب الحالي بتقييم هذا النوع من الأعضاء.");
+            const message = "تعذّر الحفظ: قواعد Firebase الحالية لا تسمح لحسابك بتقييم هذا العضو المضاف يدويًا.";
+            setMemberStatusAdminFeedback(message, true);
+            showIdentityToast(message);
             return;
           }
-          showIdentityToast("تعذّر الحفظ: قواعد Firebase الحالية لا تسمح للحساب الحالي بحفظ تقييم الأعضاء.");
+          const message = "تعذّر الحفظ: صلاحيتك ظهرت في الواجهة، لكن قواعد Firebase تمنع حفظ التقييم. يلزم تحديث قواعد Firebase للسماح بها.";
+          setMemberStatusAdminFeedback(message, true);
+          showIdentityToast(message);
           return;
         }
-        showIdentityToast(`تعذّر الحفظ: ${code} — ${authInfo}`);
+        const message = `تعذّر الحفظ: ${code} — ${authInfo}`;
+        setMemberStatusAdminFeedback(message, true);
+        showIdentityToast(message);
       }
     });
   });

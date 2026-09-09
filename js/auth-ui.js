@@ -202,6 +202,11 @@ function startApp() {
   if (typeof initMemberDirectorySystem === "function") {
     initMemberDirectorySystem({ activateRemote: true, renderMembers: true });
   }
+  // The directory listener may already be running after a user switch, so apply
+  // the permissions it has in memory instead of waiting for another snapshot.
+  if (typeof syncStoredPermissionsForCurrentUser === "function") {
+    syncStoredPermissionsForCurrentUser();
+  }
   wireSwitchUserButton();
   wireAdminQuickMenu();
   wireMemberCanvasWindows();

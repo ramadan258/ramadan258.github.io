@@ -244,6 +244,12 @@ function initAhdPage() {
       FB_STATE.user = user || null;
       FB_STATE.isAdmin = Boolean(user && user.uid === AMJAD_ADMIN_UID);
 
+      // Re-check delegated permissions as soon as Firebase finishes restoring
+      // the member session, including after switching between members.
+      if (typeof syncStoredPermissionsForCurrentUser === "function") {
+        syncStoredPermissionsForCurrentUser();
+      }
+
       setAdminMenuVisibility();
       setAhdAdminVisibility();
       renderAhdPublicList();
