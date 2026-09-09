@@ -21,6 +21,8 @@ let ADMIN_MODAL_WIRED = false;
 let SWITCH_USER_WIRED = false;
 let APP_POST_LOGIN_BOOTSTRAP_DONE = false;
 let APP_HOME_BOOTSTRAP_TIMER = null;
+const AMJAD_FIREBASE_UID = "OpXzKToeVbd9xp1KHuqnD95yXlm2";
+const AMJAD_CANONICAL_USER = Object.freeze({ id: "member_9", name: "أمجد", kind: "member" });
 
 function warmFirebaseSoon() {
   if (typeof window.scheduleFirebaseWarmup === "function") {
@@ -121,24 +123,28 @@ async function submitAdminLogin() {
 
   try {
     if (status) status.textContent = "جاري تسجيل الدخول…";
-    await trySignIn();
+    const credential = await trySignIn();
+    if (credential?.user?.uid !== AMJAD_FIREBASE_UID) {
+      try { await window.FB.signOut(window.FB.auth); } catch {}
+      throw new Error("ADMIN_ACCOUNT_MISMATCH");
+    }
 
     if (pending) {
+      // An administrator can intentionally switch away from a member account on
+      // the same device, so replace that member's local-only device binding.
+      clearLocalMemberBinding();
+      writeLocalMemberBinding(AMJAD_CANONICAL_USER.id);
       grantLocalAdminAccess({
-        owner: pending.id,
+        owner: AMJAD_CANONICAL_USER.id,
         memberStatus: true,
         ahd: true,
         memberManage: true,
         qa: true,
       });
-      markMemberSessionAuthorized(pending.id);
-      saveCurrentUser({ id: pending.id, name: pending.name, kind: "member" });
-      const binding = await ensureMemberBinding(pending.id);
+      markMemberSessionAuthorized(AMJAD_CANONICAL_USER.id);
+      saveCurrentUser(AMJAD_CANONICAL_USER);
       closeAdminLoginModal();
       startApp();
-      if (binding?.localOnly) {
-        showIdentityToast("تم الدخول بنجاح. بعض المزامنة السحابية غير متاحة حاليًا، لكن يمكنك استخدام الموقع بشكل طبيعي.");
-      }
     }
   } catch (e) {
     if (String(e?.message || "").includes("FB_NOT_READY")) {
@@ -165,6 +171,10 @@ async function submitAdminLogin() {
     }
     if (code.includes("user-disabled")) {
       if (status) status.textContent = "حساب Firebase هذا موقوف حاليًا.";
+      return;
+    }
+    if (code.includes("admin_account_mismatch")) {
+      if (status) status.textContent = "هذا البريد لا يخص حساب أمجد الإداري في Firebase.";
       return;
     }
     if (code.includes("bound_to_other_member")) {
