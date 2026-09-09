@@ -1,0 +1,315 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAmjad() {
+      return signedIn()
+        && request.auth.uid == "OpXzKToeVbd9xp1KHuqnD95yXlm2";
+    }
+
+    function isValidMemberId(memberId) {
+      return memberId is string
+        && memberId.matches('^(member_[0-9]+|custom_member_[^/]+)$');
+    }
+
+    function hasBinding() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/bindings/$(request.auth.uid));
+    }
+
+    function boundMemberId() {
+      return get(/databases/$(database)/documents/bindings/$(request.auth.uid)).data.memberId;
+    }
+
+    function isBoundTo(memberId) {
+      return hasBinding()
+        && boundMemberId() == memberId;
+    }
+
+    function canManageMemberStatuses() {
+      return hasBinding()
+        && exists(/databases/$(database)/documents/memberPermissions/$(boundMemberId()))
+        && get(/databases/$(database)/documents/memberPermissions/$(boundMemberId())).data.memberStatus == true;
+    }
+
+    function canManageQa() {
+      return hasBinding()
+        && exists(/databases/$(database)/documents/memberPermissions/$(boundMemberId()))
+        && get(/databases/$(database)/documents/memberPermissions/$(boundMemberId())).data.qa == true;
+    }
+
+    function isMemberStatusOverrideDocId(docId) {
+      return docId is string
+        && docId.matches('^status__(member_[0-9]+|custom_member_[^/]+)$');
+    }
+
+    function isValidMemberStatusOverride() {
+      return request.resource.data.keys().hasOnly([
+          'type',
+          'memberId',
+          'tier',
+          'updatedAt'
+        ])
+        && request.resource.data.type == "member_status"
+        && request.resource.data.memberId is string
+        && request.resource.data.memberId.matches('^(member_[0-9]+|custom_member_[^/]+)$')
+        && ['elite', 'active', 'lazy', 'none'].hasAny([request.resource.data.tier])
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    function isQaCategoryDocId(docId) {
+      return docId is string
+        && docId.matches('^qa_category__[^/]+$');
+    }
+
+    function isQaItemDocId(docId) {
+      return docId is string
+        && docId.matches('^qa_item__[^/]+$');
+    }
+
+    function isValidQaCategory() {
+      return request.resource.data.keys().hasOnly([
+          'type',
+          'categoryId',
+          'name',
+          'sortKey',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.type == "qa_category"
+        && request.resource.data.categoryId is string
+        && request.resource.data.categoryId.size() > 0
+        && request.resource.data.categoryId.size() <= 180
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 180
+        && request.resource.data.sortKey is int
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    function isValidQaItem() {
+      return request.resource.data.keys().hasOnly([
+          'type',
+          'itemId',
+          'categoryId',
+          'question',
+          'answer',
+          'sortKey',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.type == "qa_item"
+        && request.resource.data.itemId is string
+        && request.resource.data.itemId.size() > 0
+        && request.resource.data.itemId.size() <= 220
+        && request.resource.data.categoryId is string
+        && request.resource.data.categoryId.size() > 0
+        && request.resource.data.categoryId.size() <= 180
+        && request.resource.data.question is string
+        && request.resource.data.question.size() > 0
+        && request.resource.data.question.size() <= 2000
+        && request.resource.data.answer is string
+        && request.resource.data.answer.size() > 0
+        && request.resource.data.answer.size() <= 30000
+        && request.resource.data.sortKey is int
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    function hasOwnChatAccess() {
+      return hasBinding()
+        && exists(/databases/$(database)/documents/chatAccess/$(boundMemberId()))
+        && get(/databases/$(database)/documents/chatAccess/$(boundMemberId())).data.enabled == true;
+    }
+
+    function isChatRoomOpen() {
+      return !exists(/databases/$(database)/documents/chatRooms/main)
+        || get(/databases/$(database)/documents/chatRooms/main).data.closed != true;
+    }
+
+    function isValidChatAccessDoc(memberId) {
+      return request.resource.data.keys().hasOnly([
+          'memberId',
+          'memberName',
+          'enabled',
+          'passwordHash',
+          'passwordSalt',
+          'passwordIterations',
+          'passwordUpdatedAtMs',
+          'updatedAt',
+          'updatedAtMs'
+        ])
+        && request.resource.data.memberId == memberId
+        && request.resource.data.memberName is string
+        && request.resource.data.memberName.size() > 0
+        && request.resource.data.memberName.size() <= 80
+        && request.resource.data.enabled is bool
+        && request.resource.data.passwordHash is string
+        && request.resource.data.passwordHash.size() > 0
+        && request.resource.data.passwordSalt is string
+        && request.resource.data.passwordSalt.size() > 0
+        && request.resource.data.passwordIterations is int
+        && request.resource.data.passwordIterations >= 100000
+        && request.resource.data.passwordUpdatedAtMs is int
+        && request.resource.data.updatedAtMs is int;
+    }
+
+    function isValidChatRoomDoc() {
+      return request.resource.data.keys().hasOnly([
+          'closed',
+          'pinnedMessage',
+          'updatedAt',
+          'updatedAtMs'
+        ])
+        && request.resource.data.closed is bool
+        && request.resource.data.pinnedMessage is string
+        && request.resource.data.pinnedMessage.size() <= 500
+        && request.resource.data.updatedAtMs is int;
+    }
+
+    function isValidChatMessage(messageId) {
+      return request.resource.data.keys().hasOnly([
+          'id',
+          'roomId',
+          'memberId',
+          'memberName',
+          'text',
+          'createdAt',
+          'createdAtMs'
+        ])
+        && request.resource.data.id == messageId
+        && request.resource.data.roomId == "main"
+        && request.resource.data.memberId is string
+        && request.resource.data.memberName is string
+        && request.resource.data.memberName.size() > 0
+        && request.resource.data.memberName.size() <= 80
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 1200
+        && request.resource.data.createdAtMs is int;
+    }
+
+    function canCreateOwnChatMessage() {
+      return hasOwnChatAccess()
+        && isChatRoomOpen()
+        && request.resource.data.memberId == boundMemberId();
+    }
+
+    match /tribeMembers/{id} {
+      allow read: if true;
+      allow write: if isAmjad();
+    }
+
+    match /ahdMembers/{id} {
+      allow read: if true;
+      allow write: if isAmjad();
+    }
+
+    match /featuredMembers/{id} {
+      allow read: if true;
+
+      allow create, update: if isAmjad()
+        || (
+          canManageMemberStatuses()
+          && isMemberStatusOverrideDocId(id)
+          && isValidMemberStatusOverride()
+        )
+        || (
+          canManageQa()
+          && isQaCategoryDocId(id)
+          && isValidQaCategory()
+        )
+        || (
+          canManageQa()
+          && isQaItemDocId(id)
+          && isValidQaItem()
+        );
+
+      allow delete: if isAmjad()
+        || (
+          canManageMemberStatuses()
+          && isMemberStatusOverrideDocId(id)
+        )
+        || (
+          canManageQa()
+          && (isQaCategoryDocId(id) || isQaItemDocId(id))
+        );
+    }
+
+    match /bindings/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && !exists(/databases/$(database)/documents/bindings/$(uid))
+        && request.resource.data.keys().hasOnly(['memberId', 'createdAt'])
+        && isValidMemberId(request.resource.data.memberId);
+
+      allow update, delete: if isAmjad();
+    }
+
+    match /memberPermissions/{memberId} {
+      allow create, update: if isAmjad()
+        && request.resource.data.keys().hasOnly(['memberId', 'memberStatus', 'qa', 'updatedAt'])
+        && request.resource.data.memberId == memberId
+        && isValidMemberId(memberId)
+        && request.resource.data.memberStatus is bool
+        && request.resource.data.qa is bool
+        && request.resource.data.updatedAt is timestamp;
+      allow delete: if isAmjad();
+    }
+
+    match /streaks/{memberId} {
+      allow read: if true;
+
+      allow create, update: if isAmjad()
+        || (
+          isBoundTo(memberId)
+          && isValidMemberId(memberId)
+          && request.resource.data.keys().hasOnly(['count', 'lastCompletedDate', 'updatedAt'])
+          && request.resource.data.count is int
+          && request.resource.data.lastCompletedDate is string
+        );
+
+      allow delete: if isAmjad();
+    }
+
+    match /chatAccess/{memberId} {
+      allow read: if isAmjad() || isBoundTo(memberId);
+      allow create, update: if isAmjad()
+        && isValidMemberId(memberId)
+        && isValidChatAccessDoc(memberId);
+      allow delete: if isAmjad();
+    }
+
+    match /chatRooms/{roomId} {
+      allow read: if isAmjad() || hasOwnChatAccess();
+      allow create, update: if isAmjad()
+        && roomId == "main"
+        && isValidChatRoomDoc();
+      allow delete: if isAmjad();
+    }
+
+    match /chatMessages/{messageId} {
+      allow read: if isAmjad() || hasOwnChatAccess();
+
+      allow create: if isValidChatMessage(messageId)
+        && (
+          isAmjad()
+          || canCreateOwnChatMessage()
+        );
+
+      allow update: if false;
+      allow delete: if isAmjad();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

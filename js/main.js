@@ -375,6 +375,7 @@ function updateUserBar() {
 const FIRESTORE_CUSTOM_MEMBERS = "featuredMembers";
 const FIRESTORE_HIDDEN_MEMBERS = "featuredMembers";
 const FIRESTORE_MEMBER_ACCESS = "featuredMembers";
+const FIRESTORE_MEMBER_PERMISSIONS = "memberPermissions";
 const LOCAL_MEMBER_DIRECTORY_CUSTOM_KEY = "wa3i_member_directory_custom_v1";
 const LOCAL_MEMBER_DIRECTORY_HIDDEN_KEY = "wa3i_member_directory_hidden_v1";
 const LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY = "wa3i_member_directory_remote_cache_v1";
@@ -476,6 +477,10 @@ function hiddenMemberDocId(memberId) {
 
 function memberAccessDocId(memberId) {
   return `access__${String(memberId || "").trim()}`;
+}
+
+function memberPermissionsDocId(memberId) {
+  return String(memberId || "").trim();
 }
 
 const ASSIGNABLE_MEMBER_PERMISSIONS = Object.freeze({
@@ -1953,16 +1958,28 @@ async function updateManagedMemberPermission(memberId, permissionKey, enabled) {
 
   try {
     const { db, doc, setDoc, serverTimestamp } = window.FB;
-    await setDoc(
-      doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id)),
-      {
-        type: "member_access",
-        memberId: id,
-        permissions,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
+    await Promise.all([
+      setDoc(
+        doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id)),
+        {
+          type: "member_access",
+          memberId: id,
+          permissions,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      ),
+      setDoc(
+        doc(db, FIRESTORE_MEMBER_PERMISSIONS, memberPermissionsDocId(id)),
+        {
+          memberId: id,
+          memberStatus: permissions.memberStatus,
+          qa: permissions.qa,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      ),
+    ]);
     setMemberManageStatus(
       enabled
         ? `تم منح ${member.name} صلاحية ${ASSIGNABLE_MEMBER_PERMISSIONS[key]}.`
@@ -2141,6 +2158,7 @@ async function addManagedMember() {
       ));
     } else if (shouldClearAccessPin) {
       writes.push(deleteDoc(doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id))));
+      writes.push(deleteDoc(doc(db, FIRESTORE_MEMBER_PERMISSIONS, memberPermissionsDocId(id))));
     }
     await Promise.all(writes);
     resetMemberManageForm();
@@ -2217,6 +2235,7 @@ async function deleteManagedMember(memberId) {
       deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "lazy"))),
       deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusOverrideDocId(id))),
       deleteDoc(doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id))),
+      deleteDoc(doc(db, FIRESTORE_MEMBER_PERMISSIONS, memberPermissionsDocId(id))),
     ];
 
     const cleanupResults = await Promise.allSettled(cleanup);
