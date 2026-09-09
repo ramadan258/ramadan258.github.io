@@ -9,6 +9,104 @@ function setAhdAdminVisibility() {
   if (manageBox) manageBox.style.display = show ? "block" : "none";
 }
 
+const PENDING_AHD_MEMBER_ACTIONS = new Set();
+const LOCAL_AHD_MEMBERS_CACHE_KEY = "wa3i_ahd_members_cache_v1";
+const AHD_MEMBERS_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+let AHD_MEMBERS_CACHE_LOADED = false;
+let AHD_REMOTE_SNAPSHOT_READY = false;
+let AHD_CACHED_MEMBERS = new Map();
+
+function loadAhdMembersCache() {
+  if (AHD_MEMBERS_CACHE_LOADED) return;
+  AHD_MEMBERS_CACHE_LOADED = true;
+
+  try {
+    const raw = localStorage.getItem(LOCAL_AHD_MEMBERS_CACHE_KEY);
+    const cached = raw ? JSON.parse(raw) : null;
+    const updatedAt = Number(cached?.updatedAt || 0);
+    if (!cached || !updatedAt || Date.now() - updatedAt > AHD_MEMBERS_CACHE_MAX_AGE_MS) return;
+    if (!Array.isArray(cached.memberIds)) return;
+
+    FB_STATE.ahd = new Set(
+      cached.memberIds.map((id) => String(id || "").trim()).filter(Boolean)
+    );
+
+    const cachedMembers = new Map();
+    if (Array.isArray(cached.members)) {
+      cached.members.forEach((member) => {
+        const id = String(member?.id || "").trim();
+        const name = String(member?.name || "").trim();
+        const src = String(member?.src || "").trim();
+        if (id && name && src) cachedMembers.set(id, { id, name, src });
+      });
+    }
+    AHD_CACHED_MEMBERS = cachedMembers;
+  } catch {}
+}
+
+function saveAhdMembersCache() {
+  try {
+    const members = Array.from(FB_STATE.ahd)
+      .map((id) => {
+        const member = FB_STATE.tribe.get(id) || AHD_CACHED_MEMBERS.get(id);
+        if (!member?.name || !member?.src) return null;
+        return { id, name: String(member.name), src: String(member.src) };
+      })
+      .filter(Boolean);
+
+    localStorage.setItem(LOCAL_AHD_MEMBERS_CACHE_KEY, JSON.stringify({
+      updatedAt: Date.now(),
+      memberIds: Array.from(FB_STATE.ahd),
+      members,
+    }));
+  } catch {}
+}
+
+function setAhdAdminFeedback(message, isError = false) {
+  const el = qs("#ahdAdminFeedback");
+  if (!el) return;
+  el.textContent = String(message || "").trim();
+  el.style.color = isError ? "#ffb4b4" : "";
+}
+
+async function ensureAhdAdminWriteAccess() {
+  if (!hasAhdAdminAccess()) throw new Error("AHD_ACCESS_DENIED");
+
+  if (!fbAvailable() && typeof window.ensureFirebase === "function") {
+    await window.ensureFirebase();
+  }
+  if (!fbAvailable()) throw new Error("AHD_FIREBASE_UNAVAILABLE");
+
+  const isFirebaseAdmin = Boolean(
+    FB_STATE.isAdmin || window.FB?.auth?.currentUser?.uid === AMJAD_ADMIN_UID
+  );
+  if (isFirebaseAdmin) return;
+
+  const memberId = String(currentUserId() || "").trim();
+  if (!memberId || memberId === "guest") throw new Error("AHD_MEMBER_REQUIRED");
+
+  const binding = await ensureMemberBinding(memberId);
+  if (binding?.localOnly) throw new Error("AHD_BINDING_UNAVAILABLE");
+  await getFreshFirebaseIdToken();
+}
+
+function ahdActionErrorMessage(error) {
+  const code = String(error?.code || error?.message || "").toUpperCase();
+  if (code.includes("AHD_ACCESS_DENIED")) return "لا تملك صلاحية إدارة عهد الثبات الآن.";
+  if (code.includes("AHD_MEMBER_REQUIRED")) return "سجّل الدخول بعضو مفوّض أولًا.";
+  if (code.includes("BOUND_TO_OTHER_MEMBER")) return "هذا الجهاز مرتبط بعضو آخر. استخدم تبديل المستخدم ثم سجّل الدخول مجددًا.";
+  if (code.includes("AHD_BINDING_UNAVAILABLE") || code.includes("AHD_FIREBASE_UNAVAILABLE")) {
+    return "تعذّر تأكيد ربط حسابك بـ Firebase. تحقق من الإنترنت ثم أعد المحاولة.";
+  }
+  if (code.includes("PERMISSION-DENIED") || code.includes("PERMISSION_DENIED") || code.includes("INSUFFICIENT PERMISSIONS")) {
+    return "تعذّر الحفظ: الصلاحية لم تعد مفعلة في Firebase. اطلب من أمجد مراجعة صلاحية إدارة عهد الثبات.";
+  }
+  if (code.includes("NETWORK") || code.includes("OFFLINE") || code.includes("UNAVAILABLE")) {
+    return "تعذّر الحفظ بسبب الاتصال. تحقق من الإنترنت ثم أعد المحاولة.";
+  }
+  return "تعذّر حفظ التغيير الآن. أعد المحاولة بعد لحظة.";
+}
+
 function getAhdResolvedState() {
   const resolvedMembers = [];
   const orphanIds = [];
@@ -17,7 +115,7 @@ function getAhdResolvedState() {
     .map((id) => String(id || "").trim())
     .filter(Boolean)
     .forEach((id) => {
-      const member = FB_STATE.tribe.get(id);
+      const member = FB_STATE.tribe.get(id) || AHD_CACHED_MEMBERS.get(id);
       if (member && String(member.name || "").trim()) {
         resolvedMembers.push({ id, ...member });
       } else {
@@ -37,7 +135,9 @@ function renderAhdPublicList() {
   const canvasEl = qs("#memberCanvasAhdStrip");
   if (!el && !count && !canvasEl) return;
 
+  loadAhdMembersCache();
   const { resolvedMembers, orphanIds } = getAhdResolvedState();
+  if (AHD_REMOTE_SNAPSHOT_READY) saveAhdMembersCache();
 
   const previewFallbackMembers =
     !resolvedMembers.length &&
@@ -52,7 +152,9 @@ function renderAhdPublicList() {
   const extraCanvasCount = Math.max(0, publicMembers.length - visibleCanvasMembers.length);
 
   if (count) {
-    count.textContent = `${formatArabicNumber(publicMembers.length)} مشارك`;
+    count.textContent = (publicMembers.length || AHD_REMOTE_SNAPSHOT_READY)
+      ? `${formatArabicNumber(publicMembers.length)} مشارك`
+      : "جارٍ الإظهار...";
   }
 
   if (el) {
@@ -71,7 +173,9 @@ function renderAhdPublicList() {
       `;
           })
           .join("")
-      : `<div class="identity-empty ahd-public-empty">لا يوجد مشاركون في عهد الثبات بعد.</div>`;
+      : AHD_REMOTE_SNAPSHOT_READY
+        ? `<div class="identity-empty ahd-public-empty">لا يوجد مشاركون في عهد الثبات بعد.</div>`
+        : `<div class="identity-empty ahd-public-empty">جارٍ إظهار المشاركين...</div>`;
   }
 
   if (canvasEl) {
@@ -189,27 +293,65 @@ function renderAhdAdminLists(filterText = "", orphanIdsArg = null) {
 }
 
 async function addMemberToAhd(memberId) {
-  if (!hasAhdAdminAccess()) return;
+  if (!hasAhdAdminAccess()) {
+    setAhdAdminFeedback("لا تملك صلاحية إدارة عهد الثبات الآن.", true);
+    return false;
+  }
   const id = String(memberId || "").trim();
-  if (!id) return;
+  if (!id || PENDING_AHD_MEMBER_ACTIONS.has(id)) return false;
   if (!FB_STATE.tribe.has(id)) {
-    if (typeof showIdentityToast === "function") {
-      showIdentityToast("لا يمكن إضافة معرّف غير موجود في قائمة الأعضاء.");
-    }
-    return;
+    const message = "لا يمكن إضافة معرّف غير موجود في قائمة الأعضاء.";
+    setAhdAdminFeedback(message, true);
+    if (typeof showIdentityToast === "function") showIdentityToast(message);
+    return false;
   }
 
-  const { db, doc, setDoc, serverTimestamp } = window.FB;
-  await setDoc(doc(db, "ahdMembers", id), { joinedAt: serverTimestamp() }, { merge: true });
+  PENDING_AHD_MEMBER_ACTIONS.add(id);
+  setAhdAdminFeedback("جارٍ إضافة العضو إلى عهد الثبات...");
+  try {
+    await ensureAhdAdminWriteAccess();
+    const { db, doc, setDoc, serverTimestamp } = window.FB;
+    await setDoc(doc(db, "ahdMembers", id), { joinedAt: serverTimestamp() }, { merge: true });
+    setAhdAdminFeedback("تمت إضافة العضو إلى عهد الثبات.");
+    if (typeof showIdentityToast === "function") showIdentityToast("تمت إضافة العضو إلى عهد الثبات.");
+    return true;
+  } catch (error) {
+    console.error("Failed to add Ahd member", error);
+    const message = ahdActionErrorMessage(error);
+    setAhdAdminFeedback(message, true);
+    if (typeof showIdentityToast === "function") showIdentityToast(message);
+    return false;
+  } finally {
+    PENDING_AHD_MEMBER_ACTIONS.delete(id);
+  }
 }
 
 async function removeMemberFromAhd(memberId) {
-  if (!hasAhdAdminAccess()) return;
+  if (!hasAhdAdminAccess()) {
+    setAhdAdminFeedback("لا تملك صلاحية إدارة عهد الثبات الآن.", true);
+    return false;
+  }
   const id = String(memberId || "").trim();
-  if (!id) return;
+  if (!id || PENDING_AHD_MEMBER_ACTIONS.has(id)) return false;
 
-  const { db, doc, deleteDoc } = window.FB;
-  await deleteDoc(doc(db, "ahdMembers", id));
+  PENDING_AHD_MEMBER_ACTIONS.add(id);
+  setAhdAdminFeedback("جارٍ حذف العضو من عهد الثبات...");
+  try {
+    await ensureAhdAdminWriteAccess();
+    const { db, doc, deleteDoc } = window.FB;
+    await deleteDoc(doc(db, "ahdMembers", id));
+    setAhdAdminFeedback("تم حذف العضو من عهد الثبات.");
+    if (typeof showIdentityToast === "function") showIdentityToast("تم حذف العضو من عهد الثبات.");
+    return true;
+  } catch (error) {
+    console.error("Failed to remove Ahd member", error);
+    const message = ahdActionErrorMessage(error);
+    setAhdAdminFeedback(message, true);
+    if (typeof showIdentityToast === "function") showIdentityToast(message);
+    return false;
+  } finally {
+    PENDING_AHD_MEMBER_ACTIONS.delete(id);
+  }
 }
 
 function attachAhdFirestoreListener() {
@@ -225,6 +367,7 @@ function attachAhdFirestoreListener() {
   const unsubAhd = onSnapshot(collection(db, "ahdMembers"), (snap) => {
     FB_STATE.ahd = new Set();
     snap.forEach((docSnap) => FB_STATE.ahd.add(docSnap.id));
+    AHD_REMOTE_SNAPSHOT_READY = true;
     renderAhdPublicList();
   });
 
