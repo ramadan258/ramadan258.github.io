@@ -441,14 +441,23 @@ function wireIdentityConfirmModal() {
           }
         }
 
+        // Confirm the local device first, then let the cloud binding finish without
+        // delaying entry to the dashboard after a correct password.
+        assertLocalMemberBinding(user.id);
         markMemberSessionAuthorized(user.id);
         saveCurrentUser({ id: user.id, name: user.name, kind: "member" });
-        const binding = await ensureMemberBinding(user.id);
+        writeLocalMemberBinding(user.id);
         closeIdentityConfirm();
         startApp();
-        if (binding?.localOnly) {
-          showIdentityToast("تم الدخول بنجاح. بعض المزامنة السحابية غير متاحة حاليًا، لكن يمكنك استخدام الموقع بشكل طبيعي.");
-        }
+        void ensureMemberBinding(user.id)
+          .then((binding) => {
+            if (binding?.localOnly) {
+              showIdentityToast("تم الدخول بنجاح. بعض المزامنة السحابية غير متاحة حاليًا، لكن يمكنك استخدام الموقع بشكل طبيعي.");
+            }
+          })
+          .catch(() => {
+            showIdentityToast("تم الدخول، وستكتمل مزامنة الحساب عند عودة الاتصال.");
+          });
       } catch (e) {
         clearCurrentUser();
         const msg = String(e?.message || "");

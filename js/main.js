@@ -385,6 +385,7 @@ const MEMBER_DIRECTORY_STATE = {
   baseMembers: [],
   remoteCustomMembers: new Map(),
   remoteAccessById: new Map(),
+  remoteAccessSnapshotReady: false,
   localCustomMembers: new Map(),
   remoteHiddenMemberIds: new Set(),
   localHiddenMemberIds: new Set(),
@@ -1423,6 +1424,8 @@ function syncStoredPermissionsForCurrentUser() {
   if (!memberId || FB_STATE.isAdmin || LOCAL_ADMIN_ACCESS.memberManage) return;
 
   const accessRecord = getMemberAccessRecord(memberId);
+  // Keep the verified device permissions until the first remote directory snapshot arrives.
+  if (!accessRecord && !MEMBER_DIRECTORY_STATE.remoteAccessSnapshotReady) return;
   const permissions = accessRecord?.passwordHash
     ? getMemberPermissions(memberId)
     : normalizeMemberPermissions();
@@ -2377,6 +2380,7 @@ function initMemberDirectorySystem(options = {}) {
       MEMBER_DIRECTORY_STATE.remoteCustomMembers = customMembers;
       MEMBER_DIRECTORY_STATE.remoteHiddenMemberIds = hiddenMemberIds;
       MEMBER_DIRECTORY_STATE.remoteAccessById = accessById;
+      MEMBER_DIRECTORY_STATE.remoteAccessSnapshotReady = true;
       syncStoredPermissionsForCurrentUser();
       saveRemoteMemberDirectoryCache();
       refreshMemberDirectoryUI();
