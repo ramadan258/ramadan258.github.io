@@ -3154,3 +3154,285 @@ body.member-standalone-view .assistant-fab {
     font-size: 15px;
   }
 }
+
+/* The Azkar flow uses the same focused window pattern as Question and Answer. */
+#memberCanvasWindow[data-window-style="azkar"] {
+  padding: 18px;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-window-card {
+  width: min(660px, 100%);
+  height: auto;
+  max-height: min(86dvh, 820px);
+  overflow: hidden;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-window-head {
+  position: relative;
+  min-height: 84px;
+  padding: 20px 108px 18px;
+  justify-content: center;
+  text-align: center;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-window-head > div {
+  width: 100%;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] #memberCanvasWindowTitle {
+  font-size: 26px;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] #memberCanvasWindowSub,
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-window-foot {
+  display: none;
+}
+
+/* In RTL, logical end is the physical left edge: X on the left, back on the right. */
+#memberCanvasWindow[data-window-style="azkar"] #closeMemberCanvasWindow {
+  position: absolute;
+  inset-inline-start: auto;
+  inset-inline-end: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#memberCanvasWindow[data-window-style="azkar"] #memberCanvasWindowBack {
+  position: absolute;
+  inset-inline-start: 18px;
+  inset-inline-end: auto;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-window-body {
+  flex: 0 1 auto;
+  padding: 12px;
+  overflow: auto;
+  background: linear-gradient(180deg, rgba(8, 12, 21, 0.94), rgba(7, 11, 19, 0.98));
+  scrollbar-color: rgba(78, 205, 196, 0.48) transparent;
+  scrollbar-width: thin;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-window-body::-webkit-scrollbar {
+  width: 7px;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-window-body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(78, 205, 196, 0.48);
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-info-panel {
+  display: block;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-list {
+  display: grid;
+  gap: 10px;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-choice {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  min-height: 84px;
+  padding: 16px 52px 16px 18px;
+  border: 1px solid rgba(78, 205, 196, 0.22);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(18, 48, 55, 0.88), rgba(11, 24, 34, 0.96));
+  color: #f8f7f1;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: right;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-choice::before {
+  content: "‹";
+  position: absolute;
+  inset-inline-start: 18px;
+  top: 50%;
+  color: #4ecdc4;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-choice.is-evening {
+  border-color: rgba(245, 200, 66, 0.2);
+  background: linear-gradient(135deg, rgba(48, 39, 18, 0.84), rgba(20, 25, 29, 0.98));
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-choice:hover {
+  transform: translateX(-2px);
+  border-color: rgba(78, 205, 196, 0.52);
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-choice.is-evening:hover {
+  border-color: rgba(245, 200, 66, 0.48);
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-choice__title {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-choice__copy,
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-reader-note {
+  color: rgba(229, 239, 238, 0.7);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-reader-note,
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-loading {
+  padding: 12px 14px;
+  border: 1px solid rgba(78, 205, 196, 0.16);
+  border-radius: 16px;
+  background: rgba(78, 205, 196, 0.06);
+  text-align: center;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-loading {
+  color: rgba(229, 239, 238, 0.8);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(16, 35, 43, 0.88), rgba(10, 18, 28, 0.98));
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card__order,
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card__order {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(78, 205, 196, 0.14);
+  color: #75e5dd;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card__count {
+  padding: 6px 10px;
+  border: 1px solid rgba(245, 200, 66, 0.2);
+  border-radius: 999px;
+  background: rgba(245, 200, 66, 0.09);
+  color: #f5c842;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card__content {
+  padding: 15px 15px 12px;
+  color: #f8f7f1;
+  font-family: "Amiri", serif;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 2.05;
+  text-align: right;
+  word-break: break-word;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card__details {
+  margin: 0 14px 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.14);
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card__details summary {
+  padding: 10px 12px;
+  color: rgba(231, 242, 242, 0.86);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card__extra {
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 12px;
+  color: rgba(229, 239, 238, 0.72);
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+#memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card__extra strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #f5c842;
+  font-size: 11px;
+}
+
+@media (max-width: 640px) {
+  #memberCanvasWindow[data-window-style="azkar"] {
+    padding: 10px;
+  }
+
+  #memberCanvasWindow[data-window-style="azkar"] .member-canvas-window-card {
+    width: 100%;
+    max-height: min(86dvh, 720px);
+    border-radius: 22px;
+  }
+
+  #memberCanvasWindow[data-window-style="azkar"] .member-canvas-window-head {
+    min-height: 74px;
+    padding: 17px 88px 15px;
+  }
+
+  #memberCanvasWindow[data-window-style="azkar"] #memberCanvasWindowTitle {
+    font-size: 22px;
+  }
+
+  #memberCanvasWindow[data-window-style="azkar"] #closeMemberCanvasWindow {
+    inset-inline-end: 14px;
+  }
+
+  #memberCanvasWindow[data-window-style="azkar"] #memberCanvasWindowBack {
+    inset-inline-start: 14px;
+  }
+
+  #memberCanvasWindow[data-window-style="azkar"] .member-canvas-window-body {
+    padding: 10px;
+  }
+
+  #memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-choice {
+    min-height: 78px;
+    padding: 14px 46px 14px 14px;
+    border-radius: 16px;
+  }
+
+  #memberCanvasWindow[data-window-style="azkar"] .member-canvas-azkar-choice__title {
+    font-size: 16px;
+  }
+
+  #memberCanvasWindow[data-window-style="azkar"] .member-canvas-zikr-card__content {
+    padding: 14px 13px 11px;
+    font-size: 21px;
+    line-height: 2;
+  }
+}

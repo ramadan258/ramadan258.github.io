@@ -1,5 +1,5 @@
 ﻿    const CONFIG = {
-      AHD_TARGET_DATE_ISO: "2027-04-07T23:59:59+03:00",
+      AHD_TARGET_DATE_ISO: "2026-10-11T23:59:59+03:00",
       FORCE_HIZB_NUMBER: null,
 
       LINKS: {
@@ -1496,7 +1496,7 @@ function setActiveAdminPanel(panelKey) {
 }
 
 function syncBodyModalLock() {
-  const hasOpenModal = Boolean(document.querySelector(".tafsir-modal-overlay.open, .azkar-modal-overlay.open"));
+  const hasOpenModal = Boolean(document.querySelector(".tafsir-modal-overlay.open, .member-canvas-window.open"));
   document.body.style.overflow = hasOpenModal ? "hidden" : "";
 }
 
@@ -1533,6 +1533,9 @@ function openMemberCanvasWindow(targetSelector, titleText = "", subText = "", wi
   modal.setAttribute("aria-hidden", "false");
   if (targetSelector === "#memberCanvasQa" && typeof openQaCanvasCategories === "function") {
     openQaCanvasCategories();
+  }
+  if (targetSelector === "#memberCanvasAzkar" && typeof openAzkarCanvasChoices === "function") {
+    openAzkarCanvasChoices();
   }
   syncBodyModalLock();
 }
@@ -1696,8 +1699,11 @@ function wireMemberCanvasWindows() {
   const canvasBack = qs("#memberCanvasWindowBack");
   if (canvasBack) {
     canvasBack.addEventListener("click", () => {
-      if (!canvasBack.hidden && typeof goBackInQaCanvas === "function") {
+      if (canvasBack.hidden) return;
+      if (typeof qaCanvasIsOpen === "function" && qaCanvasIsOpen() && typeof goBackInQaCanvas === "function") {
         goBackInQaCanvas();
+      } else if (typeof azkarCanvasIsOpen === "function" && azkarCanvasIsOpen() && typeof goBackInAzkarCanvas === "function") {
+        goBackInAzkarCanvas();
       }
     });
   }
@@ -3130,6 +3136,10 @@ function previousISODate(isoDate) {
     }
 
     function openAzkarReader(cfg) {
+      if (typeof openAzkarCanvas === "function") {
+        openAzkarCanvas();
+        return;
+      }
       window.open(getAzkarReaderUrl(cfg), "_blank", "noopener");
     }
 

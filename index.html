@@ -146,7 +146,7 @@
   </script>
 
   <link rel="stylesheet" href="css/index-page.css?v=20260914library3" />
-  <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260914ahd3" />
+  <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260914azkar1" />
 </head>
 
 <body class="member-design-canvas-mode">
@@ -266,6 +266,10 @@
 
       <article id="memberCanvasQa" class="member-canvas-info-panel" hidden>
         <div id="memberCanvasQaList" class="member-canvas-qa-list" aria-label="قوائم سؤال وجواب"></div>
+      </article>
+
+      <article id="memberCanvasAzkar" class="member-canvas-info-panel" hidden>
+        <div id="memberCanvasAzkarList" class="member-canvas-azkar-list" aria-label="الأذكار"></div>
       </article>
 
     </div>
@@ -586,17 +590,17 @@
 
     <article class="steadfastness-challenge" aria-label="تفاصيل مسابقة عهد الثبات">
       <div class="steadfastness-challenge-head">
-        <h3>صفر زلات حتى نهاية شوال</h3>
+        <h3>صفر زلات حتى نهاية ربيع الثاني</h3>
       </div>
       <div class="steadfastness-challenge-facts">
         <div class="steadfastness-challenge-fact"><span>الهدف</span><strong>صفر زلات</strong></div>
         <div class="steadfastness-challenge-fact prize"><span>الجائزة</span><strong>100 دولار</strong></div>
-        <div class="steadfastness-challenge-fact"><span>الموعد</span><strong>نهاية شوال</strong></div>
+        <div class="steadfastness-challenge-fact"><span>الموعد</span><strong>نهاية ربيع الثاني</strong></div>
       </div>
     </article>
 
     <section id="countdown" class="countdown-section compact-countdown ahd-window-countdown" aria-label="الوقت المتبقي في عهد الثبات">
-      <div class="countdown-compact-label">الوقت المتبقي حتى نهاية شوال</div>
+      <div class="countdown-compact-label">الوقت المتبقي حتى نهاية ربيع الثاني</div>
       <div class="countdown">
         <div class="time-box">
           <span id="days">--</span>
@@ -620,7 +624,7 @@
     <div id="ahdStandaloneCountdownSlot" class="ahd-standalone-countdown-slot" hidden></div>
 
     <article class="ahd-oath-copy">
-      <div>نعاهد أنفسنا وأعضاء القبيلة على الثبات حتى نهاية شوال، وأن نواجه لحظات الضعف بصدق وخطة، متوكلين على الله ومستعينين به، وأن نعين بعضنا دون لوم أو إحراج.</div>
+      <div>نعاهد أنفسنا وأعضاء القبيلة على الثبات حتى نهاية ربيع الثاني، وأن نواجه لحظات الضعف بصدق وخطة، متوكلين على الله ومستعينين به، وأن نعين بعضنا دون لوم أو إحراج.</div>
       <p class="ahd-oath-verse">﴿وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ﴾ <span>الطلاق: ٣</span></p>
     </article>
 
@@ -680,39 +684,6 @@
     <a class="mobile-dock-item report" href="daily_report.html?v=20260914qawhite1">التقرير</a>
     <button class="mobile-dock-item azkar" type="button" data-forward-click="#openMorningAzkar">الأذكار</button>
     <button class="mobile-dock-item library" type="button" data-forward-click="#openRecoveryLibrary">المكتبة</button>
-  </div>
-
-  <!-- =====================
-       Azkar Modal (Reusable)
-  ===================== -->
-  <div class="azkar-modal-overlay" id="azkarModal" aria-hidden="true">
-    <div class="azkar-modal-card" role="dialog" aria-modal="true" aria-labelledby="azkarModalTitle">
-      <div class="azkar-modal-head">
-        <div class="azkar-modal-title" id="azkarModalTitle">—</div>
-
-        <div class="azkar-modal-tools">
-          <input class="azkar-search" id="azkarSearch" type="search" placeholder="ابحث داخل الأذكار..." />
-          <button class="azkar-tool-btn" id="azkarFindBtn" type="button">بحث</button>
-          <button class="azkar-tool-btn ghost" id="azkarOpenNewTab" type="button">فتح</button>
-          <button type="button" class="azkar-modal-close" id="closeAzkarModal" aria-label="إغلاق">✕</button>
-        </div>
-      </div>
-
-      <div class="azkar-modal-body">
-        <iframe
-          id="azkarFrame"
-          class="azkar-iframe"
-          title="Azkar"
-          loading="lazy"
-          referrerpolicy="no-referrer"
-        ></iframe>
-      </div>
-
-      <div class="azkar-modal-foot">
-        <div class="azkar-note" id="azkarNote">—</div>
-        <button type="button" class="azkar-modal-close-btn" id="closeAzkarModal2">إغلاق</button>
-      </div>
-    </div>
   </div>
 
   <div class="azkar-toast" id="azkarToast" aria-live="polite" aria-atomic="true"></div>
@@ -1047,11 +1018,12 @@
   
   </div>
 
-  <script src="js/main.js?v=20260914ahd2"></script>
+  <script src="js/main.js?v=20260914azkar1"></script>
   <script src="js/auth-ui.js?v=20260914library1"></script>
   <script src="js/member-status.js?v=20260914qawhite1"></script>
   <script src="js/ahd.js?v=20260914library1"></script>
   <script src="js/qa.js?v=20260914qa3"></script>
+  <script src="js/azkar-canvas.js?v=20260914azkar1"></script>
   <script src="js/recovery-tools.js?v=20260914library3"></script>
   <script src="js/hadith.js?v=20260914qawhite1"></script>
 </body>
