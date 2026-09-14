@@ -399,6 +399,7 @@ function initAhdPage() {
       setMemberStatusAdminVisibility();
       setMemberManageAdminVisibility();
       if (typeof setQaAdminVisibility === "function") setQaAdminVisibility();
+      if (typeof setLibraryAdminVisibility === "function") setLibraryAdminVisibility();
       if (hasMemberStatusAdminAccess()) {
         renderMemberStatusAdminList();
       }
@@ -422,6 +423,7 @@ function initAhdPage() {
     setAhdAdminVisibility();
     setMemberManageAdminVisibility();
     if (typeof setQaAdminVisibility === "function") setQaAdminVisibility();
+    if (typeof setLibraryAdminVisibility === "function") setLibraryAdminVisibility();
     renderAhdPublicList();
   };
 

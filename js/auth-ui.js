@@ -13,6 +13,7 @@ function closeAllModals() {
   setAhdAdminVisibility();
   setMemberManageAdminVisibility();
   if (typeof setQaAdminVisibility === "function") setQaAdminVisibility();
+  if (typeof setLibraryAdminVisibility === "function") setLibraryAdminVisibility();
   syncBodyModalLock();
 }
 

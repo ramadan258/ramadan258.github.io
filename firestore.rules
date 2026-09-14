@@ -133,6 +133,60 @@ service cloud.firestore {
         && request.resource.data.updatedAt is timestamp;
     }
 
+    function isLibraryBookDocId(docId) {
+      return docId is string
+        && docId.matches('^book__[A-Za-z0-9_-]+$');
+    }
+
+    function isLibraryDefaultHiddenDocId(docId) {
+      return docId is string
+        && docId.matches('^hidden__[A-Za-z0-9_-]+$');
+    }
+
+    function isValidLibraryBook() {
+      return request.resource.data.keys().hasOnly([
+          'type',
+          'bookId',
+          'title',
+          'author',
+          'description',
+          'href',
+          'minutes',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.type == "library_book"
+        && request.resource.data.bookId is string
+        && request.resource.data.bookId.matches('^[A-Za-z0-9_-]{1,120}$')
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 240
+        && request.resource.data.author is string
+        && request.resource.data.author.size() <= 180
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 2000
+        && request.resource.data.href is string
+        && request.resource.data.href.matches('^https?://.+')
+        && request.resource.data.href.size() <= 2000
+        && request.resource.data.minutes is int
+        && request.resource.data.minutes >= 0
+        && request.resource.data.minutes <= 999
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    function isValidLibraryDefaultHidden() {
+      return request.resource.data.keys().hasOnly([
+          'type',
+          'bookId',
+          'hiddenAt'
+        ])
+        && request.resource.data.type == "library_default_hidden"
+        && request.resource.data.bookId is string
+        && request.resource.data.bookId.matches('^[A-Za-z0-9_-]{1,120}$')
+        && request.resource.data.hiddenAt is timestamp;
+    }
+
     function hasOwnChatAccess() {
       return hasBinding()
         && exists(/databases/$(database)/documents/chatAccess/$(boundMemberId()))
@@ -278,6 +332,17 @@ service cloud.firestore {
         && request.resource.data.qa is bool
         && request.resource.data.updatedAt is timestamp;
       allow delete: if isAmjad();
+    }
+
+    match /libraryBooks/{docId} {
+      allow read: if true;
+      allow create, update: if isAmjad()
+        && (
+          (isLibraryBookDocId(docId) && isValidLibraryBook())
+          || (isLibraryDefaultHiddenDocId(docId) && isValidLibraryDefaultHidden())
+        );
+      allow delete: if isAmjad()
+        && (isLibraryBookDocId(docId) || isLibraryDefaultHiddenDocId(docId));
     }
 
     match /streaks/{memberId} {

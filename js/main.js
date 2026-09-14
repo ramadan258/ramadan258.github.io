@@ -1343,12 +1343,17 @@ function hasQaAdminAccess() {
   return Boolean(FB_STATE.isAdmin || LOCAL_ADMIN_ACCESS.qa);
 }
 
+function hasLibraryAdminAccess() {
+  return Boolean(FB_STATE.isAdmin);
+}
+
 function hasAnyAdminAccess() {
   return Boolean(
     hasMemberStatusAdminAccess() ||
     hasAhdAdminAccess() ||
     hasMemberManageAdminAccess() ||
-    hasQaAdminAccess()
+    hasQaAdminAccess() ||
+    hasLibraryAdminAccess()
   );
 }
 
@@ -1357,6 +1362,7 @@ function canAccessAdminPanel(panelKey) {
   if (panelKey === "ahd") return hasAhdAdminAccess();
   if (panelKey === "member-manage") return hasMemberManageAdminAccess();
   if (panelKey === "qa") return hasQaAdminAccess();
+  if (panelKey === "library") return hasLibraryAdminAccess();
   return false;
 }
 
@@ -1416,6 +1422,7 @@ function grantLocalAdminAccess(nextAccess = {}) {
   setAhdAdminVisibility();
   setMemberManageAdminVisibility();
   if (typeof setQaAdminVisibility === "function") setQaAdminVisibility();
+  if (typeof setLibraryAdminVisibility === "function") setLibraryAdminVisibility();
 }
 
 function syncStoredPermissionsForCurrentUser() {
@@ -1478,6 +1485,7 @@ function setAdminMenuVisibility() {
     setAhdAdminVisibility();
     setMemberManageAdminVisibility();
     if (typeof setQaAdminVisibility === "function") setQaAdminVisibility();
+    if (typeof setLibraryAdminVisibility === "function") setLibraryAdminVisibility();
     syncBodyModalLock();
   }
 
@@ -1497,6 +1505,7 @@ function setActiveAdminPanel(panelKey) {
   setAhdAdminVisibility();
   setMemberManageAdminVisibility();
   if (typeof setQaAdminVisibility === "function") setQaAdminVisibility();
+  if (typeof setLibraryAdminVisibility === "function") setLibraryAdminVisibility();
 }
 
 function syncBodyModalLock() {
@@ -1750,6 +1759,15 @@ function getAdminPanelConfig(panelKey) {
     };
   }
 
+  if (panelKey === "library") {
+    return {
+      title: "إدارة المكتبة",
+      sub: "أضف كتابًا برابط عام أو احذف كتابًا من مكتبة التعافي.",
+      wrap: "#libraryAdminWrap",
+      slot: "#libraryAdminSlot",
+    };
+  }
+
   return null;
 }
 
@@ -1757,7 +1775,7 @@ function restoreAdminPanelFromModal() {
   const mount = qs("#adminPanelModalMount");
   if (!mount) return;
 
-  ["member-status", "ahd", "member-manage", "qa"].forEach((panelKey) => {
+  ["member-status", "ahd", "member-manage", "qa", "library"].forEach((panelKey) => {
     const cfg = getAdminPanelConfig(panelKey);
     const wrap = cfg ? qs(cfg.wrap) : null;
     const slot = cfg ? qs(cfg.slot) : null;
@@ -2425,6 +2443,10 @@ function openAdminPanelModal(panelKey) {
   if (panelKey === "qa" && typeof renderQaAdminPanel === "function") {
     renderQaAdminPanel();
     setTimeout(() => qs("#qaAdminCategoryName")?.focus?.(), 60);
+  }
+  if (panelKey === "library" && typeof renderLibraryAdminPanel === "function") {
+    renderLibraryAdminPanel();
+    setTimeout(() => qs("#libraryAdminTitle")?.focus?.(), 60);
   }
 }
 

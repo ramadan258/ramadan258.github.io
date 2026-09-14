@@ -145,7 +145,7 @@
     };
   </script>
 
-  <link rel="stylesheet" href="css/index-page.css?v=20260914qawhite1" />
+  <link rel="stylesheet" href="css/index-page.css?v=20260914library1" />
   <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260914qawhite1" />
 </head>
 
@@ -341,6 +341,10 @@
       <button class="admin-quick-option" type="button" data-admin-open="qa">
         تعديل سؤال وجواب
         <small>إضافة القوائم والأسئلة والأجوبة أو حذفها.</small>
+      </button>
+      <button class="admin-quick-option" type="button" data-admin-open="library">
+        إدارة المكتبة
+        <small>إضافة كتاب برابط عام أو حذفه من المكتبة.</small>
       </button>
     </div>
   </div>
@@ -559,6 +563,39 @@
           </div>
           <div id="qaAdminItemStatus" class="panel-sub" style="margin-top:12px"></div>
           <div id="qaAdminItemList" class="qa-admin-item-list" aria-label="الأسئلة والأجوبة داخل القائمة"></div>
+        </aside>
+      </div>
+    </div>
+
+    <div id="libraryAdminSlot" hidden></div>
+    <div id="libraryAdminWrap" class="panel" style="margin-top:22px; display:none" aria-hidden="true">
+      <div class="admin-panel-head">
+        <div class="panel-title">📚 إدارة المكتبة</div>
+        <button class="admin-panel-close" type="button" data-admin-close="library">إغلاق</button>
+      </div>
+
+      <div class="panel-sub" style="margin-top:10px">
+        أضف كتابًا من خلال رابط عام مباشر، وسيظهر فورًا لجميع الأعضاء. الكتب المحذوفة تختفي من المكتبة العامة.
+      </div>
+
+      <div class="library-admin-grid" style="margin-top:16px">
+        <aside class="library-admin-form">
+          <div class="panel-title">إضافة كتاب</div>
+          <input id="libraryAdminTitle" class="text-input" type="text" placeholder="اسم الكتاب" autocomplete="off" />
+          <input id="libraryAdminAuthor" class="text-input" type="text" placeholder="المؤلف أو المصدر (اختياري)" autocomplete="off" style="margin-top:10px" />
+          <textarea id="libraryAdminDescription" class="text-input qa-admin-textarea" placeholder="وصف قصير للكتاب (اختياري)" style="margin-top:10px"></textarea>
+          <input id="libraryAdminHref" class="text-input" type="url" inputmode="url" placeholder="رابط الكتاب العام أو المباشر" autocomplete="off" style="margin-top:10px" />
+          <input id="libraryAdminMinutes" class="text-input" type="number" min="0" max="999" inputmode="numeric" placeholder="مدة القراءة بالدقائق (اختياري)" autocomplete="off" style="margin-top:10px" />
+          <div class="member-manage-actions">
+            <button id="libraryAdminAddBtn" class="identity-btn" type="button">إضافة الكتاب</button>
+            <button id="libraryAdminResetBtn" class="identity-btn ghost" type="button">إفراغ</button>
+          </div>
+          <div id="libraryAdminStatus" class="panel-sub" style="margin-top:12px" role="status" aria-live="polite"></div>
+        </aside>
+
+        <aside class="library-admin-list-wrap">
+          <div class="panel-title">الكتب الحالية</div>
+          <div id="libraryAdminList" class="library-admin-list" aria-label="إدارة الكتب الحالية"></div>
         </aside>
       </div>
     </div>
@@ -796,7 +833,7 @@
       </div>
 
       <div class="tafsir-modal-foot">
-        <div class="tafsir-note">لإضافة كتب جديدة لاحقًا يكفي وضعها داخل المجلد العام أو ربطها برابط مباشر داخل إعدادات الموقع.</div>
+        <div class="tafsir-note">الكتب تُدار من إعدادات أمجد وتظهر هنا للجميع.</div>
         <button type="button" class="tafsir-modal-close-btn" id="closeRecoveryLibraryModal2">إغلاق</button>
       </div>
     </div>
@@ -1058,12 +1095,12 @@
   
   </div>
 
-  <script src="js/main.js?v=20260914qawhite1"></script>
-  <script src="js/auth-ui.js?v=20260914qawhite1"></script>
+  <script src="js/main.js?v=20260914library1"></script>
+  <script src="js/auth-ui.js?v=20260914library1"></script>
   <script src="js/member-status.js?v=20260914qawhite1"></script>
-  <script src="js/ahd.js?v=20260914qawhite1"></script>
+  <script src="js/ahd.js?v=20260914library1"></script>
   <script src="js/qa.js?v=20260914qawhite1"></script>
-  <script src="js/recovery-tools.js?v=20260914qawhite1"></script>
+  <script src="js/recovery-tools.js?v=20260914library1"></script>
   <script src="js/hadith.js?v=20260914qawhite1"></script>
 </body>
 </html>

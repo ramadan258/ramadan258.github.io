@@ -378,61 +378,335 @@ function setupRescueCenterModal() {
 // ---------------------------
 // Recovery Library
 // ---------------------------
-function setupRecoveryLibrary() {
-  const modal = qs("#recoveryLibraryModal");
-  const openBtn = qs("#openRecoveryLibrary");
-  const closeBtn = qs("#closeRecoveryLibraryModal");
-  const closeBtn2 = qs("#closeRecoveryLibraryModal2");
+const FIRESTORE_LIBRARY_BOOKS = "libraryBooks";
+const LIBRARY_BOOK_DOC_PREFIX = "book__";
+const LIBRARY_DEFAULT_HIDDEN_DOC_PREFIX = "hidden__";
+
+const LIBRARY_STATE = {
+  remoteBooks: new Map(),
+  hiddenDefaultIds: new Set(),
+  listenersAttached: false,
+  uiWired: false,
+  adminControlsWired: false,
+};
+
+function isValidLibraryBookId(value) {
+  return /^[A-Za-z0-9_-]{1,120}$/.test(String(value || "").trim());
+}
+
+function normalizeLibraryBook(rawBook, source = "custom") {
+  const raw = rawBook && typeof rawBook === "object" ? rawBook : {};
+  const id = String(raw.id || raw.bookId || "").trim();
+  const href = String(raw.href || "").trim();
+  if (!isValidLibraryBookId(id) || !href) return null;
+
+  const parsedMinutes = Number(raw.minutes);
+  return {
+    id,
+    title: String(raw.title || "كتاب بلا عنوان").trim().slice(0, 240),
+    author: String(raw.author || "").trim().slice(0, 180),
+    description: String(raw.description || "").trim().slice(0, 2000),
+    href: href.slice(0, 2000),
+    minutes: Number.isFinite(parsedMinutes) ? Math.max(0, Math.min(999, Math.round(parsedMinutes))) : 0,
+    source,
+  };
+}
+
+function getRecoveryLibraryBooks() {
+  const booksById = new Map();
+  const defaultBooks = Array.isArray(CONFIG.RECOVERY_BOOKS) ? CONFIG.RECOVERY_BOOKS : [];
+
+  defaultBooks.forEach((book) => {
+    const normalized = normalizeLibraryBook(book, "default");
+    if (normalized && !LIBRARY_STATE.hiddenDefaultIds.has(normalized.id)) {
+      booksById.set(normalized.id, normalized);
+    }
+  });
+
+  LIBRARY_STATE.remoteBooks.forEach((book, id) => {
+    booksById.set(id, book);
+  });
+
+  return Array.from(booksById.values());
+}
+
+function renderRecoveryLibrary() {
   const listEl = qs("#recoveryLibraryList");
   const countChip = qs("#libraryCountChip");
-  const books = Array.isArray(CONFIG.RECOVERY_BOOKS) ? CONFIG.RECOVERY_BOOKS : [];
+  const books = getRecoveryLibraryBooks();
 
   if (countChip) {
     countChip.textContent = `${formatArabicNumber(books.length)} كتاب`;
   }
 
-  function renderBooks() {
-    if (!listEl) return;
-    if (!books.length) {
-      listEl.innerHTML = `
-        <div class="library-empty">
-          لا توجد كتب مضافة بعد.<br>
-          أضف ملفات الكتب لاحقًا داخل المجلد <code>books/</code> أو اربطها بروابط عامة مباشرة، وستظهر هنا للجميع.
+  if (!listEl) return;
+  if (!books.length) {
+    listEl.innerHTML = `
+      <div class="library-empty">
+        لا توجد كتب مضافة في المكتبة الآن.
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = books.map((book) => `
+    <div class="library-item">
+      <div class="library-item-title">${escapeHtml(book.title || "كتاب بلا عنوان")}</div>
+      <div class="library-item-author">${escapeHtml(book.author || "مؤلف غير محدد")}</div>
+      <div class="library-meta">
+        ${book.minutes ? `<span class="library-chip">${formatArabicNumber(book.minutes)} دقائق</span>` : ""}
+        <span class="library-chip">مفتوح للجميع</span>
+      </div>
+      <div class="library-item-desc">${escapeHtml(book.description || "كتاب مضاف للمكتبة العامة.")}</div>
+      <div class="library-item-actions">
+        <button class="library-btn primary" type="button" data-open-book="${escapeHtml(book.id)}">فتح الكتاب</button>
+      </div>
+    </div>
+  `).join("");
+
+  listEl.querySelectorAll("[data-open-book]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-open-book");
+      const book = getRecoveryLibraryBooks().find((entry) => entry.id === id);
+      if (!book?.href) {
+        showToast("هذا الكتاب لا يملك رابطًا صالحًا بعد.");
+        return;
+      }
+      window.open(book.href, "_blank", "noopener,noreferrer");
+    });
+  });
+}
+
+function setLibraryAdminStatus(message = "", isError = false) {
+  const el = qs("#libraryAdminStatus");
+  if (!el) return;
+  el.textContent = String(message || "").trim();
+  el.style.color = isError ? "#ffb4b4" : "";
+}
+
+function resetLibraryAdminForm() {
+  ["#libraryAdminTitle", "#libraryAdminAuthor", "#libraryAdminDescription", "#libraryAdminHref", "#libraryAdminMinutes"].forEach((selector) => {
+    const input = qs(selector);
+    if (input) input.value = "";
+  });
+  setLibraryAdminStatus("");
+}
+
+function normalizePublicBookUrl(value) {
+  const rawUrl = String(value || "").trim();
+  if (!rawUrl) return "";
+
+  try {
+    const url = new URL(rawUrl);
+    return ["https:", "http:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function createLibraryBookId() {
+  const random = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID().replaceAll("-", "").slice(0, 12)
+    : Math.random().toString(36).slice(2, 14);
+  return `book_${Date.now().toString(36)}_${random}`;
+}
+
+async function addLibraryBook() {
+  if (!hasLibraryAdminAccess()) return;
+  if (!fbAvailable()) {
+    setLibraryAdminStatus("يتعذر الاتصال الآن. أعد المحاولة بعد لحظة.", true);
+    return;
+  }
+
+  const title = String(qs("#libraryAdminTitle")?.value || "").trim();
+  const author = String(qs("#libraryAdminAuthor")?.value || "").trim();
+  const description = String(qs("#libraryAdminDescription")?.value || "").trim();
+  const href = normalizePublicBookUrl(qs("#libraryAdminHref")?.value);
+  const rawMinutes = String(qs("#libraryAdminMinutes")?.value || "").trim();
+  const minutes = rawMinutes ? Number(rawMinutes) : 0;
+
+  if (!title) {
+    setLibraryAdminStatus("اكتب اسم الكتاب أولًا.", true);
+    return;
+  }
+  if (title.length > 240 || author.length > 180 || description.length > 2000) {
+    setLibraryAdminStatus("بعض الحقول أطول من الحد المسموح. اختصر النص ثم أعد المحاولة.", true);
+    return;
+  }
+  if (!href) {
+    setLibraryAdminStatus("ضع رابطًا عامًا صحيحًا يبدأ بـ https:// أو http://.", true);
+    return;
+  }
+  if (!Number.isFinite(minutes) || minutes < 0 || minutes > 999 || !Number.isInteger(minutes)) {
+    setLibraryAdminStatus("مدة القراءة يجب أن تكون رقمًا صحيحًا من 0 إلى 999.", true);
+    return;
+  }
+
+  const addBtn = qs("#libraryAdminAddBtn");
+  if (addBtn) addBtn.disabled = true;
+  setLibraryAdminStatus("تُضاف إلى المكتبة الآن...");
+
+  try {
+    const { db, doc, setDoc, serverTimestamp } = window.FB;
+    const bookId = createLibraryBookId();
+    await setDoc(doc(db, FIRESTORE_LIBRARY_BOOKS, `${LIBRARY_BOOK_DOC_PREFIX}${bookId}`), {
+      type: "library_book",
+      bookId,
+      title,
+      author,
+      description,
+      href,
+      minutes,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    resetLibraryAdminForm();
+    setLibraryAdminStatus("تمت إضافة الكتاب، وسيظهر لجميع الأعضاء فورًا.");
+  } catch (error) {
+    console.error("Unable to add library book", error);
+    setLibraryAdminStatus("تعذرت إضافة الكتاب. تأكد من تسجيل دخول أمجد ومن الرابط ثم أعد المحاولة.", true);
+  } finally {
+    if (addBtn) addBtn.disabled = false;
+  }
+}
+
+async function deleteLibraryBook(bookId) {
+  if (!hasLibraryAdminAccess()) return;
+  const book = getRecoveryLibraryBooks().find((entry) => entry.id === String(bookId || ""));
+  if (!book || !fbAvailable()) return;
+  if (!window.confirm(`هل تريد حذف كتاب «${book.title}» من المكتبة العامة؟`)) return;
+
+  setLibraryAdminStatus("يُحذف الكتاب الآن...");
+  try {
+    const { db, doc, setDoc, deleteDoc, serverTimestamp } = window.FB;
+    if (book.source === "default") {
+      await setDoc(doc(db, FIRESTORE_LIBRARY_BOOKS, `${LIBRARY_DEFAULT_HIDDEN_DOC_PREFIX}${book.id}`), {
+        type: "library_default_hidden",
+        bookId: book.id,
+        hiddenAt: serverTimestamp(),
+      });
+    } else {
+      await deleteDoc(doc(db, FIRESTORE_LIBRARY_BOOKS, `${LIBRARY_BOOK_DOC_PREFIX}${book.id}`));
+    }
+    setLibraryAdminStatus("تم حذف الكتاب من المكتبة العامة.");
+  } catch (error) {
+    console.error("Unable to delete library book", error);
+    setLibraryAdminStatus("تعذر حذف الكتاب. أعد المحاولة بعد لحظة.", true);
+  }
+}
+
+function renderLibraryAdminPanel() {
+  const listEl = qs("#libraryAdminList");
+  if (!listEl) return;
+  if (!hasLibraryAdminAccess()) {
+    listEl.innerHTML = "";
+    return;
+  }
+
+  const books = getRecoveryLibraryBooks();
+  if (!books.length) {
+    listEl.innerHTML = `<div class="member-manage-empty">لا توجد كتب في المكتبة الآن.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = books.map((book) => `
+    <article class="library-admin-book">
+      <div class="library-admin-book-head">
+        <div>
+          <div class="library-admin-book-title">${escapeHtml(book.title)}</div>
+          <div class="library-admin-book-meta">${escapeHtml(book.author || "مؤلف غير محدد")}${book.minutes ? ` · ${formatArabicNumber(book.minutes)} دقائق` : ""}</div>
         </div>
-      `;
+        <button class="library-admin-delete" type="button" data-delete-library-book="${escapeHtml(book.id)}">حذف</button>
+      </div>
+      ${book.description ? `<div class="library-admin-book-desc">${escapeHtml(book.description)}</div>` : ""}
+      <a class="library-admin-book-link" href="${escapeHtml(book.href)}" target="_blank" rel="noopener noreferrer">فتح الرابط للتأكد منه</a>
+    </article>
+  `).join("");
+
+  listEl.querySelectorAll("[data-delete-library-book]").forEach((btn) => {
+    btn.addEventListener("click", () => deleteLibraryBook(btn.getAttribute("data-delete-library-book")));
+  });
+}
+
+function wireLibraryAdminControls() {
+  if (LIBRARY_STATE.adminControlsWired) return;
+  LIBRARY_STATE.adminControlsWired = true;
+
+  qs("#libraryAdminAddBtn")?.addEventListener("click", addLibraryBook);
+  qs("#libraryAdminResetBtn")?.addEventListener("click", resetLibraryAdminForm);
+  qs("#libraryAdminTitle")?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      addLibraryBook();
+    }
+  });
+}
+
+function setLibraryAdminVisibility() {
+  const wrap = qs("#libraryAdminWrap");
+  const show = hasLibraryAdminAccess() && typeof ADMIN_UI_STATE !== "undefined" && ADMIN_UI_STATE.activePanel === "library";
+  if (wrap) {
+    wrap.style.display = show ? "block" : "none";
+    wrap.setAttribute("aria-hidden", show ? "false" : "true");
+  }
+  if (show) {
+    wireLibraryAdminControls();
+    renderLibraryAdminPanel();
+  }
+}
+
+function attachLibraryFirestoreListener() {
+  if (LIBRARY_STATE.listenersAttached) return;
+  LIBRARY_STATE.listenersAttached = true;
+
+  const tryInit = () => {
+    if (!fbAvailable()) {
+      setTimeout(tryInit, 80);
       return;
     }
 
-    listEl.innerHTML = books.map((book) => `
-      <div class="library-item">
-        <div class="library-item-title">${escapeHtml(book.title || "كتاب بلا عنوان")}</div>
-        <div class="library-item-author">${escapeHtml(book.author || "مؤلف غير محدد")}</div>
-        <div class="library-meta">
-          ${book.minutes ? `<span class="library-chip">${formatArabicNumber(book.minutes)} دقائق</span>` : ""}
-          <span class="library-chip">مفتوح للجميع</span>
-        </div>
-        <div class="library-item-desc">${escapeHtml(book.description || "كتاب مضاف للمكتبة العامة.")}</div>
-        <div class="library-item-actions">
-          <button class="library-btn primary" type="button" data-open-book="${escapeHtml(book.id || "")}">فتح الكتاب</button>
-        </div>
-      </div>
-    `).join("");
+    const { db, onSnapshot, collection } = window.FB;
+    onSnapshot(
+      collection(db, FIRESTORE_LIBRARY_BOOKS),
+      (snapshot) => {
+        const remoteBooks = new Map();
+        const hiddenDefaultIds = new Set();
 
-    listEl.querySelectorAll("[data-open-book]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-open-book");
-        const book = books.find((b) => String(b.id || "") === String(id || ""));
-        if (!book?.href) {
-          showToast("هذا الكتاب لا يملك رابطًا صالحًا بعد.");
-          return;
-        }
-        window.open(book.href, "_blank", "noopener,noreferrer");
-      });
-    });
-  }
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() || {};
+          const docId = String(docSnap.id || "");
+          if (docId.startsWith(LIBRARY_BOOK_DOC_PREFIX)) {
+            const book = normalizeLibraryBook({ ...data, id: data.bookId || docId.replace(LIBRARY_BOOK_DOC_PREFIX, "") }, "custom");
+            if (book) remoteBooks.set(book.id, book);
+          }
+          if (docId.startsWith(LIBRARY_DEFAULT_HIDDEN_DOC_PREFIX)) {
+            const hiddenId = String(data.bookId || docId.replace(LIBRARY_DEFAULT_HIDDEN_DOC_PREFIX, "")).trim();
+            if (isValidLibraryBookId(hiddenId)) hiddenDefaultIds.add(hiddenId);
+          }
+        });
+
+        LIBRARY_STATE.remoteBooks = remoteBooks;
+        LIBRARY_STATE.hiddenDefaultIds = hiddenDefaultIds;
+        renderRecoveryLibrary();
+        renderLibraryAdminPanel();
+      },
+      (error) => {
+        console.error("Library listener failed", error);
+      }
+    );
+  };
+
+  tryInit();
+}
+
+function setupRecoveryLibrary() {
+  const modal = qs("#recoveryLibraryModal");
+  const openBtn = qs("#openRecoveryLibrary");
+  const closeBtn = qs("#closeRecoveryLibraryModal");
+  const closeBtn2 = qs("#closeRecoveryLibraryModal2");
 
   function openModal() {
-    renderBooks();
+    renderRecoveryLibrary();
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -444,14 +718,18 @@ function setupRecoveryLibrary() {
     document.body.style.overflow = "";
   }
 
-  openBtn?.addEventListener("click", openModal);
-  closeBtn?.addEventListener("click", closeModal);
-  closeBtn2?.addEventListener("click", closeModal);
-  modal?.addEventListener("click", (e) => {
-    if (e.target === modal) closeModal();
-  });
+  if (!LIBRARY_STATE.uiWired) {
+    LIBRARY_STATE.uiWired = true;
+    openBtn?.addEventListener("click", openModal);
+    closeBtn?.addEventListener("click", closeModal);
+    closeBtn2?.addEventListener("click", closeModal);
+    modal?.addEventListener("click", (e) => {
+      if (e.target === modal) closeModal();
+    });
+  }
 
-  renderBooks();
+  attachLibraryFirestoreListener();
+  renderRecoveryLibrary();
 }
 
 // ---------------------------

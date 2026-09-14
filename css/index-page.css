@@ -816,6 +816,77 @@
     background: rgba(255,255,255,.03);
     line-height: 1.9;
   }
+  .library-admin-grid {
+    display: grid;
+    grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+  .library-admin-form,
+  .library-admin-list-wrap {
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 20px;
+    padding: 16px;
+  }
+  .library-admin-form .panel-title,
+  .library-admin-list-wrap .panel-title {
+    margin-bottom: 12px;
+  }
+  .library-admin-list {
+    display: grid;
+    gap: 10px;
+  }
+  .library-admin-book {
+    border: 1px solid rgba(255,255,255,.07);
+    background: rgba(8,14,24,.48);
+    border-radius: 16px;
+    padding: 13px;
+  }
+  .library-admin-book-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .library-admin-book-title {
+    color: var(--text-light);
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.5;
+  }
+  .library-admin-book-meta {
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .library-admin-book-desc {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  .library-admin-book-link {
+    display: block;
+    margin-top: 9px;
+    color: var(--primary);
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .library-admin-delete {
+    flex: 0 0 auto;
+    border: 1px solid rgba(255,120,120,.22);
+    background: rgba(255,120,120,.08);
+    color: #ffd4d4;
+    border-radius: 11px;
+    padding: 8px 11px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+  }
 
   .admin-quick-menu {
     position: fixed;
@@ -1203,6 +1274,9 @@
       max-height: 76vh;
     }
     .member-manage-grid {
+      grid-template-columns: 1fr;
+    }
+    .library-admin-grid {
       grid-template-columns: 1fr;
     }
     .member-manage-card-actions {
