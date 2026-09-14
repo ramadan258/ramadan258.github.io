@@ -41,6 +41,18 @@ const QA_PREVIEW_ITEMS = [
   },
 ];
 
+// Show the current category list immediately for first-time visitors.
+// Firestore replaces it in the background whenever the content changes.
+const QA_BOOTSTRAP_CATEGORIES = [
+  { id: "qa_category_دليـلُ_المُتعافيــن_الــجُــدد_mnuugq7e", name: "دليـلُ المُتعافيــن الــجُــدد☘️", sortKey: 1775942758058 },
+  { id: "qa_category_أسئلـة_عن_الــزَّلات_والانـتـكَاسَــات_mnuumxpb", name: "أسئلـة عن الــزَّلات والانـتـكَاسَــات 🌟", sortKey: 1775943047711 },
+  { id: "qa_category_أسئلـة_عـن_الإباحيــة_خاصَّــة_بالشبــاب_mnuun8g9", name: "أسئلـة عـن الإباحيــة خاصَّــة بالشبــاب 🌼", sortKey: 1775943061641 },
+  { id: "qa_category_دراســــات_ومـقــارنـــات_mnuunfmi", name: "دراســــات ومـقــارنـــات 💫", sortKey: 1775943070938 },
+  { id: "qa_category_أسئلـة_عـن_قضايا_متعلقة_بالإباحيـةِ_والاستمنـاء_mnuupjjt", name: "أسئلـة عـن قضايا متعلقة بالإباحيـةِ والاستمنـاء🌻", sortKey: 1775943169338 },
+  { id: "qa_category_أسئلـة_عـن_مُشكـلات_متعلّقــة_بالإباحيـة_والاستمنـاء_mnuuqtu5", name: "أسئلـة عـن مُشكـلات متعلّقــة بالإباحيـة والاستمنـاء🌷", sortKey: 1775943229325 },
+  { id: "qa_category_أسئلـة_عامَّــة_عـن_الإباحيـةِ_والاستمنـاء_mnuvunr1", name: "أسئلـة عامَّــة عـن الإباحيـةِ والاستمنـاء🍃", sortKey: 1775945087677 },
+];
+
 const QA_STATE = {
   categories: [],
   items: [],
@@ -126,7 +138,9 @@ function sortQaItems(list) {
 function getQaCategoriesForView() {
   const categories = QA_STATE.categories.length
     ? QA_STATE.categories
-    : (typeof previewModeEnabled === "function" && previewModeEnabled() ? QA_PREVIEW_CATEGORIES : []);
+    : (typeof previewModeEnabled === "function" && previewModeEnabled()
+      ? QA_PREVIEW_CATEGORIES
+      : QA_BOOTSTRAP_CATEGORIES);
   return sortQaCategories(categories);
 }
 
