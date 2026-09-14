@@ -576,22 +576,6 @@
   }
   .tcard-link-btn:hover { opacity: .8; }
 
-  .library-meta {
-    margin-top: 14px;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .library-chip {
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: rgba(78,205,196,.08);
-    border: 1px solid rgba(78,205,196,.18);
-    color: var(--primary);
-    font-size: 11px;
-    font-weight: 800;
-  }
-
   @media(max-width: 900px) {
     .risk-question-grid {
       grid-template-columns: 1fr;
@@ -774,38 +758,11 @@
     color: var(--text-light);
     line-height: 1.5;
   }
-  .library-item-author {
-    margin-top: 6px;
-    font-size: 13px;
-    color: var(--text-muted);
-  }
   .library-item-desc {
     margin-top: 12px;
     font-size: 13px;
     line-height: 1.8;
     color: var(--text-muted);
-  }
-  .library-item-actions {
-    margin-top: 14px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .library-btn {
-    padding: 10px 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.09);
-    background: rgba(255,255,255,.05);
-    color: var(--text-light);
-    font-family: inherit;
-    font-weight: 900;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .library-btn.primary {
-    background: rgba(78,205,196,.16);
-    border-color: rgba(78,205,196,.3);
-    color: var(--primary);
   }
   .library-empty {
     padding: 22px;
@@ -815,6 +772,59 @@
     border: 1px dashed rgba(255,255,255,.12);
     background: rgba(255,255,255,.03);
     line-height: 1.9;
+  }
+  .recovery-library-card {
+    width: min(620px, 100%);
+    height: auto;
+    max-height: min(72vh, 640px);
+  }
+  .recovery-library-head {
+    position: relative;
+    justify-content: center;
+    min-height: 74px;
+    padding: 16px 72px;
+  }
+  .recovery-library-head .tafsir-modal-title {
+    font-size: 22px;
+    text-align: center;
+  }
+  .recovery-library-head .tafsir-modal-close {
+    position: absolute;
+    inset-inline-start: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  #recoveryLibraryModal .tafsir-modal-body {
+    flex: 0 1 auto;
+    padding: 12px;
+    background: rgba(0,0,0,.12);
+  }
+  #recoveryLibraryList {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+  .library-book-entry {
+    width: 100%;
+    min-height: 58px;
+    border: 1px solid rgba(78,205,196,.17);
+    border-radius: 15px;
+    background: linear-gradient(135deg, rgba(78,205,196,.12), rgba(255,255,255,.035));
+    color: var(--text-light);
+    padding: 14px 18px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1.55;
+    text-align: right;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease, transform .18s ease;
+  }
+  .library-book-entry:hover,
+  .library-book-entry:focus-visible {
+    border-color: rgba(78,205,196,.48);
+    background: rgba(78,205,196,.18);
+    transform: translateY(-1px);
+    outline: none;
   }
   .library-admin-grid {
     display: grid;
@@ -1278,6 +1288,24 @@
     }
     .library-admin-grid {
       grid-template-columns: 1fr;
+    }
+    .recovery-library-card {
+      width: 100%;
+      max-height: min(68dvh, 560px);
+      border-radius: 20px;
+    }
+    .recovery-library-head {
+      min-height: 66px;
+      padding: 13px 62px;
+    }
+    .recovery-library-head .tafsir-modal-title {
+      font-size: 20px;
+    }
+    .recovery-library-head .tafsir-modal-close {
+      inset-inline-start: 12px;
+    }
+    #recoveryLibraryModal .tafsir-modal-body {
+      padding: 10px;
     }
     .member-manage-card-actions {
       grid-template-columns: 1fr;

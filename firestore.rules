@@ -148,10 +148,7 @@ service cloud.firestore {
           'type',
           'bookId',
           'title',
-          'author',
-          'description',
           'href',
-          'minutes',
           'createdAt',
           'updatedAt'
         ])
@@ -161,16 +158,9 @@ service cloud.firestore {
         && request.resource.data.title is string
         && request.resource.data.title.size() > 0
         && request.resource.data.title.size() <= 240
-        && request.resource.data.author is string
-        && request.resource.data.author.size() <= 180
-        && request.resource.data.description is string
-        && request.resource.data.description.size() <= 2000
         && request.resource.data.href is string
         && request.resource.data.href.matches('^https?://.+')
         && request.resource.data.href.size() <= 2000
-        && request.resource.data.minutes is int
-        && request.resource.data.minutes >= 0
-        && request.resource.data.minutes <= 999
         && request.resource.data.createdAt is timestamp
         && request.resource.data.updatedAt is timestamp;
     }

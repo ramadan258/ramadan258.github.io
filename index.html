@@ -145,7 +145,7 @@
     };
   </script>
 
-  <link rel="stylesheet" href="css/index-page.css?v=20260914library1" />
+  <link rel="stylesheet" href="css/index-page.css?v=20260914library2" />
   <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260914qawhite1" />
 </head>
 
@@ -575,17 +575,14 @@
       </div>
 
       <div class="panel-sub" style="margin-top:10px">
-        أضف كتابًا من خلال رابط عام مباشر، وسيظهر فورًا لجميع الأعضاء. الكتب المحذوفة تختفي من المكتبة العامة.
+        أضف اسم الكتاب ورابطه العام، أو احذفه من المكتبة.
       </div>
 
       <div class="library-admin-grid" style="margin-top:16px">
         <aside class="library-admin-form">
           <div class="panel-title">إضافة كتاب</div>
           <input id="libraryAdminTitle" class="text-input" type="text" placeholder="اسم الكتاب" autocomplete="off" />
-          <input id="libraryAdminAuthor" class="text-input" type="text" placeholder="المؤلف أو المصدر (اختياري)" autocomplete="off" style="margin-top:10px" />
-          <textarea id="libraryAdminDescription" class="text-input qa-admin-textarea" placeholder="وصف قصير للكتاب (اختياري)" style="margin-top:10px"></textarea>
           <input id="libraryAdminHref" class="text-input" type="url" inputmode="url" placeholder="رابط الكتاب العام أو المباشر" autocomplete="off" style="margin-top:10px" />
-          <input id="libraryAdminMinutes" class="text-input" type="number" min="0" max="999" inputmode="numeric" placeholder="مدة القراءة بالدقائق (اختياري)" autocomplete="off" style="margin-top:10px" />
           <div class="member-manage-actions">
             <button id="libraryAdminAddBtn" class="identity-btn" type="button">إضافة الكتاب</button>
             <button id="libraryAdminResetBtn" class="identity-btn ghost" type="button">إفراغ</button>
@@ -819,22 +816,14 @@
        Recovery Library Modal
   ===================== -->
   <div class="tafsir-modal-overlay" id="recoveryLibraryModal" aria-hidden="true">
-    <div class="tafsir-modal-card" role="dialog" aria-modal="true" aria-labelledby="recoveryLibraryTitle">
-      <div class="tafsir-modal-head">
-        <div>
-          <div class="tafsir-modal-title" id="recoveryLibraryTitle">مكتبة التعافي</div>
-          <div class="tafsir-modal-sub" id="recoveryLibrarySub">كتب عامة متاحة لجميع أعضاء القبيلة.</div>
-        </div>
+    <div class="tafsir-modal-card recovery-library-card" role="dialog" aria-modal="true" aria-labelledby="recoveryLibraryTitle">
+      <div class="tafsir-modal-head recovery-library-head">
+        <div class="tafsir-modal-title" id="recoveryLibraryTitle">مكتبة التعافي</div>
         <button type="button" class="tafsir-modal-close" id="closeRecoveryLibraryModal" aria-label="إغلاق">✕</button>
       </div>
 
       <div class="tafsir-modal-body">
         <div id="recoveryLibraryList" class="library-list"></div>
-      </div>
-
-      <div class="tafsir-modal-foot">
-        <div class="tafsir-note">الكتب تُدار من إعدادات أمجد وتظهر هنا للجميع.</div>
-        <button type="button" class="tafsir-modal-close-btn" id="closeRecoveryLibraryModal2">إغلاق</button>
       </div>
     </div>
   </div>
@@ -1095,12 +1084,12 @@
   
   </div>
 
-  <script src="js/main.js?v=20260914library1"></script>
+  <script src="js/main.js?v=20260914library2"></script>
   <script src="js/auth-ui.js?v=20260914library1"></script>
   <script src="js/member-status.js?v=20260914qawhite1"></script>
   <script src="js/ahd.js?v=20260914library1"></script>
   <script src="js/qa.js?v=20260914qawhite1"></script>
-  <script src="js/recovery-tools.js?v=20260914library1"></script>
+  <script src="js/recovery-tools.js?v=20260914library2"></script>
   <script src="js/hadith.js?v=20260914qawhite1"></script>
 </body>
 </html>

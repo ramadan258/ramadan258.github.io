@@ -450,18 +450,9 @@ function renderRecoveryLibrary() {
   }
 
   listEl.innerHTML = books.map((book) => `
-    <div class="library-item">
-      <div class="library-item-title">${escapeHtml(book.title || "كتاب بلا عنوان")}</div>
-      <div class="library-item-author">${escapeHtml(book.author || "مؤلف غير محدد")}</div>
-      <div class="library-meta">
-        ${book.minutes ? `<span class="library-chip">${formatArabicNumber(book.minutes)} دقائق</span>` : ""}
-        <span class="library-chip">مفتوح للجميع</span>
-      </div>
-      <div class="library-item-desc">${escapeHtml(book.description || "كتاب مضاف للمكتبة العامة.")}</div>
-      <div class="library-item-actions">
-        <button class="library-btn primary" type="button" data-open-book="${escapeHtml(book.id)}">فتح الكتاب</button>
-      </div>
-    </div>
+    <button class="library-book-entry" type="button" data-open-book="${escapeHtml(book.id)}" aria-label="فتح ${escapeHtml(book.title || "كتاب")}">
+      ${escapeHtml(book.title || "كتاب بلا عنوان")}
+    </button>
   `).join("");
 
   listEl.querySelectorAll("[data-open-book]").forEach((btn) => {
@@ -485,7 +476,7 @@ function setLibraryAdminStatus(message = "", isError = false) {
 }
 
 function resetLibraryAdminForm() {
-  ["#libraryAdminTitle", "#libraryAdminAuthor", "#libraryAdminDescription", "#libraryAdminHref", "#libraryAdminMinutes"].forEach((selector) => {
+  ["#libraryAdminTitle", "#libraryAdminHref"].forEach((selector) => {
     const input = qs(selector);
     if (input) input.value = "";
   });
@@ -519,29 +510,20 @@ async function addLibraryBook() {
   }
 
   const title = String(qs("#libraryAdminTitle")?.value || "").trim();
-  const author = String(qs("#libraryAdminAuthor")?.value || "").trim();
-  const description = String(qs("#libraryAdminDescription")?.value || "").trim();
   const href = normalizePublicBookUrl(qs("#libraryAdminHref")?.value);
-  const rawMinutes = String(qs("#libraryAdminMinutes")?.value || "").trim();
-  const minutes = rawMinutes ? Number(rawMinutes) : 0;
 
   if (!title) {
     setLibraryAdminStatus("اكتب اسم الكتاب أولًا.", true);
     return;
   }
-  if (title.length > 240 || author.length > 180 || description.length > 2000) {
-    setLibraryAdminStatus("بعض الحقول أطول من الحد المسموح. اختصر النص ثم أعد المحاولة.", true);
+  if (title.length > 240) {
+    setLibraryAdminStatus("اسم الكتاب طويل جدًا. اختصره ثم أعد المحاولة.", true);
     return;
   }
   if (!href) {
     setLibraryAdminStatus("ضع رابطًا عامًا صحيحًا يبدأ بـ https:// أو http://.", true);
     return;
   }
-  if (!Number.isFinite(minutes) || minutes < 0 || minutes > 999 || !Number.isInteger(minutes)) {
-    setLibraryAdminStatus("مدة القراءة يجب أن تكون رقمًا صحيحًا من 0 إلى 999.", true);
-    return;
-  }
-
   const addBtn = qs("#libraryAdminAddBtn");
   if (addBtn) addBtn.disabled = true;
   setLibraryAdminStatus("تُضاف إلى المكتبة الآن...");
@@ -553,10 +535,7 @@ async function addLibraryBook() {
       type: "library_book",
       bookId,
       title,
-      author,
-      description,
       href,
-      minutes,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
@@ -612,14 +591,9 @@ function renderLibraryAdminPanel() {
   listEl.innerHTML = books.map((book) => `
     <article class="library-admin-book">
       <div class="library-admin-book-head">
-        <div>
-          <div class="library-admin-book-title">${escapeHtml(book.title)}</div>
-          <div class="library-admin-book-meta">${escapeHtml(book.author || "مؤلف غير محدد")}${book.minutes ? ` · ${formatArabicNumber(book.minutes)} دقائق` : ""}</div>
-        </div>
+        <div class="library-admin-book-title">${escapeHtml(book.title)}</div>
         <button class="library-admin-delete" type="button" data-delete-library-book="${escapeHtml(book.id)}">حذف</button>
       </div>
-      ${book.description ? `<div class="library-admin-book-desc">${escapeHtml(book.description)}</div>` : ""}
-      <a class="library-admin-book-link" href="${escapeHtml(book.href)}" target="_blank" rel="noopener noreferrer">فتح الرابط للتأكد منه</a>
     </article>
   `).join("");
 
@@ -703,7 +677,6 @@ function setupRecoveryLibrary() {
   const modal = qs("#recoveryLibraryModal");
   const openBtn = qs("#openRecoveryLibrary");
   const closeBtn = qs("#closeRecoveryLibraryModal");
-  const closeBtn2 = qs("#closeRecoveryLibraryModal2");
 
   function openModal() {
     renderRecoveryLibrary();
@@ -722,7 +695,6 @@ function setupRecoveryLibrary() {
     LIBRARY_STATE.uiWired = true;
     openBtn?.addEventListener("click", openModal);
     closeBtn?.addEventListener("click", closeModal);
-    closeBtn2?.addEventListener("click", closeModal);
     modal?.addEventListener("click", (e) => {
       if (e.target === modal) closeModal();
     });
