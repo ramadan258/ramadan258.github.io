@@ -1570,7 +1570,9 @@ function closeMemberCanvasWindow() {
   const back = qs("#memberCanvasWindowBack");
   if (back) {
     back.hidden = true;
-    back.textContent = "القوائم";
+    back.textContent = "→";
+    back.setAttribute("aria-label", "العودة");
+    back.removeAttribute("title");
   }
 
   syncBodyModalLock();

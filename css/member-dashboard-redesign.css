@@ -2654,16 +2654,18 @@ body.member-standalone-view .assistant-fab {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
   min-height: 40px;
-  padding: 0 12px;
+  padding: 0;
   border: 1px solid rgba(78, 205, 196, 0.28);
   border-radius: 12px;
   background: rgba(78, 205, 196, 0.1);
   color: #c7f6f2;
   cursor: pointer;
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 900;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .member-canvas-window-back[hidden] {
@@ -2672,9 +2674,15 @@ body.member-standalone-view .assistant-fab {
 
 #memberCanvasWindow[data-window-style="qa"] #memberCanvasWindowBack {
   position: absolute;
-  inset-inline-end: 18px;
+  inset-inline-start: 18px;
+  inset-inline-end: auto;
   top: 50%;
   transform: translateY(-50%);
+}
+
+#memberCanvasWindow[data-window-style="qa"] #closeMemberCanvasWindow {
+  inset-inline-start: auto;
+  inset-inline-end: 18px;
 }
 
 #memberCanvasWindow[data-window-style="forms"] .member-canvas-window-body,
@@ -2814,6 +2822,12 @@ body.member-standalone-view .assistant-fab {
   }
 
   #memberCanvasWindow[data-window-style="qa"] #memberCanvasWindowBack {
+    inset-inline-start: 14px;
+    inset-inline-end: auto;
+  }
+
+  #memberCanvasWindow[data-window-style="qa"] #closeMemberCanvasWindow {
+    inset-inline-start: auto;
     inset-inline-end: 14px;
   }
 

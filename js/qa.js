@@ -262,8 +262,12 @@ function setQaCanvasHeader(titleText, backLabel = "") {
   const back = qs("#memberCanvasWindowBack");
   if (title) title.textContent = String(titleText || "سؤال وجواب").trim();
   if (back) {
-    back.hidden = !backLabel;
-    back.textContent = String(backLabel || "").trim();
+    const destination = String(backLabel || "").trim();
+    back.hidden = !destination;
+    back.textContent = "→";
+    back.setAttribute("aria-label", destination ? `العودة إلى ${destination}` : "العودة");
+    if (destination) back.title = `العودة إلى ${destination}`;
+    else back.removeAttribute("title");
   }
 }
 
