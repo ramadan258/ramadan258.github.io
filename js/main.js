@@ -1,5 +1,5 @@
 ﻿    const CONFIG = {
-      AHD_TARGET_DATE_ISO: "2026-11-10T23:59:59+01:00",
+      AHD_TARGET_DATE_ISO: "2026-10-31T23:59:59+01:00",
       FORCE_HIZB_NUMBER: null,
 
       LINKS: {
