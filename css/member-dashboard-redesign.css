@@ -192,6 +192,13 @@ body.member-standalone-view #appRoot.member-design-canvas > section.member-stand
   border-color: rgba(245, 200, 66, 0.24);
 }
 
+.member-canvas-link.is-forms {
+  background:
+    radial-gradient(circle at top right, rgba(52, 211, 153, 0.15), transparent 42%),
+    linear-gradient(180deg, rgba(12, 31, 29, 0.98), rgba(8, 18, 20, 0.96));
+  border-color: rgba(52, 211, 153, 0.25);
+}
+
 .member-canvas-link.is-relapse {
   background:
     radial-gradient(circle at top right, rgba(78, 205, 196, 0.1), transparent 38%),
@@ -272,6 +279,24 @@ body.member-standalone-view #appRoot.member-design-canvas > section.member-stand
   border-radius: 24px;
   background: linear-gradient(180deg, rgba(15, 22, 35, 0.96), rgba(9, 14, 24, 0.94));
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+}
+
+.member-canvas-form-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.member-canvas-form-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(78, 205, 196, 0.34);
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.24);
+}
+
+.member-canvas-form-link:focus-visible {
+  outline: 2px solid rgba(78, 205, 196, 0.55);
+  outline-offset: 3px;
 }
 
 .member-canvas-info-title,
