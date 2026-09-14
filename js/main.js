@@ -1531,6 +1531,9 @@ function openMemberCanvasWindow(targetSelector, titleText = "", subText = "", wi
 
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
+  if (targetSelector === "#memberCanvasQa" && typeof openQaCanvasCategories === "function") {
+    openQaCanvasCategories();
+  }
   syncBodyModalLock();
 }
 
@@ -1563,6 +1566,11 @@ function closeMemberCanvasWindow() {
     modal.classList.remove("open");
     modal.setAttribute("aria-hidden", "true");
     delete modal.dataset.windowStyle;
+  }
+  const back = qs("#memberCanvasWindowBack");
+  if (back) {
+    back.hidden = true;
+    back.textContent = "القوائم";
   }
 
   syncBodyModalLock();
@@ -1682,6 +1690,15 @@ function wireMemberCanvasWindows() {
       );
     });
   });
+
+  const canvasBack = qs("#memberCanvasWindowBack");
+  if (canvasBack) {
+    canvasBack.addEventListener("click", () => {
+      if (!canvasBack.hidden && typeof goBackInQaCanvas === "function") {
+        goBackInQaCanvas();
+      }
+    });
+  }
 
   qsa("[data-canvas-scroll]").forEach((btn) => {
     btn.addEventListener("click", () => {

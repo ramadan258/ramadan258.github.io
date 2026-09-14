@@ -64,6 +64,12 @@ const QA_STATE = {
   unsubs: [],
 };
 
+const QA_CANVAS_STATE = {
+  screen: "categories",
+  categoryId: "",
+  itemId: "",
+};
+
 function normalizeQaCategory(entry) {
   const id = String(entry?.id || "").trim();
   const name = String(entry?.name || "").trim();
@@ -245,18 +251,116 @@ function renderQaTaskMeta() {
   }
 }
 
+function qaCanvasIsOpen() {
+  return qs("#memberCanvasQa")?.classList.contains("member-canvas-window-mounted") || false;
+}
+
+function setQaCanvasHeader(titleText, backLabel = "") {
+  if (!qaCanvasIsOpen()) return;
+
+  const title = qs("#memberCanvasWindowTitle");
+  const back = qs("#memberCanvasWindowBack");
+  if (title) title.textContent = String(titleText || "سؤال وجواب").trim();
+  if (back) {
+    back.hidden = !backLabel;
+    back.textContent = String(backLabel || "").trim();
+  }
+}
+
 function renderQaCanvasMenu() {
   const list = qs("#memberCanvasQaList");
   if (!list) return;
 
   const categories = getQaCategoriesForView();
-  list.innerHTML = categories.length
-    ? categories.map((category) => `
-        <a class="member-canvas-qa-link" href="${escapeHtml(buildQaPageUrl(category.id))}">
-          ${escapeHtml(category.name)}
-        </a>
-      `).join("")
-    : '<div class="member-canvas-choice-empty">لا توجد قوائم مضافة بعد.</div>';
+  const items = getQaItemsForView();
+  const selectedCategory = categories.find((category) => category.id === QA_CANVAS_STATE.categoryId) || null;
+  const selectedItem = items.find((item) => item.id === QA_CANVAS_STATE.itemId && item.categoryId === selectedCategory?.id) || null;
+
+  if (QA_CANVAS_STATE.screen === "questions" && !selectedCategory) {
+    QA_CANVAS_STATE.screen = "categories";
+    QA_CANVAS_STATE.categoryId = "";
+  }
+
+  if (QA_CANVAS_STATE.screen === "answer" && (!selectedCategory || !selectedItem)) {
+    QA_CANVAS_STATE.screen = selectedCategory ? "questions" : "categories";
+    QA_CANVAS_STATE.itemId = "";
+  }
+
+  if (QA_CANVAS_STATE.screen === "questions" && selectedCategory) {
+    const categoryItems = items.filter((item) => item.categoryId === selectedCategory.id);
+    list.innerHTML = categoryItems.length
+      ? categoryItems.map((item) => `
+          <button type="button" class="member-canvas-qa-link" data-qa-canvas-item="${escapeHtml(item.id)}">
+            ${escapeHtml(item.question)}
+          </button>
+        `).join("")
+      : '<div class="member-canvas-choice-empty">لا توجد أسئلة داخل هذه القائمة بعد.</div>';
+    setQaCanvasHeader(selectedCategory.name, "القوائم");
+  } else if (QA_CANVAS_STATE.screen === "answer" && selectedCategory && selectedItem) {
+    list.innerHTML = `
+      <article class="member-canvas-qa-answer-card">
+        <div class="member-canvas-qa-answer-question">${escapeHtml(selectedItem.question)}</div>
+        <div class="member-canvas-qa-answer-body">${escapeHtml(selectedItem.answer).replace(/\n/g, "<br>")}</div>
+      </article>
+    `;
+    setQaCanvasHeader("الجواب", "الأسئلة");
+  } else {
+    QA_CANVAS_STATE.screen = "categories";
+    QA_CANVAS_STATE.categoryId = "";
+    QA_CANVAS_STATE.itemId = "";
+    list.innerHTML = categories.length
+      ? categories.map((category) => `
+          <button type="button" class="member-canvas-qa-link" data-qa-canvas-category="${escapeHtml(category.id)}">
+            ${escapeHtml(category.name)}
+          </button>
+        `).join("")
+      : '<div class="member-canvas-choice-empty">لا توجد قوائم مضافة بعد.</div>';
+    setQaCanvasHeader("سؤال وجواب");
+  }
+
+  list.querySelectorAll("[data-qa-canvas-category]").forEach((button) => {
+    button.addEventListener("click", () => openQaCanvasCategory(button.getAttribute("data-qa-canvas-category")));
+  });
+  list.querySelectorAll("[data-qa-canvas-item]").forEach((button) => {
+    button.addEventListener("click", () => openQaCanvasAnswer(button.getAttribute("data-qa-canvas-item")));
+  });
+}
+
+function openQaCanvasCategories() {
+  QA_CANVAS_STATE.screen = "categories";
+  QA_CANVAS_STATE.categoryId = "";
+  QA_CANVAS_STATE.itemId = "";
+  renderQaCanvasMenu();
+}
+
+function openQaCanvasCategory(categoryId) {
+  const id = String(categoryId || "").trim();
+  if (!getQaCategoriesForView().some((category) => category.id === id)) return;
+  QA_CANVAS_STATE.screen = "questions";
+  QA_CANVAS_STATE.categoryId = id;
+  QA_CANVAS_STATE.itemId = "";
+  renderQaCanvasMenu();
+}
+
+function openQaCanvasAnswer(itemId) {
+  const id = String(itemId || "").trim();
+  if (!getQaItemsForView().some((item) => item.id === id && item.categoryId === QA_CANVAS_STATE.categoryId)) return;
+  QA_CANVAS_STATE.screen = "answer";
+  QA_CANVAS_STATE.itemId = id;
+  renderQaCanvasMenu();
+}
+
+function goBackInQaCanvas() {
+  if (QA_CANVAS_STATE.screen === "answer") {
+    QA_CANVAS_STATE.screen = "questions";
+    QA_CANVAS_STATE.itemId = "";
+  } else if (QA_CANVAS_STATE.screen === "questions") {
+    QA_CANVAS_STATE.screen = "categories";
+    QA_CANVAS_STATE.categoryId = "";
+  } else {
+    return;
+  }
+  renderQaCanvasMenu();
 }
 
 function renderQaPage() {

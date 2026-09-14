@@ -2621,6 +2621,10 @@ body.member-standalone-view .assistant-fab {
   text-align: center;
 }
 
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-window-head {
+  padding-inline: 108px;
+}
+
 #memberCanvasWindow[data-window-style="forms"] .member-canvas-window-head > div,
 #memberCanvasWindow[data-window-style="qa"] .member-canvas-window-head > div {
   width: 100%;
@@ -2646,11 +2650,52 @@ body.member-standalone-view .assistant-fab {
   transform: translateY(-50%);
 }
 
+.member-canvas-window-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid rgba(78, 205, 196, 0.28);
+  border-radius: 12px;
+  background: rgba(78, 205, 196, 0.1);
+  color: #c7f6f2;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.member-canvas-window-back[hidden] {
+  display: none;
+}
+
+#memberCanvasWindow[data-window-style="qa"] #memberCanvasWindowBack {
+  position: absolute;
+  inset-inline-end: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 #memberCanvasWindow[data-window-style="forms"] .member-canvas-window-body,
 #memberCanvasWindow[data-window-style="qa"] .member-canvas-window-body {
   flex: 0 1 auto;
   padding: 12px;
   overflow: auto;
+}
+
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-window-body {
+  scrollbar-color: rgba(78, 205, 196, 0.48) transparent;
+  scrollbar-width: thin;
+}
+
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-window-body::-webkit-scrollbar {
+  width: 7px;
+}
+
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-window-body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(78, 205, 196, 0.48);
 }
 
 #memberCanvasWindow[data-window-style="forms"] .member-canvas-info-panel,
@@ -2687,6 +2732,9 @@ body.member-standalone-view .assistant-fab {
   font-weight: 900;
   line-height: 1.45;
   text-decoration: none;
+  text-align: right;
+  font-family: inherit;
+  cursor: pointer;
   transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
@@ -2708,6 +2756,30 @@ body.member-standalone-view .assistant-fab {
   box-shadow: none;
 }
 
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-qa-answer-card {
+  padding: 18px;
+  border: 1px solid rgba(78, 205, 196, 0.22);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(18, 48, 55, 0.88), rgba(11, 24, 34, 0.96));
+  color: #f8f7f1;
+}
+
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-qa-answer-question {
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(78, 205, 196, 0.18);
+  color: #f8f7f1;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.75;
+}
+
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-qa-answer-body {
+  color: rgba(248, 247, 241, 0.9);
+  font-size: 16px;
+  line-height: 2;
+}
+
 @media (max-width: 640px) {
   #memberCanvasWindow[data-window-style="forms"],
   #memberCanvasWindow[data-window-style="qa"] {
@@ -2727,6 +2799,10 @@ body.member-standalone-view .assistant-fab {
     padding: 17px 64px 15px;
   }
 
+  #memberCanvasWindow[data-window-style="qa"] .member-canvas-window-head {
+    padding-inline: 88px;
+  }
+
   #memberCanvasWindow[data-window-style="forms"] #memberCanvasWindowTitle,
   #memberCanvasWindow[data-window-style="qa"] #memberCanvasWindowTitle {
     font-size: 22px;
@@ -2735,6 +2811,10 @@ body.member-standalone-view .assistant-fab {
   #memberCanvasWindow[data-window-style="forms"] #closeMemberCanvasWindow,
   #memberCanvasWindow[data-window-style="qa"] #closeMemberCanvasWindow {
     inset-inline-start: 14px;
+  }
+
+  #memberCanvasWindow[data-window-style="qa"] #memberCanvasWindowBack {
+    inset-inline-end: 14px;
   }
 
   #memberCanvasWindow[data-window-style="forms"] .member-canvas-window-body,
@@ -2748,5 +2828,18 @@ body.member-standalone-view .assistant-fab {
     padding: 12px 15px;
     border-radius: 16px;
     font-size: 16px;
+  }
+
+  #memberCanvasWindow[data-window-style="qa"] .member-canvas-qa-answer-card {
+    padding: 15px;
+    border-radius: 16px;
+  }
+
+  #memberCanvasWindow[data-window-style="qa"] .member-canvas-qa-answer-question {
+    font-size: 16px;
+  }
+
+  #memberCanvasWindow[data-window-style="qa"] .member-canvas-qa-answer-body {
+    font-size: 15px;
   }
 }
