@@ -2788,6 +2788,121 @@ body.member-standalone-view .assistant-fab {
   line-height: 2;
 }
 
+/* Use the live competition section inside the same focused window style. */
+#memberCanvasWindow[data-window-style="ahd"] {
+  padding: 18px;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] .member-canvas-window-card {
+  width: min(760px, 100%);
+  height: auto;
+  max-height: min(84dvh, 800px);
+  overflow: hidden;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] .member-canvas-window-head {
+  position: relative;
+  min-height: 78px;
+  padding: 18px 72px;
+  justify-content: center;
+  text-align: center;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] .member-canvas-window-head > div {
+  width: 100%;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #memberCanvasWindowTitle {
+  font-size: 25px;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #memberCanvasWindowSub,
+#memberCanvasWindow[data-window-style="ahd"] .member-canvas-window-foot {
+  display: none;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #closeMemberCanvasWindow {
+  position: absolute;
+  inset-inline-start: auto;
+  inset-inline-end: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#memberCanvasWindow[data-window-style="ahd"] .member-canvas-window-body {
+  flex: 0 1 auto;
+  padding: 12px;
+  overflow: auto;
+  background: linear-gradient(180deg, rgba(8, 12, 21, 0.94), rgba(7, 11, 19, 0.98));
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .community-section-head {
+  display: none;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge {
+  margin-top: 0;
+  padding: 18px;
+  border-radius: 20px;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge h3 {
+  font-size: 26px;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-oath-copy {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 20px;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-participants-title {
+  margin: 18px 2px 10px;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-slider-container {
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  #memberCanvasWindow[data-window-style="ahd"] {
+    padding: 10px;
+  }
+
+  #memberCanvasWindow[data-window-style="ahd"] .member-canvas-window-card {
+    width: 100%;
+    max-height: min(82dvh, 720px);
+    border-radius: 22px;
+  }
+
+  #memberCanvasWindow[data-window-style="ahd"] .member-canvas-window-head {
+    min-height: 72px;
+    padding: 16px 64px;
+  }
+
+  #memberCanvasWindow[data-window-style="ahd"] #memberCanvasWindowTitle {
+    font-size: 22px;
+  }
+
+  #memberCanvasWindow[data-window-style="ahd"] #closeMemberCanvasWindow {
+    inset-inline-end: 14px;
+  }
+
+  #memberCanvasWindow[data-window-style="ahd"] .member-canvas-window-body {
+    padding: 10px;
+  }
+
+  #memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge,
+  #memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-oath-copy {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  #memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge h3 {
+    font-size: 22px;
+  }
+}
+
 @media (max-width: 640px) {
   #memberCanvasWindow[data-window-style="forms"],
   #memberCanvasWindow[data-window-style="qa"] {
