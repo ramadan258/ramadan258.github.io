@@ -85,6 +85,7 @@ function applyQaContent(categories, items) {
   QA_STATE.items = sortQaItems(items.filter(Boolean));
   getQaAdminSelectedCategoryId();
   renderQaTaskMeta();
+  renderQaCanvasMenu();
   renderQaPage();
   renderQaAdminPanel();
 }
@@ -242,6 +243,20 @@ function renderQaTaskMeta() {
     metaEl.textContent = "";
     metaEl.hidden = true;
   }
+}
+
+function renderQaCanvasMenu() {
+  const list = qs("#memberCanvasQaList");
+  if (!list) return;
+
+  const categories = getQaCategoriesForView();
+  list.innerHTML = categories.length
+    ? categories.map((category) => `
+        <a class="member-canvas-qa-link" href="${escapeHtml(buildQaPageUrl(category.id))}">
+          ${escapeHtml(category.name)}
+        </a>
+      `).join("")
+    : '<div class="member-canvas-choice-empty">لا توجد قوائم مضافة بعد.</div>';
 }
 
 function renderQaPage() {
@@ -776,6 +791,7 @@ function initQaPage() {
   wireQaAdminControls();
   refreshQaAdminFormState();
   renderQaTaskMeta();
+  renderQaCanvasMenu();
   renderQaPage();
   renderQaAdminPanel();
   attachQaFirestoreListeners();

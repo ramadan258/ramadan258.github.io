@@ -146,7 +146,7 @@
   </script>
 
   <link rel="stylesheet" href="css/index-page.css?v=20260914library3" />
-  <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260914forms1" />
+  <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260914qa1" />
 </head>
 
 <body class="member-design-canvas-mode">
@@ -244,7 +244,7 @@
       <button class="member-canvas-link is-ahd" type="button" data-canvas-page="ahd">
         <span class="member-canvas-link__label">عهد الثبات</span>
       </button>
-      <button class="member-canvas-link is-feelings" type="button" data-canvas-page="qa">
+      <button class="member-canvas-link is-feelings" type="button" data-canvas-window="#memberCanvasQa" data-window-title="سؤال وجواب" data-window-style="qa">
         <span class="member-canvas-link__label">سؤال وجواب</span>
       </button>
       <button class="member-canvas-link is-forms" type="button" data-canvas-window="#memberCanvasForms" data-window-title="النماذج" data-window-style="forms">
@@ -280,6 +280,10 @@
           <a class="member-canvas-form-link is-pulse48" href="pulse_48.html?v=20260914forms1">٤٨</a>
           <a class="member-canvas-form-link is-weekly-mirror" href="weekly_mirror.html?v=20260914forms1">مرآة الأسبوع</a>
         </div>
+      </article>
+
+      <article id="memberCanvasQa" class="member-canvas-info-panel" hidden>
+        <div id="memberCanvasQaList" class="member-canvas-qa-list" aria-label="قوائم سؤال وجواب"></div>
       </article>
 
     </div>
@@ -1075,7 +1079,7 @@
   <script src="js/auth-ui.js?v=20260914library1"></script>
   <script src="js/member-status.js?v=20260914qawhite1"></script>
   <script src="js/ahd.js?v=20260914library1"></script>
-  <script src="js/qa.js?v=20260914qawhite1"></script>
+  <script src="js/qa.js?v=20260914qa1"></script>
   <script src="js/recovery-tools.js?v=20260914library3"></script>
   <script src="js/hadith.js?v=20260914qawhite1"></script>
 </body>

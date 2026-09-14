@@ -2599,18 +2599,21 @@ body.member-standalone-view .assistant-fab {
 }
 
 /* Keep the forms chooser as focused and compact as the recovery library. */
-#memberCanvasWindow[data-window-style="forms"] {
+#memberCanvasWindow[data-window-style="forms"],
+#memberCanvasWindow[data-window-style="qa"] {
   padding: 18px;
 }
 
-#memberCanvasWindow[data-window-style="forms"] .member-canvas-window-card {
+#memberCanvasWindow[data-window-style="forms"] .member-canvas-window-card,
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-window-card {
   width: min(620px, 100%);
   height: auto;
   max-height: min(72dvh, 640px);
   overflow: hidden;
 }
 
-#memberCanvasWindow[data-window-style="forms"] .member-canvas-window-head {
+#memberCanvasWindow[data-window-style="forms"] .member-canvas-window-head,
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-window-head {
   position: relative;
   min-height: 84px;
   padding: 20px 72px 18px;
@@ -2618,43 +2621,60 @@ body.member-standalone-view .assistant-fab {
   text-align: center;
 }
 
-#memberCanvasWindow[data-window-style="forms"] .member-canvas-window-head > div {
+#memberCanvasWindow[data-window-style="forms"] .member-canvas-window-head > div,
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-window-head > div {
   width: 100%;
 }
 
-#memberCanvasWindow[data-window-style="forms"] #memberCanvasWindowTitle {
+#memberCanvasWindow[data-window-style="forms"] #memberCanvasWindowTitle,
+#memberCanvasWindow[data-window-style="qa"] #memberCanvasWindowTitle {
   font-size: 26px;
 }
 
 #memberCanvasWindow[data-window-style="forms"] #memberCanvasWindowSub,
-#memberCanvasWindow[data-window-style="forms"] .member-canvas-window-foot {
+#memberCanvasWindow[data-window-style="forms"] .member-canvas-window-foot,
+#memberCanvasWindow[data-window-style="qa"] #memberCanvasWindowSub,
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-window-foot {
   display: none;
 }
 
-#memberCanvasWindow[data-window-style="forms"] #closeMemberCanvasWindow {
+#memberCanvasWindow[data-window-style="forms"] #closeMemberCanvasWindow,
+#memberCanvasWindow[data-window-style="qa"] #closeMemberCanvasWindow {
   position: absolute;
   inset-inline-start: 18px;
   top: 50%;
   transform: translateY(-50%);
 }
 
-#memberCanvasWindow[data-window-style="forms"] .member-canvas-window-body {
+#memberCanvasWindow[data-window-style="forms"] .member-canvas-window-body,
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-window-body {
   flex: 0 1 auto;
   padding: 12px;
   overflow: auto;
 }
 
-#memberCanvasWindow[data-window-style="forms"] .member-canvas-info-panel {
+#memberCanvasWindow[data-window-style="forms"] .member-canvas-info-panel,
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-info-panel {
   display: block;
 }
 
-#memberCanvasWindow[data-window-style="forms"] .member-canvas-forms-grid {
+#memberCanvasWindow[data-window-style="forms"] .member-canvas-forms-grid,
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-qa-list {
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
 }
 
-#memberCanvasWindow[data-window-style="forms"] .member-canvas-form-link {
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-choice-empty {
+  padding: 20px;
+  border: 1px dashed rgba(78, 205, 196, 0.28);
+  border-radius: 16px;
+  color: rgba(248, 247, 241, 0.72);
+  text-align: center;
+}
+
+#memberCanvasWindow[data-window-style="forms"] .member-canvas-form-link,
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-qa-link {
   display: flex;
   align-items: center;
   min-height: 62px;
@@ -2670,7 +2690,8 @@ body.member-standalone-view .assistant-fab {
   transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
-#memberCanvasWindow[data-window-style="forms"] .member-canvas-form-link::before {
+#memberCanvasWindow[data-window-style="forms"] .member-canvas-form-link::before,
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-qa-link::before {
   content: "‹";
   margin-inline-end: 12px;
   color: #4ecdc4;
@@ -2679,7 +2700,8 @@ body.member-standalone-view .assistant-fab {
   line-height: 1;
 }
 
-#memberCanvasWindow[data-window-style="forms"] .member-canvas-form-link:hover {
+#memberCanvasWindow[data-window-style="forms"] .member-canvas-form-link:hover,
+#memberCanvasWindow[data-window-style="qa"] .member-canvas-qa-link:hover {
   transform: translateX(-2px);
   border-color: rgba(78, 205, 196, 0.52);
   background: linear-gradient(135deg, rgba(25, 69, 76, 0.94), rgba(12, 34, 42, 0.98));
@@ -2687,34 +2709,41 @@ body.member-standalone-view .assistant-fab {
 }
 
 @media (max-width: 640px) {
-  #memberCanvasWindow[data-window-style="forms"] {
+  #memberCanvasWindow[data-window-style="forms"],
+  #memberCanvasWindow[data-window-style="qa"] {
     padding: 10px;
   }
 
-  #memberCanvasWindow[data-window-style="forms"] .member-canvas-window-card {
+  #memberCanvasWindow[data-window-style="forms"] .member-canvas-window-card,
+  #memberCanvasWindow[data-window-style="qa"] .member-canvas-window-card {
     width: 100%;
     max-height: min(68dvh, 560px);
     border-radius: 22px;
   }
 
-  #memberCanvasWindow[data-window-style="forms"] .member-canvas-window-head {
+  #memberCanvasWindow[data-window-style="forms"] .member-canvas-window-head,
+  #memberCanvasWindow[data-window-style="qa"] .member-canvas-window-head {
     min-height: 74px;
     padding: 17px 64px 15px;
   }
 
-  #memberCanvasWindow[data-window-style="forms"] #memberCanvasWindowTitle {
+  #memberCanvasWindow[data-window-style="forms"] #memberCanvasWindowTitle,
+  #memberCanvasWindow[data-window-style="qa"] #memberCanvasWindowTitle {
     font-size: 22px;
   }
 
-  #memberCanvasWindow[data-window-style="forms"] #closeMemberCanvasWindow {
+  #memberCanvasWindow[data-window-style="forms"] #closeMemberCanvasWindow,
+  #memberCanvasWindow[data-window-style="qa"] #closeMemberCanvasWindow {
     inset-inline-start: 14px;
   }
 
-  #memberCanvasWindow[data-window-style="forms"] .member-canvas-window-body {
+  #memberCanvasWindow[data-window-style="forms"] .member-canvas-window-body,
+  #memberCanvasWindow[data-window-style="qa"] .member-canvas-window-body {
     padding: 10px;
   }
 
-  #memberCanvasWindow[data-window-style="forms"] .member-canvas-form-link {
+  #memberCanvasWindow[data-window-style="forms"] .member-canvas-form-link,
+  #memberCanvasWindow[data-window-style="qa"] .member-canvas-qa-link {
     min-height: 58px;
     padding: 12px 15px;
     border-radius: 16px;
