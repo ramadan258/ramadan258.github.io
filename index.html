@@ -146,7 +146,7 @@
   </script>
 
   <link rel="stylesheet" href="css/index-page.css?v=20260914library3" />
-  <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260914ahd1" />
+  <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260914ahd3" />
 </head>
 
 <body class="member-design-canvas-mode">
@@ -255,24 +255,6 @@
     <button id="openFeelingsPage" type="button" data-canvas-page="feelings" hidden aria-hidden="true"></button>
 
     <div id="memberCanvasPanels" hidden>
-      <article id="memberCanvasAhdGuide" class="member-canvas-info-panel" hidden>
-        <div class="member-canvas-info-lead">عهد الثبات مسابقة جماعية نثبت فيها معًا حتى نهاية شهر عشرة.</div>
-        <div class="member-canvas-info-grid">
-          <div class="member-canvas-info-card">
-            <div class="member-canvas-info-title">الهدف</div>
-            <div class="member-canvas-info-copy">صفر زلات حتى نهاية شهر عشرة، مع الصدق في المتابعة وعدم ترك الطريق وحدنا.</div>
-          </div>
-          <div class="member-canvas-info-card">
-            <div class="member-canvas-info-title">الجائزة</div>
-            <div class="member-canvas-info-copy">مئة دولار للفائز في نهاية المسابقة بإذن الله.</div>
-          </div>
-          <div class="member-canvas-info-card">
-            <div class="member-canvas-info-title">روحها</div>
-            <div class="member-canvas-info-copy">صحبة صادقة، ستر، ومسؤولية؛ نعين بعضنا على الثبات ولا نُحرج أحدًا.</div>
-          </div>
-        </div>
-      </article>
-
       <article id="memberCanvasForms" class="member-canvas-info-panel" hidden>
         <div class="member-canvas-info-grid member-canvas-forms-grid">
           <a class="member-canvas-form-link is-plan" href="recovery_plan.html?v=20260914forms1">خطة التعافي</a>
@@ -600,32 +582,53 @@
         <span class="member-kicker">مسابقة القبيلة</span>
         <h2>عهد الثبات</h2>
       </div>
-      <div id="ahdCount" class="community-count" aria-live="polite">—</div>
     </div>
 
     <article class="steadfastness-challenge" aria-label="تفاصيل مسابقة عهد الثبات">
       <div class="steadfastness-challenge-head">
-        <h3>صفر زلات حتى النهاية</h3>
+        <h3>صفر زلات حتى نهاية شوال</h3>
       </div>
       <div class="steadfastness-challenge-facts">
         <div class="steadfastness-challenge-fact"><span>الهدف</span><strong>صفر زلات</strong></div>
         <div class="steadfastness-challenge-fact prize"><span>الجائزة</span><strong>100 دولار</strong></div>
-        <div class="steadfastness-challenge-fact"><span>الموعد</span><strong>نهاية أكتوبر 2026</strong></div>
+        <div class="steadfastness-challenge-fact"><span>الموعد</span><strong>نهاية شوال</strong></div>
       </div>
     </article>
 
+    <section id="countdown" class="countdown-section compact-countdown ahd-window-countdown" aria-label="الوقت المتبقي في عهد الثبات">
+      <div class="countdown-compact-label">الوقت المتبقي حتى نهاية شوال</div>
+      <div class="countdown">
+        <div class="time-box">
+          <span id="days">--</span>
+          <small>يوم</small>
+        </div>
+        <div class="time-box">
+          <span id="hours">--</span>
+          <small>ساعة</small>
+        </div>
+        <div class="time-box">
+          <span id="minutes">--</span>
+          <small>دقيقة</small>
+        </div>
+        <div class="time-box seconds">
+          <span id="seconds">--</span>
+          <small>ثانية</small>
+        </div>
+      </div>
+    </section>
+
+    <div id="ahdStandaloneCountdownSlot" class="ahd-standalone-countdown-slot" hidden></div>
+
     <article class="ahd-oath-copy">
-      <div>نعاهد أنفسنا ونعاهد أعضاء القبيلة أن نحفظ عهد الثبات حتى نهاية موسم شهر عشرة، وأن نواجه لحظات الضعف بصدق وخطة، متوكلين على الله ومستعينين به، وأن نعين بعضنا على الثبات دون لوم أو إحراج.</div>
+      <div>نعاهد أنفسنا وأعضاء القبيلة على الثبات حتى نهاية شوال، وأن نواجه لحظات الضعف بصدق وخطة، متوكلين على الله ومستعينين به، وأن نعين بعضنا دون لوم أو إحراج.</div>
       <p class="ahd-oath-verse">﴿وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ﴾ <span>الطلاق: ٣</span></p>
     </article>
 
-    <div class="ahd-participants-title">المشاركون في عهد الثبات</div>
+    <div class="ahd-participants-title">المشاركون في عهد الثبات <span id="ahdCount" class="community-count" aria-live="polite">—</span></div>
 
     <div class="slider-container ahd-slider-container">
       <div id="ahdPublicList" class="slider ahd-slider" aria-label="المشاركون في عهد الثبات"></div>
     </div>
-
-    <div id="ahdStandaloneCountdownSlot" class="ahd-standalone-countdown-slot" hidden></div>
 
     <div id="ahdAdminSlot" hidden></div>
     <div id="ahdAdminWrap" class="panel" style="margin-top:22px; display:none" aria-hidden="true">
@@ -660,38 +663,6 @@
     </div>
   </section>
 
-
-  <!-- =====================
-       العد التنازلي
-  ===================== -->
-  <section id="countdown" class="countdown-section compact-countdown">
-    <div class="community-section-head">
-      <div>
-        <span class="member-kicker">الثبات</span>
-        <h2 class="countdown-title">العدّ حتى نهاية شهر عشرة</h2>
-      </div>
-      <div class="community-section-note">باقي الوقت في مسابقة عهد الثبات.</div>
-    </div>
-
-    <div class="countdown">
-      <div class="time-box">
-        <span id="days">--</span>
-        <small>يوم</small>
-      </div>
-      <div class="time-box">
-        <span id="hours">--</span>
-        <small>ساعة</small>
-      </div>
-      <div class="time-box">
-        <span id="minutes">--</span>
-        <small>دقيقة</small>
-      </div>
-      <div class="time-box seconds">
-        <span id="seconds">--</span>
-        <small>ثواني</small>
-      </div>
-    </div>
-  </section>
 
   <footer class="member-footer">
     <div class="member-footer-tags">
@@ -1076,7 +1047,7 @@
   
   </div>
 
-  <script src="js/main.js?v=20260914qa3"></script>
+  <script src="js/main.js?v=20260914ahd2"></script>
   <script src="js/auth-ui.js?v=20260914library1"></script>
   <script src="js/member-status.js?v=20260914qawhite1"></script>
   <script src="js/ahd.js?v=20260914library1"></script>

@@ -1330,13 +1330,11 @@ body.member-standalone-view #ahd.member-standalone-active .ahd-oath-copy {
 body.member-standalone-view #ahd.member-standalone-active #countdown.ahd-embedded-countdown {
   width: 100%;
   margin: 0;
-  padding: 18px;
-  border-radius: 26px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background:
-    radial-gradient(circle at top right, rgba(245, 200, 66, 0.08), transparent 34%),
-    linear-gradient(180deg, rgba(15, 22, 36, 0.96), rgba(9, 14, 24, 0.94));
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  padding: 14px;
+  border: 1px solid rgba(78, 205, 196, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(13, 44, 49, 0.75), rgba(11, 20, 29, 0.96));
+  box-shadow: none;
 }
 
 body.member-standalone-view #ahd.member-standalone-active #countdown.ahd-embedded-countdown::before {
@@ -1506,6 +1504,80 @@ body.member-standalone-view #ahd.member-standalone-active #countdown.ahd-embedde
 
 #countdown.compact-countdown .time-box small {
   font-size: 12px;
+}
+
+/* Keep the direct Ahd page as compact as the in-app window. */
+body.member-standalone-view #ahd.member-standalone-active .steadfastness-challenge {
+  margin-top: 14px;
+  padding: 14px;
+  border-color: rgba(245, 200, 66, 0.2);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(245, 200, 66, 0.1), transparent 46%),
+    linear-gradient(135deg, rgba(25, 25, 17, 0.96), rgba(10, 23, 29, 0.98));
+  box-shadow: none;
+}
+
+body.member-standalone-view #ahd.member-standalone-active .steadfastness-challenge h3 {
+  margin: 0;
+  font-family: "Cairo", sans-serif;
+  font-size: 20px;
+  text-align: center;
+}
+
+body.member-standalone-view #ahd.member-standalone-active .steadfastness-challenge-facts {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+body.member-standalone-view #ahd.member-standalone-active .steadfastness-challenge-fact {
+  min-width: 0;
+  gap: 2px;
+  padding: 9px 6px;
+  border-radius: 13px;
+  text-align: center;
+}
+
+body.member-standalone-view #ahd.member-standalone-active .steadfastness-challenge-fact span {
+  font-size: 10px;
+}
+
+body.member-standalone-view #ahd.member-standalone-active .steadfastness-challenge-fact strong {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+body.member-standalone-view #ahd.member-standalone-active .countdown-compact-label {
+  color: #dcebf0;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+}
+
+body.member-standalone-view #ahd.member-standalone-active #countdown.ahd-embedded-countdown .countdown {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+body.member-standalone-view #ahd.member-standalone-active #countdown.ahd-embedded-countdown .time-box {
+  min-width: 0;
+  padding: 9px 4px 7px;
+  border-radius: 12px;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(3, 10, 15, 0.28);
+  box-shadow: none;
+}
+
+body.member-standalone-view #ahd.member-standalone-active #countdown.ahd-embedded-countdown .time-box span {
+  font-size: 21px;
+  line-height: 1;
+}
+
+body.member-standalone-view #ahd.member-standalone-active #countdown.ahd-embedded-countdown .time-box small {
+  margin-top: 5px;
+  font-size: 9px;
 }
 
 footer.member-footer {
@@ -2842,22 +2914,119 @@ body.member-standalone-view .assistant-fab {
 
 #memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge {
   margin-top: 0;
-  padding: 18px;
-  border-radius: 20px;
+  padding: 14px;
+  border-color: rgba(245, 200, 66, 0.2);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(245, 200, 66, 0.1), transparent 46%),
+    linear-gradient(135deg, rgba(25, 25, 17, 0.96), rgba(10, 23, 29, 0.98));
+  box-shadow: none;
 }
 
 #memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge h3 {
-  font-size: 26px;
+  margin: 0;
+  color: #f8f1d2;
+  font-family: "Cairo", sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.55;
+  text-align: center;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge-facts {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge-fact {
+  min-width: 0;
+  gap: 2px;
+  padding: 9px 6px;
+  border-radius: 13px;
+  text-align: center;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge-fact span {
+  font-size: 10px;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge-fact strong {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-window-countdown {
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 12px;
+  border: 1px solid rgba(78, 205, 196, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(13, 44, 49, 0.75), rgba(11, 20, 29, 0.96));
+  box-shadow: none;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .countdown-compact-label {
+  color: #dcebf0;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .countdown {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .time-box {
+  min-width: 0;
+  padding: 9px 4px 7px;
+  border-radius: 12px;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(3, 10, 15, 0.28);
+  box-shadow: none;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .time-box span {
+  font-size: 21px;
+  line-height: 1;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .time-box small {
+  margin-top: 5px;
+  font-size: 9px;
 }
 
 #memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-oath-copy {
   margin-top: 12px;
-  padding: 16px;
-  border-radius: 20px;
+  padding: 14px 16px;
+  border-color: rgba(245, 200, 66, 0.12);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(24, 25, 18, 0.88), rgba(12, 16, 13, 0.94));
+  box-shadow: none;
+  font-size: 14px;
+  line-height: 2;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-oath-verse {
+  margin-top: 8px;
+  font-size: 17px;
 }
 
 #memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-participants-title {
   margin: 18px 2px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-participants-title .community-count {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
 }
 
 #memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-slider-container {
@@ -2893,13 +3062,26 @@ body.member-standalone-view .assistant-fab {
   }
 
   #memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge,
-  #memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-oath-copy {
+  #memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-oath-copy,
+  #memberCanvasWindow[data-window-style="ahd"] #ahd .ahd-window-countdown {
     padding: 14px;
     border-radius: 18px;
   }
 
   #memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge h3 {
-    font-size: 22px;
+    font-size: 18px;
+  }
+
+  #memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #memberCanvasWindow[data-window-style="ahd"] #ahd .steadfastness-challenge-fact strong {
+    font-size: 12px;
+  }
+
+  #memberCanvasWindow[data-window-style="ahd"] #ahd .time-box span {
+    font-size: 19px;
   }
 }
 
