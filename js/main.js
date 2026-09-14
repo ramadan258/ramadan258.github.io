@@ -1500,7 +1500,7 @@ function syncBodyModalLock() {
   document.body.style.overflow = hasOpenModal ? "hidden" : "";
 }
 
-function openMemberCanvasWindow(targetSelector, titleText = "", subText = "") {
+function openMemberCanvasWindow(targetSelector, titleText = "", subText = "", windowStyle = "") {
   const modal = qs("#memberCanvasWindow");
   const mount = qs("#memberCanvasWindowMount");
   const title = qs("#memberCanvasWindowTitle");
@@ -1510,6 +1510,12 @@ function openMemberCanvasWindow(targetSelector, titleText = "", subText = "") {
   if (!modal || !mount || !target) return;
 
   closeMemberCanvasWindow();
+  const normalizedWindowStyle = String(windowStyle || "").trim();
+  if (normalizedWindowStyle) {
+    modal.dataset.windowStyle = normalizedWindowStyle;
+  } else {
+    delete modal.dataset.windowStyle;
+  }
 
   CANVAS_WINDOW_STATE.activeNode = target;
   CANVAS_WINDOW_STATE.originalParent = target.parentNode;
@@ -1556,6 +1562,7 @@ function closeMemberCanvasWindow() {
   if (modal) {
     modal.classList.remove("open");
     modal.setAttribute("aria-hidden", "true");
+    delete modal.dataset.windowStyle;
   }
 
   syncBodyModalLock();
@@ -1670,7 +1677,8 @@ function wireMemberCanvasWindows() {
       openMemberCanvasWindow(
         btn.getAttribute("data-canvas-window") || "",
         btn.getAttribute("data-window-title") || "",
-        btn.getAttribute("data-window-sub") || ""
+        btn.getAttribute("data-window-sub") || "",
+        btn.getAttribute("data-window-style") || ""
       );
     });
   });
