@@ -1,6 +1,8 @@
 const FIRESTORE_QA_BUCKET = "featuredMembers";
 const QA_CATEGORY_DOC_PREFIX = "qa_category__";
 const QA_ITEM_DOC_PREFIX = "qa_item__";
+const LOCAL_QA_CACHE_KEY = "wa3i_qa_content_cache_v1";
+const QA_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 const QA_PREVIEW_CATEGORIES = [
   { id: "qa_preview_relapse", name: "أسئلة عن الزلات والانتكاسات", sortKey: 1 },
@@ -49,6 +51,59 @@ const QA_STATE = {
   controlsWired: false,
   unsubs: [],
 };
+
+function normalizeQaCategory(entry) {
+  const id = String(entry?.id || "").trim();
+  const name = String(entry?.name || "").trim();
+  if (!id || !name) return null;
+  return { id, name, sortKey: Number(entry?.sortKey || 0) };
+}
+
+function normalizeQaItem(entry) {
+  const id = String(entry?.id || "").trim();
+  const categoryId = String(entry?.categoryId || "").trim();
+  const question = String(entry?.question || "").trim();
+  const answer = String(entry?.answer || "").trim();
+  if (!id || !categoryId || !question || !answer) return null;
+  return { id, categoryId, question, answer, sortKey: Number(entry?.sortKey || 0) };
+}
+
+function applyQaContent(categories, items) {
+  QA_STATE.categories = sortQaCategories(categories.filter(Boolean));
+  QA_STATE.items = sortQaItems(items.filter(Boolean));
+  getQaAdminSelectedCategoryId();
+  renderQaTaskMeta();
+  renderQaPage();
+  renderQaAdminPanel();
+}
+
+function loadQaCache() {
+  try {
+    const raw = localStorage.getItem(LOCAL_QA_CACHE_KEY);
+    const cached = raw ? JSON.parse(raw) : null;
+    const savedAt = Number(cached?.savedAt || 0);
+    if (!cached || !savedAt || Date.now() - savedAt > QA_CACHE_MAX_AGE_MS) return false;
+    if (!Array.isArray(cached.categories) || !Array.isArray(cached.items)) return false;
+
+    applyQaContent(
+      cached.categories.map(normalizeQaCategory),
+      cached.items.map(normalizeQaItem)
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function saveQaCache() {
+  try {
+    localStorage.setItem(LOCAL_QA_CACHE_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      categories: QA_STATE.categories,
+      items: QA_STATE.items,
+    }));
+  } catch {}
+}
 
 function sortQaCategories(list) {
   return list.slice().sort((a, b) => {
@@ -652,64 +707,40 @@ function attachQaFirestoreListeners() {
 
     const { db, onSnapshot, collection } = window.FB;
 
-    const unsubCategories = onSnapshot(
+    const unsubContent = onSnapshot(
       collection(db, FIRESTORE_QA_BUCKET),
       (snap) => {
-        const next = [];
+        const categories = [];
+        const items = [];
         snap.forEach((docSnap) => {
-          if (!String(docSnap.id || "").startsWith(QA_CATEGORY_DOC_PREFIX)) return;
           const data = docSnap.data() || {};
-          const id = String(data.categoryId || docSnap.id.replace(QA_CATEGORY_DOC_PREFIX, "")).trim();
-          const name = String(data.name || "").trim();
-          if (!id || !name) return;
-          next.push({
-            id,
-            name,
-            sortKey: Number(data.sortKey || 0),
-          });
+          const docId = String(docSnap.id || "");
+
+          if (docId.startsWith(QA_CATEGORY_DOC_PREFIX)) {
+            categories.push(normalizeQaCategory({
+              id: data.categoryId || docId.replace(QA_CATEGORY_DOC_PREFIX, ""),
+              name: data.name,
+              sortKey: data.sortKey,
+            }));
+          } else if (docId.startsWith(QA_ITEM_DOC_PREFIX)) {
+            items.push(normalizeQaItem({
+              id: data.itemId || docId.replace(QA_ITEM_DOC_PREFIX, ""),
+              categoryId: data.categoryId,
+              question: data.question,
+              answer: data.answer,
+              sortKey: data.sortKey,
+            }));
+          }
         });
-        QA_STATE.categories = sortQaCategories(next);
-        getQaAdminSelectedCategoryId();
-        renderQaTaskMeta();
-        renderQaPage();
-        renderQaAdminPanel();
+        applyQaContent(categories, items);
+        saveQaCache();
       },
       (error) => {
-        console.error("QA categories listener failed", error);
+        console.error("QA content listener failed", error);
       }
     );
 
-    const unsubItems = onSnapshot(
-      collection(db, FIRESTORE_QA_BUCKET),
-      (snap) => {
-        const next = [];
-        snap.forEach((docSnap) => {
-          if (!String(docSnap.id || "").startsWith(QA_ITEM_DOC_PREFIX)) return;
-          const data = docSnap.data() || {};
-          const id = String(data.itemId || docSnap.id.replace(QA_ITEM_DOC_PREFIX, "")).trim();
-          const categoryId = String(data.categoryId || "").trim();
-          const question = String(data.question || "").trim();
-          const answer = String(data.answer || "").trim();
-          if (!id || !categoryId || !question || !answer) return;
-          next.push({
-            id,
-            categoryId,
-            question,
-            answer,
-            sortKey: Number(data.sortKey || 0),
-          });
-        });
-        QA_STATE.items = sortQaItems(next);
-        renderQaTaskMeta();
-        renderQaPage();
-        renderQaAdminPanel();
-      },
-      (error) => {
-        console.error("QA items listener failed", error);
-      }
-    );
-
-    QA_STATE.unsubs.push(unsubCategories, unsubItems);
+    QA_STATE.unsubs.push(unsubContent);
   };
 
   tryInit();
@@ -726,6 +757,7 @@ function setupQaPage() {
 }
 
 function initQaPage() {
+  loadQaCache();
   setupQaPage();
   wireQaAdminControls();
   refreshQaAdminFormState();
