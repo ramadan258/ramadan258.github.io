@@ -36,6 +36,11 @@
           id: "fast-recovery-guide",
           title: "وصفة سريعة للتعافي",
           href: "books/وصفة سريعة للتعافي.pdf"
+        },
+        {
+          id: "stop-masturbation-book",
+          title: "كيف توقف العادة السرية",
+          href: "books/كيف توقف العادة السرية.pdf"
         }
       ],
 
