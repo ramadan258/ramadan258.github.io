@@ -3755,12 +3755,28 @@ body.member-standalone-view .assistant-fab {
 }
 
 #adminPanelModal .member-manage-list {
+  width: 100%;
+  min-width: 0;
   grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
   gap: 10px;
 }
 
 #adminPanelModal .member-manage-card {
+  width: 100%;
+  min-width: 0;
   padding: 13px;
+}
+
+#adminPanelModal .member-manage-head > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+#adminPanelModal .member-manage-meta,
+#adminPanelModal .member-manage-access-line,
+#adminPanelModal .member-manage-permission-note {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 #adminPanelModal .member-manage-permission-box {
@@ -3883,6 +3899,8 @@ body.member-standalone-view .assistant-fab {
 
   #adminPanelModal .status-admin-grid,
   #adminPanelModal .member-manage-list {
+    width: 100%;
+    min-width: 0;
     grid-template-columns: 1fr;
   }
 
