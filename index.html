@@ -457,10 +457,6 @@
         <div class="panel-title">🎖️ إدارة تمييز الأعضاء</div>
         <button class="admin-panel-close" type="button" data-admin-close="member-status">إغلاق</button>
       </div>
-      <div class="panel-sub" style="margin-top:10px">
-        اختر نوع السوار الذي سيظهر حول صورة العضو للجميع. التغيير يُحفظ مباشرة ويظهر فورًا.
-      </div>
-
       <div class="status-legend">
         <div class="status-legend-item elite">العضو المميز جدًا</div>
         <div class="status-legend-item active">العضو الفعال</div>
@@ -478,10 +474,6 @@
         <button class="admin-panel-close" type="button" data-admin-close="member-manage">إغلاق</button>
       </div>
 
-      <div class="panel-sub" style="margin-top:10px">
-        أضف عضوًا جديدًا، أو عدّل اسم عضو أو صورته، أو احذف عضوًا موجودًا من القبيلة. ومن بطاقة كل عضو يمكنك منح أو سحب صلاحية سؤال وجواب أو تقييم الأعضاء. الصور المضافة من هنا تُخزّن سحابيًا، واستبدالها يستبدل النسخة القديمة، وحذف العضو يزيل صورته المرفوعة معه.
-      </div>
-
       <div class="member-manage-grid" style="margin-top:16px">
         <aside class="member-manage-form">
           <div class="panel-title" id="memberManageFormTitle">إضافة عضو جديد</div>
@@ -490,9 +482,7 @@
           <input id="memberManageAccessPin" class="text-input" type="password" inputmode="numeric" maxlength="5" placeholder="كلمة مرور الدخول (1-5 أرقام)" autocomplete="new-password" style="margin-top:10px" />
           <button id="memberManageClearPinBtn" class="identity-btn ghost" type="button" style="margin-top:10px; display:none">مسح كلمة السر</button>
           <input id="memberManageImage" class="text-input" type="file" accept="image/*" style="margin-top:10px" />
-          <div id="memberManageFormHint" class="panel-sub" style="margin-top:10px">
-            تُضغط الصورة تلقائيًا بقوة لتناسب الرفع والعرض داخل الموقع.
-          </div>
+          <div id="memberManageFormHint" class="panel-sub" style="margin-top:10px"></div>
           <div class="member-manage-actions">
             <button id="memberManageAddBtn" class="identity-btn" type="button">إضافة العضو</button>
             <button id="memberManageResetBtn" class="identity-btn ghost" type="button">إعادة ضبط</button>
@@ -512,10 +502,6 @@
       <div class="admin-panel-head">
         <div class="panel-title">🗂️ تعديل صفحة سؤال وجواب (أمجد)</div>
         <button class="admin-panel-close" type="button" data-admin-close="qa">إغلاق</button>
-      </div>
-
-      <div class="panel-sub" style="margin-top:10px">
-        أضف قائمة جديدة، أو احذف قائمة موجودة، ثم أضف داخلها السؤال والجواب بالنسخ واللصق كما تريد.
       </div>
 
       <div class="qa-admin-grid" style="margin-top:16px">
@@ -550,10 +536,6 @@
       <div class="admin-panel-head">
         <div class="panel-title">📚 إدارة المكتبة</div>
         <button class="admin-panel-close" type="button" data-admin-close="library">إغلاق</button>
-      </div>
-
-      <div class="panel-sub" style="margin-top:10px">
-        أضف اسم الكتاب ورابطه العام، أو احذفه من المكتبة.
       </div>
 
       <div class="library-admin-grid" style="margin-top:16px">
@@ -642,7 +624,6 @@
       </div>
 
       <div id="ahdManageBox" style="display:none; margin-top:16px">
-        <div class="panel-sub" style="margin-bottom:10px">اختر عضوًا من القبيلة لإضافته إلى المسابقة، أو احذفه من قائمة المشاركين.</div>
         <div id="ahdAdminFeedback" class="panel-sub" style="margin-bottom:12px" aria-live="polite"></div>
 
         <div class="today-layout" style="gap:14px">
@@ -662,7 +643,6 @@
           </aside>
         </div>
 
-        <div class="panel-sub" style="margin-top:12px">التغييرات تُحفظ على Firebase وتظهر للجميع فورًا.</div>
       </div>
     </div>
   </section>
@@ -1018,7 +998,7 @@
   
   </div>
 
-  <script src="js/main.js?v=20260914october1"></script>
+  <script src="js/main.js?v=20260915settings3"></script>
   <script src="js/auth-ui.js?v=20260914library1"></script>
   <script src="js/member-status.js?v=20260914qawhite1"></script>
   <script src="js/ahd.js?v=20260914library1"></script>
