@@ -2441,6 +2441,7 @@ function openAdminPanelModal(panelKey) {
 
   restoreAdminPanelFromModal();
   setActiveAdminPanel(panelKey);
+  modal.dataset.adminPanel = panelKey;
 
   if (title) title.textContent = cfg.title;
   if (sub) sub.textContent = cfg.sub;
@@ -2478,6 +2479,7 @@ function closeAdminPanelModal() {
   if (modal) {
     modal.classList.remove("open");
     modal.setAttribute("aria-hidden", "true");
+    delete modal.dataset.adminPanel;
   }
 
   syncBodyModalLock();
