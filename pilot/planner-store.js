@@ -23,7 +23,11 @@ export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=
       if(revision!==pending.get(snap.id).revision && !operation){error='CONFLICT';notify();}return;
     }
     if(record){records.set(snap.id,record.value);revisions.set(snap.id,revision);}
-    else {records.delete(snap.id);revisions.delete(snap.id);}
+    else {
+      if(snap.id==='catalog')records.set('catalog',emptyCatalog(today));
+      else records.delete(snap.id);
+      revisions.delete(snap.id);
+    }
   }
   const catalogSnap=await fs.getDocFromServer(fs.doc(collection,'catalog'));assertCurrent();accept(catalogSnap);
   records.set('catalog',records.get('catalog')||emptyCatalog(today));
