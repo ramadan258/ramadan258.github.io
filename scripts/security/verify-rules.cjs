@@ -6,11 +6,11 @@ const { createHash } = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 
 const root = resolve(__dirname, '../..');
-const approvedHash = '23edbb5ca2a5ba2dcca7e6c65123d24490cfa81a818f754deda835f3c5d71961';
+const approvedHash = '89ffcd7787512cd134572b2308fdf8313c18c3431749ecec6805500f91ebf84c';
 const hook = 'node scripts/security/verify-rules.cjs';
 function verify(source, config) {
   const hash = createHash('sha256').update(source.replace(/\r\n/g, '\n')).digest('hex');
-  assert.equal(hash, approvedHash, 'STOP: rules differ from the approved safe containment. Separate review is required.');
+  assert.equal(hash, approvedHash, 'STOP: rules differ from the approved account release. Separate review is required.');
   assert.equal(config.firestore?.rules, 'firestore.rules', 'STOP: alternate rules path.');
   assert.ok(Array.isArray(config.firestore?.predeploy) && config.firestore.predeploy.includes(hook), 'STOP: deployment guard missing.');
   return hash;

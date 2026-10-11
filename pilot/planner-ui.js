@@ -1,0 +1,199 @@
+import { planner } from './planner-store.js';
+import { dateKey,addDays,monday,weekday,weekdays,dayStats,goalStats,goalPeriod,versionAt } from './model.mjs';
+import { createHarvest } from './harvest-ui.js';
+const $=selector=>document.querySelector(selector),$$=selector=>[...document.querySelectorAll(selector)];
+const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const number=value=>value.toLocaleString('ar-SA',{maximumFractionDigits:1}),percent=value=>value===null?'—':number(value)+'٪';
+const icon=name=>`<svg class="icon" aria-hidden="true"><use href="#icon-${name}"/></svg>`;
+const fullDate=key=>new Date(key+'T12:00:00Z').toLocaleDateString('ar-SA',{calendar:'gregory',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+const uid=()=>crypto.randomUUID();
+const store=await planner().catch(error=>{
+  document.body.classList.remove('session-pending');document.body.replaceChildren();
+  const main=document.createElement('main');main.className='preview-home';main.innerHTML='<p>تعذر تحميل بيانات الحساب.</p><button class="save-button" type="button">إعادة المحاولة</button>';
+  main.querySelector('button').onclick=()=>location.reload();document.body.append(main);throw error;
+});
+let {catalog,days}=store.snapshot(),today=dateKey(),selectedDate=today,tab='day',detail=null,harvestDate=today;
+let archivedHabits=false,archivedGoals=false,expanded={habits:false,tasks:false},editor=null,goalYear=today.slice(0,4);
+const currentDay=()=>dayStats(catalog,days,selectedDate,today);
+const actions=(kind,id,archived=false)=>`<div class="item-actions"><button type="button" data-edit="${kind}" data-id="${id}">تعديل</button><button type="button" data-archive="${kind}" data-id="${id}">${archived?'استعادة':'أرشفة'}</button><button type="button" data-delete="${kind}" data-id="${id}" class="danger">حذف</button></div>`;
+function run(command) {
+  try{store.dispatch(command);return true;}catch(e){alert(e.message==='INVALID_SCHEDULE'?'اختر يومًا واحدًا على الأقل.':'راجع الحقول والأرقام والهدف المرتبط.');return false;}
+}
+function saveStatus() {
+  const state=store.status();$('#saveStatus').textContent=state.error==='CONFLICT'?'تعارض مع جلسة أخرى؛ مسودتك محفوظة هنا':state.error?'لم يكتمل الحفظ؛ مسودتك محفوظة على هذا الجهاز':state.pending?'جارٍ الحفظ…':'محفوظ في الحساب';
+  $('#retrySave').hidden=!state.error;$('#saveStatus').dataset.error=!!state.error;
+  if(state.error==='CONFLICT'&&!$('#resolveConflict')) {
+    const button=document.createElement('button');button.className='list-toggle';button.id='resolveConflict';button.textContent='مراجعة التعارض';button.onclick=resolveConflict;$('.window-footer').append(button);
+  }
+  if(!state.error)$('#resolveConflict')?.remove();
+}
+function taskRows(tasks) {
+  return tasks.length?tasks.map(t=>`<div class="task-edit-row"><label class="task-row${t.state==='done'?' is-complete':''}"><input type="checkbox" data-task="${t.id}" ${t.state==='done'?'checked':''}><span class="check-indicator">${icon('check')}</span><span class="row-name">${escape(t.name)}</span>${t.priority?icon('star'):''}</label><button type="button" class="row-edit" data-edit="task" data-id="${t.id}" aria-label="تعديل ${escape(t.name)}">⋯</button></div>`).join(''):'<p class="list-empty">لا توجد مهام</p>';
+}
+function renderDaily() {
+  const day=currentDay();$('#todayWeekday').textContent=weekdays[weekday(selectedDate)];$('#todayDate').textContent=fullDate(selectedDate);$('#dayPicker').value=selectedDate;$('#dayPicker').max=today;
+  const important=day.tasks.filter(t=>t.priority),other=day.tasks.filter(t=>!t.priority);
+  $('#priorityCount').textContent=number(important.length);$('#taskCount').textContent=number(other.length);
+  $('#priorityList').innerHTML=taskRows(important);$('#taskList').innerHTML=taskRows(other);
+  $('#dailyPercent').textContent=percent(day.percentage);$('#dailyProgress').setAttribute('aria-valuenow',day.percentage||0);$('#dailyProgressFill').style.width=(day.percentage||0)+'%';
+  $('#dailyHabitCount').textContent=`${number(day.completed)} من ${number(day.required)}`;$('#dailyRemaining').textContent=`${number(day.unanswered)} دون إجابة`;
+  $('#dailyHabitList').innerHTML=day.habits.length?day.habits.map(h=>`<label class="habit-row${days[selectedDate]?.habitStatus[h.id]==='done'?' is-complete':''}"><input type="checkbox" data-habit="${h.id}" ${days[selectedDate]?.habitStatus[h.id]==='done'?'checked':''}><span class="check-indicator">${icon('check')}</span><span class="row-name">${escape(h.name)}</span></label>`).join(''):'<p class="list-empty">أضف عادتك الأولى</p>';
+}
+function habitWeekCount(id) {
+  const dates=Array.from({length:7},(_,i)=>addDays(monday(today),i)).filter(k=>k<=today&&dayStats(catalog,days,k,today).habits.some(h=>h.id===id));
+  return {required:dates.length,done:dates.filter(k=>days[k]?.habitStatus[id]==='done').length};
+}
+function renderHabits() {
+  const habits=catalog.habits.filter(h=>!h.deletedAt&&(!versionAt(h,today)?.active)===archivedHabits);
+  $('#habitTotal').textContent=number(habits.length)+' عادات';$('#archivedHabits').textContent=archivedHabits?'العودة للعادات':'المؤرشفة';
+  $('#habitDirectory').innerHTML=habits.length?habits.map(h=>{
+    const v=versionAt(h,today),stats=habitWeekCount(h.id);
+    return `<div class="habit-directory-card"><button class="habit-directory-row" data-detail="${h.id}">${icon('habit')}<span class="habit-directory-info"><strong>${escape(v.name)}</strong><small>${v.days.map(d=>weekdays[d]).join(' · ')}</small></span><span class="habit-directory-count">${number(stats.done)} / ${number(stats.required)}</span>${icon('chevron')}</button>${actions('habit',h.id,!v.active)}</div>`;
+  }).join(''):'<p class="list-empty">لا توجد عادات</p>';
+  if(detail)renderHabitDetail();
+}
+function renderHabitDetail() {
+  const h=catalog.habits.find(h=>h.id===detail);if(!h||h.deletedAt){detail=null;return toggleDetail();}
+  const v=versionAt(h,today),stats=habitWeekCount(h.id);$('#detailTitle').textContent=v.name;$('#detailSchedule').textContent=v.days.map(d=>weekdays[d]).join(' · ');
+  $('#detailGoal').textContent=catalog.goals.find(g=>g.id===v.goalId)?.name||'عادة مستقلة';$('#detailHabitCount').textContent=`${number(stats.done)} من ${number(stats.required)}`;
+  $('#habitActions').innerHTML=actions('habit',h.id,!v.active);
+  $('#habitWeek').innerHTML=weekdays.map((name,i)=>{
+    const date=addDays(monday(today),i),scheduled=dayStats(catalog,days,date,today).habits.some(h=>h.id===detail),done=days[date]?.habitStatus[detail]==='done';
+    return `<button type="button" class="habit-day${done?' is-done':''}${!scheduled?' is-unscheduled':''}" data-history="${date}" ${!scheduled||date>today?'disabled':''} aria-pressed="${done}" aria-label="${name} ${done?'مكتملة':'غير مكتملة'}"><span class="day-name">${name}</span><span class="day-number">${number(Number(date.slice(-2)))}</span>${icon('check')}</button>`;
+  }).join('');toggleDetail();
+}
+function toggleDetail(){ $('#habitOverview').hidden=!!detail;$('#habitDetail').hidden=!detail;$('#detailBack').hidden=!detail; }
+function renderGoals() {
+  const year=goalYear,goals=catalog.goals.filter(g=>g.period.startsWith(year)&&!g.deletedAt&&g.archived===archivedGoals);
+  const years=[...new Set([Number(today.slice(0,4))-1,Number(today.slice(0,4)),Number(today.slice(0,4))+1,...Object.keys(catalog.plans).map(Number),Number(year)])].sort();
+  $('#planPeriod').innerHTML=`<span>${escape(catalog.plans[year]||'خطة السنة')}</span><select id="planYear" aria-label="سنة الخطة">${years.map(y=>`<option ${String(y)===year?'selected':''}>${y}</option>`).join('')}</select>`;
+  $('#planTools').innerHTML=`<div class="plan-actions"><button class="list-toggle" data-edit="plan">${catalog.plans[year]?'تعديل الخطة':'إنشاء خطة'}</button><button class="list-toggle" data-edit="area">مجال جديد</button><span class="section-count">${catalog.areas.map(a=>escape(a.name)).join(' · ')}</span></div>`;
+  $('#archivedGoals').textContent=archivedGoals?'العودة للأهداف':'المؤرشفة';
+  $('#goalList').innerHTML=goals.length?goals.map(g=>{
+    const stats=goalStats(catalog,days,g,today),area=catalog.areas.find(a=>a.id===g.areaId),level={annual:'سنوي',monthly:'شهري',weekly:'أسبوعي'}[g.level];
+    const period=goalPeriod(g),end=period.end<today?period.end:today;
+    if(g.metric==='linked'&&period.start<=end&&!store.hasRange(period.start,end))return `<details class="goal-card"><summary><span class="goal-mark">${icon('target')}</span><span class="goal-info"><strong>${escape(g.name)}</strong><small>بيانات التقدم غير مكتملة</small></span><span class="goal-progress">—</span></summary>${actions('goal',g.id,g.archived)}</details>`;
+    return `<details class="goal-card"><summary><span class="goal-mark">${icon('target')}</span><span class="goal-info"><small>${escape(area?.name)} · ${level} · ${escape(g.period)}</small><strong>${escape(g.name)}</strong><span class="goal-track"><span style="width:${stats.percentage}%"></span></span></span><span class="goal-progress"><strong>${percent(stats.percentage)}</strong><small>${number(stats.done)} / ${number(stats.total)}</small></span>${icon('chevron')}</summary><div class="goal-stages"><div class="goal-stage"><span>${g.metric==='linked'?'إنجازات العادات والمهام المرتبطة':'تقدم مسجل يدويًا'}</span><strong>${number(stats.done)} / ${number(stats.total)}</strong></div><div class="goal-stage"><span>الهدف الأعلى</span><strong>${escape(catalog.goals.find(p=>p.id===g.parentId)?.name||'مستقل')}</strong></div></div>${actions('goal',g.id,g.archived)}</details>`;
+  }).join(''):'<p class="list-empty">لا توجد أهداف</p>';
+}
+function dayList(type,items,date) {
+  const visible=expanded[type]?items:items.slice(0,4);
+  return (items.length?`<ul class="detail-item-list">${visible.map(item=>{
+    const state=type==='habits'?days[date]?.habitStatus[item.id]||'unanswered':item.state;
+    return `<li class="detail-item${state==='done'?' is-complete':''}"><span class="detail-state-mark">${state==='done'?icon('check'):'<span class="detail-open-mark"></span>'}</span><span class="detail-item-name">${escape(item.name)}${item.priority?icon('star'):''}</span><span class="detail-item-status">${date>today?'لم يحن بعد':state==='done'?'مكتملة':state==='no'?'غير مكتملة':'دون إجابة'}</span></li>`;
+  }).join('')}</ul>`:'<p class="list-empty">لا توجد عناصر مجدولة</p>')+(items.length>4?`<button type="button" class="list-toggle" data-expand="${type}">${expanded[type]?'عرض أقل':'عرض الكل'}</button>`:'');
+}
+function renderDayDetails(date=harvestDate,open=false) {
+  if(date!==harvestDate)expanded={habits:false,tasks:false};harvestDate=date;
+  const day=dayStats(catalog,days,date,today);
+  const percentage=day.required?day.completed/day.required*100:null;
+  $('#selectedDayStatus').textContent=day.future?'لم يحن بعد':date===today?'حتى الآن':'يوم سابق';$('#selectedDayDate').textContent=fullDate(date);
+  $('#selectedDaySummary').innerHTML=`<dl><div><dt>إنجاز العادات</dt><dd data-day-percentage>${day.future?'—':percent(percentage)}</dd></div><div><dt>العادات</dt><dd>${number(day.completed)} / ${number(day.required)}</dd></div><div><dt>المهام</dt><dd>${number(day.taskCompleted)} / ${number(day.tasks.length)}</dd></div></dl>`;
+  $('#selectedDayHabits').innerHTML=dayList('habits',day.habits,date);$('#selectedDayTasks').innerHTML=dayList('tasks',day.tasks,date);
+  $('#selectedDayAnnouncement').textContent=weekdays[weekday(date)]+' '+percent(percentage);
+}
+function render(){({catalog,days}=store.snapshot());if(tab==='day')renderDaily();if(tab==='habits')renderHabits();if(tab==='goals')renderGoals();if(tab==='harvest')harvest.render();saveStatus();}
+function selectTab(name,focus=false) {
+  tab=name;closeEditor();detail=null;toggleDetail();
+  $$('[data-tab]').forEach(button=>{const active=button.dataset.tab===name;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',active);button.tabIndex=active?0:-1;$('#panel-'+button.dataset.tab).hidden=!active;if(active&&focus)button.focus();});
+  $('#windowContent').scrollTop=0;
+  render();if(name==='harvest')harvest.activate();else harvest.deactivate();
+  if(name==='goals'&&catalog.goals.some(g=>g.metric==='linked'&&g.period.startsWith(goalYear)))void loadRange(goalYear+'-01-01',goalYear+'-12-31');
+}
+async function loadRange(start,end=start) {
+  if(end>today)end=today;
+  try{await store.ensureRange(start,end);render();}catch{alert('تعذر تحميل السجلات. أعد المحاولة.');}
+}
+const field=(label,name,value='',type='text',extra='')=>`<label class="add-field"><span>${label}</span><input name="${name}" type="${type}" value="${escape(value)}" ${extra}></label>`;
+const options=(items,selected)=>items.map(item=>`<option value="${escape(item.id)}" ${item.id===selected?'selected':''}>${escape(item.name)}</option>`).join('');
+const select=(label,name,items,value)=>`<label class="add-field"><span>${label}</span><select name="${name}">${options(items,value)}</select></label>`;
+const goalOptions=()=>[{id:'',name:'بلا ارتباط'},...catalog.goals.filter(g=>!g.archived&&!g.deletedAt)];
+function closeEditor(){if(!editor)return;editor.remove();editor=null;}
+function openEditor(kind,id='',mount=null) {
+  closeEditor();let contents='',value;
+  if(kind==='habit') {
+    value=id?versionAt(catalog.habits.find(h=>h.id===id),today):{name:'',days:[0,1,2,3,4,5,6],goalId:''};
+    contents=field('اسم العادة','name',value.name,'text','required maxlength="120"')+`<fieldset class="repeat-days"><legend>أيام التكرار</legend>${weekdays.map((name,i)=>`<label><input type="checkbox" name="days" value="${i}" ${value.days.includes(i)?'checked':''}><span>${name}</span></label>`).join('')}</fieldset>`+select('الهدف المرتبط','goalId',goalOptions(),value.goalId);
+    mount ||= detail?'#detailHabitForm':tab==='day'?'#dailyHabitForm':'#habitForm';
+  } else if(kind==='task') {
+    value=currentDay().tasks.find(t=>t.id===id)||{name:'',goalId:'',priority:false};
+    contents=field('اسم المهمة','name',value.name,'text','required maxlength="120"')+`<label class="priority-field"><input type="checkbox" name="priority" ${value.priority?'checked':''}>مهمة ذات أولوية</label>`+select('الهدف المرتبط','goalId',goalOptions(),value.goalId);mount='#taskForm';
+    if(id)contents+=`<button class="list-toggle danger" type="button" data-delete="task" data-id="${id}">حذف المهمة</button>`;
+  } else if(kind==='goal') {
+    if(!catalog.areas.length){alert('أضف مجالًا أولًا.');return openEditor('area');}
+    value=catalog.goals.find(g=>g.id===id)||{name:'',level:'annual',period:goalYear,areaId:catalog.areas[0].id,parentId:'',metric:'manual',target:1,value:0};
+    contents=field('اسم الهدف','name',value.name,'text','required maxlength="120"')+select('مجال الحياة','areaId',catalog.areas,value.areaId)
+      +select('نوع الهدف','level',[{id:'annual',name:'سنوي'},{id:'monthly',name:'شهري'},{id:'weekly',name:'أسبوعي'}],value.level)
+      +field('الفترة','period',value.period,value.level==='annual'?'number':value.level==='monthly'?'month':'date','required')
+      +select('الهدف الأعلى','parentId',[{id:'',name:'مستقل'},...catalog.goals.filter(g=>g.id!==id&&!g.deletedAt)],value.parentId)
+      +select('مقياس التقدم','metric',[{id:'manual',name:'عدد أسجله يدويًا'},{id:'linked',name:'عدد إنجازات العادات والمهام'}],value.metric)
+      +field('العدد المستهدف','target',value.target,'number','min="1" max="100000" step="any" required')
+      +`<div id="manualGoalValue" ${value.metric==='linked'?'hidden':''}>${field('العدد المنجز','value',value.value,'number','min="0" max="100000" step="any" required')}</div>`;mount='#goalForm';
+  } else if(kind==='plan') {contents=field('السنة','year',goalYear,'number','min="2000" max="2099" required')+field('اسم الخطة','name',catalog.plans[goalYear]||'','text','required maxlength="120"');mount='#goalForm';}
+  else {contents=field('اسم مجال الحياة','name','','text','required maxlength="120"');mount='#goalForm';}
+  const form=document.createElement('form');form.className='inline-add-form';form.dataset.kind=kind;form.dataset.id=id;
+  form.innerHTML=contents+'<div class="add-form-actions"><button class="save-button" type="submit">حفظ</button><button class="cancel-button" type="button" data-cancel-add>إلغاء</button></div>';
+  $(mount).prepend(form);editor=form;form.scrollIntoView({block:'nearest',behavior:'smooth'});form.querySelector('input')?.focus();
+}
+document.addEventListener('submit',event=>{
+  if(event.target!==editor)return;event.preventDefault();const form=editor,values=new FormData(form),kind=form.dataset.kind;
+  const cmd={type:kind,id:form.dataset.id||uid(),name:values.get('name')};
+  if(kind==='habit')Object.assign(cmd,{days:values.getAll('days').map(Number),goalId:values.get('goalId')});
+  if(kind==='task')Object.assign(cmd,{date:selectedDate,priority:values.has('priority'),goalId:values.get('goalId')});
+  if(kind==='goal')Object.assign(cmd,{areaId:values.get('areaId'),level:values.get('level'),period:values.get('period'),parentId:values.get('parentId'),metric:values.get('metric'),target:Number(values.get('target')),value:Number(values.get('value'))});
+  if(kind==='plan'){cmd.year=values.get('year');goalYear=cmd.year;}
+  if(run(cmd))closeEditor();
+});
+document.addEventListener('change',async event=>{
+  const input=event.target;
+  if(input.dataset.habit)run({type:'habitStatus',id:input.dataset.habit,date:selectedDate,status:input.checked?'done':'no'});
+  if(input.dataset.task)run({type:'taskStatus',id:input.dataset.task,date:selectedDate,status:input.checked?'done':'no'});
+  if(input.id==='dayPicker'&&input.value&&input.value<=today){
+    const requested=input.value;input.value=selectedDate;input.disabled=true;closeEditor();
+    try{await store.ensureRange(requested,requested);selectedDate=requested;render();}
+    catch{input.value=selectedDate;alert('تعذر تحميل اليوم. بقيت البيانات السابقة دون تغيير.');}
+    finally{input.disabled=false;}
+  }
+  if(input.id==='planYear'){goalYear=input.value;renderGoals();if(catalog.goals.some(g=>g.metric==='linked'&&g.period.startsWith(goalYear)))void loadRange(goalYear+'-01-01',goalYear+'-12-31');}
+  if(editor&&input.name==='level') {
+    const period=editor.elements.period;period.type=input.value==='annual'?'number':input.value==='monthly'?'month':'date';
+    period.value=input.value==='annual'?goalYear:input.value==='monthly'?today.slice(0,7):monday(today);editor.elements.parentId.value='';
+  }
+  if(editor&&input.name==='metric')$('#manualGoalValue').hidden=input.value==='linked';
+});
+document.addEventListener('click',event=>{
+  const button=event.target.closest('button');if(!button)return;
+  if(button.dataset.tab)selectTab(button.dataset.tab);
+  if(button.dataset.add)openEditor(button.dataset.add,'',button.dataset.formMount);
+  if(button.dataset.edit)openEditor(button.dataset.edit,button.dataset.id);
+  if(button.hasAttribute('data-cancel-add'))closeEditor();
+  if(button.dataset.detail){detail=button.dataset.detail;renderHabitDetail();}
+  if(button.id==='detailBack'){detail=null;toggleDetail();}
+  if(button.dataset.history)run({type:'habitStatus',id:detail,date:button.dataset.history,status:days[button.dataset.history]?.habitStatus[detail]==='done'?'no':'done'});
+  if(button.dataset.archive) {
+    const kind=button.dataset.archive,id=button.dataset.id,isArchived=kind==='habit'?!versionAt(catalog.habits.find(h=>h.id===id),today).active:catalog.goals.find(g=>g.id===id).archived;
+    run({type:kind+(isArchived?'Restore':'Archive'),id});closeEditor();
+  }
+  if(button.dataset.delete&&confirm('حذف هذا العنصر؟ ستبقى سجلات العادات السابقة محفوظة.')){run({type:button.dataset.delete+'Delete',id:button.dataset.id,date:selectedDate});closeEditor();}
+  if(button.id==='archivedHabits'){archivedHabits=!archivedHabits;renderHabits();}
+  if(button.id==='archivedGoals'){archivedGoals=!archivedGoals;renderGoals();}
+  if(button.dataset.expand){expanded[button.dataset.expand]=!expanded[button.dataset.expand];renderDayDetails(harvestDate);}
+  if(button.id==='retrySave')void store.flush().catch(()=>{});
+});
+$('.tabs').addEventListener('keydown',event=>{
+  const names=['day','habits','goals','harvest'],index=names.indexOf(tab),next=event.key==='ArrowLeft'?(index+1)%4:event.key==='ArrowRight'?(index+3)%4:event.key==='Home'?0:event.key==='End'?3:null;
+  if(next!==null){event.preventDefault();selectTab(names[next],true);}
+});
+$('#khutayWindow').addEventListener('cancel',event=>{event.preventDefault();if(editor)closeEditor();else void leave();});
+async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html';}
+$('#closePreview').onclick=leave;$('#launchPreview').onclick=()=>$('#khutayWindow').showModal();
+$('#accountLabel').textContent=window.WA3I_SESSION.session.member.name;
+window.addEventListener('wa3i-session-cleared',()=>{document.body.replaceChildren();});
+async function resolveConflict() {
+  const draft=store.draft(),blob=new Blob([JSON.stringify(draft,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download='khutay-my-draft.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  if(confirm('تم تجهيز نسخة من مسودتك. هل تريد تحميل بيانات الخادم بدل التعديلات المتعارضة؟'))await store.reloadServer();
+}
+const harvest=createHarvest({root:$('#panel-harvest'),store,today,showDay:renderDayDetails});
+store.subscribe(render);render();$('#khutayWindow').showModal();
+setInterval(()=>{if(dateKey()!==today)location.reload();},60000);

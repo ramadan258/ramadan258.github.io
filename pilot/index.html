@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>الموحدون – واعي | قبيلة الموحدون</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- SEO -->
+  <meta name="description" content="الموحدون – واعي. مبادرة للثبات، مجاهدة النفس، وتجديد العهد في قبيلة الموحدون." />
+  <meta name="keywords" content="الموحدون, واعي, قبيلة الموحدون, التعافي, الثبات, مجاهدة النفس, عهد الثبات, صفر زلات" />
+  <meta name="application-name" content="قبيلة الموحدون - واعي" />
+  <meta name="apple-mobile-web-app-title" content="قبيلة الموحدون - واعي" />
+  <meta name="theme-color" content="#0c1320" />
+  <link rel="canonical" href="https://ramadan258.github.io/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="قبيلة الموحدون - واعي" />
+  <meta property="og:url" content="https://ramadan258.github.io/" />
+  <meta property="og:title" content="الموحدون – واعي | قبيلة الموحدون" />
+  <meta property="og:description" content="مبادرة للثبات، مجاهدة النفس، وتجديد العهد في قبيلة الموحدون." />
+  <meta property="og:image" content="https://ramadan258.github.io/apple-touch-icon.png?v=20260914qawhite1" />
+  <meta property="og:image:width" content="180" />
+  <meta property="og:image:height" content="180" />
+  <meta property="og:image:alt" content="شعار واعي مع عنوان قبيلة الموحدون" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="الموحدون – واعي | قبيلة الموحدون" />
+  <meta name="twitter:description" content="مبادرة للثبات، مجاهدة النفس، وتجديد العهد في قبيلة الموحدون." />
+  <meta name="twitter:image" content="https://ramadan258.github.io/apple-touch-icon.png?v=20260914qawhite1" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css?v=20260914qawhite1" />
+  <link rel="stylesheet" href="today.css?v=20260914qawhite1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="favicon.ico?v=20260914qawhite1" />
+  <link rel="icon" href="favicon.ico?v=20260914qawhite1" sizes="any" />
+  <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png?v=20260914qawhite1" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260914qawhite1" />
+  <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png?v=20260914qawhite1" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=20260914qawhite1" />
+  <link rel="manifest" href="site.webmanifest?v=20260914qawhite1" />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "قبيلة الموحدون - واعي",
+      "alternateName": ["الموحدون - واعي", "ramadan258.github.io"],
+      "url": "https://ramadan258.github.io/"
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "قبيلة الموحدون - واعي",
+      "url": "https://ramadan258.github.io/",
+      "logo": "https://ramadan258.github.io/apple-touch-icon.png?v=20260914qawhite1"
+    }
+  </script>
+
+<script src="session-config.js"></script><script src="session-runtime.js"></script><link rel="stylesheet" href="session.css">
+
+  <link rel="stylesheet" href="css/index-page.css?v=20260914library3" />
+  <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=20260915settings2" />
+</head>
+
+<body class="member-design-canvas-mode session-pending">
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4ecdc4"/>
+      <stop offset="100%" stop-color="#f5c842"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+
+<!-- بوابة اختيار المستخدم -->
+<div id="identityGate" class="identity-gate" role="dialog" aria-modal="true" aria-label="اختيار المستخدم">
+  <div class="identity-card">
+    <h2 class="identity-title">من أنت؟</h2>
+
+
+    <div id="identityLast" class="identity-last is-hidden" aria-live="polite"></div>
+
+    <div id="identityGrid" class="identity-grid" aria-label="قائمة الأعضاء"></div>
+
+
+  </div>
+</div>
+
+</div>
+
+
+<!-- تأكيد اختيار المستخدم -->
+<div id="identityConfirmOverlay" class="identity-confirm-overlay" role="dialog" aria-modal="true" aria-label="تأكيد اختيار المستخدم">
+  <div class="identity-confirm-card">
+    <div class="identity-confirm-title" id="identityConfirmTitle">تأكيد الدخول</div>
+    <img id="identityConfirmAvatar" class="identity-confirm-avatar" src="" alt="" />
+    <div id="identityConfirmName" class="identity-confirm-name">—</div>
+    <div id="identityConfirmHint" class="identity-confirm-hint">
+      تأكد أنك اخترت اسمك الصحيح. إذا اخترت بالخطأ يمكن إصلاح ذلك عبر زر “تبديل المستخدم”.
+    </div>
+
+    <div id="identityConfirmPasswordWrap" class="identity-confirm-password-wrap">
+<input id="identityConfirmPassword" class="text-input" type="password" maxlength="128" autocomplete="current-password" placeholder="كلمة المرور" />
+    </div>
+
+    <div id="identityConfirmError" class="identity-confirm-error is-hidden" aria-live="polite"></div>
+
+    <div class="identity-confirm-actions">
+      <button id="identityConfirmYes" class="identity-btn" type="button">دخول</button>
+      <button id="identityConfirmNo" class="identity-btn ghost" type="button">رجوع</button>
+    </div>
+
+    <div class="identity-confirm-actions is-hidden" id="identityResetActions">
+      <button id="identityResetBtn" class="identity-btn danger" type="button">إعادة ضبط هذا الجهاز</button>
+      <button id="identityResetCancel" class="identity-btn ghost" type="button">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<div class="identity-toast" id="identityToast" aria-live="polite" aria-atomic="true"></div>
+
+<div id="appRoot" class="app-root member-design-canvas is-hidden" aria-hidden="true">
+  <div id="standalonePageTopbar" class="standalone-page-topbar" hidden>
+    <a id="standaloneBackHomeBtn" class="standalone-page-back" href="index.html?resume=1">← العودة للصفحة الرئيسية</a>
+  </div>
+
+  <div class="member-design-canvas-shell">
+    <div class="member-canvas-topbar">
+      <button class="member-canvas-user-switch" data-switch-user-btn type="button" aria-label="تبديل المستخدم">
+        <span class="member-canvas-user-name" data-current-user-pill>—</span>
+        <span class="member-canvas-user-arrow" aria-hidden="true"></span>
+      </button>
+      <div class="member-canvas-title">الموحدون</div>
+    </div>
+
+    <div id="memberCanvasMembersSlot" class="member-canvas-members-slot"></div>
+
+    <div class="member-canvas-hub" aria-label="روابط الواجهة الرئيسية"><a class="member-canvas-link is-forms" href="khutay.html"><span class="member-canvas-link__label">خُطاي</span></a>
+      <button class="member-canvas-link is-ahd" type="button" data-canvas-window="#ahd" data-window-title="عهد الثبات" data-window-style="ahd">
+        <span class="member-canvas-link__label">عهد الثبات</span>
+      </button>
+      <button class="member-canvas-link is-feelings" type="button" data-canvas-window="#memberCanvasQa" data-window-title="سؤال وجواب" data-window-style="qa">
+        <span class="member-canvas-link__label">سؤال وجواب</span>
+      </button>
+      <button class="member-canvas-link is-forms" type="button" data-canvas-window="#memberCanvasForms" data-window-title="النماذج" data-window-style="forms">
+        <span class="member-canvas-link__label">النماذج</span>
+      </button>
+    </div>
+
+    <button id="openFeelingsPage" type="button" data-canvas-page="feelings" hidden aria-hidden="true"></button>
+
+    <div id="memberCanvasPanels" hidden>
+      <article id="memberCanvasForms" class="member-canvas-info-panel" hidden>
+        <div class="member-canvas-info-grid member-canvas-forms-grid">
+          <a class="member-canvas-form-link is-plan" href="recovery_plan.html?v=20260914forms1">خطة التعافي</a>
+          <a class="member-canvas-form-link is-relapse" href="slip_report.html?v=20260914forms1">ما قبل وبعد الزلة</a>
+          <a class="member-canvas-form-link is-pulse48" href="pulse_48.html?v=20260914forms1">٤٨</a>
+          <a class="member-canvas-form-link is-weekly-mirror" href="weekly_mirror.html?v=20260914forms1">مرآة الأسبوع</a>
+        </div>
+      </article>
+
+      <article id="memberCanvasQa" class="member-canvas-info-panel" hidden>
+        <div id="memberCanvasQaList" class="member-canvas-qa-list" aria-label="قوائم سؤال وجواب"></div>
+      </article>
+
+      <article id="memberCanvasAzkar" class="member-canvas-info-panel" hidden>
+        <div id="memberCanvasAzkarList" class="member-canvas-azkar-list" aria-label="الأذكار"></div>
+      </article>
+
+    </div>
+  </div>
+
+  <div class="tafsir-modal-overlay member-canvas-window" id="memberCanvasWindow" aria-hidden="true">
+    <div class="tafsir-modal-card member-canvas-window-card" role="dialog" aria-modal="true" aria-labelledby="memberCanvasWindowTitle">
+      <div class="tafsir-modal-head member-canvas-window-head">
+        <div>
+          <div class="tafsir-modal-title" id="memberCanvasWindowTitle">—</div>
+          <div class="tafsir-modal-sub" id="memberCanvasWindowSub">—</div>
+        </div>
+        <button type="button" class="member-canvas-window-back" id="memberCanvasWindowBack" aria-label="العودة" hidden>→</button>
+        <button type="button" class="tafsir-modal-close" id="closeMemberCanvasWindow" aria-label="إغلاق">✕</button>
+      </div>
+
+      <div class="tafsir-modal-body member-canvas-window-body" id="memberCanvasWindowMount"></div>
+
+      <div class="tafsir-modal-foot member-canvas-window-foot">
+        <div class="tafsir-note">يمكنك إغلاق النافذة والعودة مباشرة إلى الواجهة الرئيسية.</div>
+        <button type="button" class="tafsir-modal-close-btn" id="closeMemberCanvasWindow2">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminQuickMenu" class="admin-quick-menu" aria-label="لوحة الإدارة المختصرة">
+    <button id="adminQuickToggle" class="admin-quick-toggle" type="button" aria-label="فتح خيارات الإدارة" aria-expanded="false" aria-controls="adminQuickPanel">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <div id="adminQuickPanel" class="admin-quick-panel" aria-hidden="true">
+      <div class="admin-quick-kicker">لوحة الإدارة</div>
+      <div class="admin-quick-title">الإعدادات</div>
+      <button class="admin-quick-option" type="button" data-admin-open="member-status">
+        تقييم الأعضاء
+        <small>فتح لوحة تمييز الأعضاء فقط.</small>
+      </button>
+      <button class="admin-quick-option" type="button" data-admin-open="ahd">
+        إدارة عهد الثبات
+        <small>إضافة المشاركين وحذفهم من المسابقة.</small>
+      </button>
+      <button class="admin-quick-option" type="button" data-admin-open="member-manage">
+        إدارة الأعضاء
+        <small>إضافة عضو جديد أو حذف عضو مع صورته.</small>
+      </button>
+      <button class="admin-quick-option" type="button" data-admin-open="qa">
+        تعديل سؤال وجواب
+        <small>إضافة القوائم والأسئلة والأجوبة أو حذفها.</small>
+      </button>
+      <button class="admin-quick-option" type="button" data-admin-open="library">
+        إدارة المكتبة
+        <small>إضافة كتاب برابط عام أو حذفه من المكتبة.</small>
+      </button>
+    </div>
+  </div>
+
+  <header class="member-header">
+    <div class="member-header-grid">
+      <div class="member-brand-block">
+        <span class="member-kicker">واجهة العضو</span>
+        <h1>لوحة اليوم</h1>
+        <p>ابدأ مباشرة. كل ما تحتاجه ظاهر من أول شاشة، بدون زحام أو نزول طويل داخل الصفحة.</p>
+      </div>
+
+      <div class="member-header-side">
+        <div class="userbar">
+          <button class="member-user-switch" data-switch-user-btn type="button" aria-label="تبديل المستخدم">
+            <span class="member-user-switch__brand">الموحدون</span>
+            <span class="member-user-switch__name" data-current-user-pill>—</span>
+            <span class="member-user-switch__arrow" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <div class="member-command-bar" aria-label="إجراءات سريعة">
+          <button class="member-command-btn primary" id="openMorningAzkar" type="button">الأذكار</button>
+          <button class="member-command-btn" id="openQaPage" type="button">سؤال وجواب</button>
+          <button class="member-command-btn" id="openRescueCenter" type="button">النجدة</button>
+          <a class="member-command-btn gold" href="daily_report.html?v=20260915report2">التقرير</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="member-jump-links" aria-label="أقسام سريعة">
+      <a class="member-link-chip" href="#members">الأعضاء</a>
+      <a class="member-link-chip" href="#ahd">عهد الثبات</a>
+      <button class="member-link-chip" id="openRecoveryLibrary" type="button">المكتبة</button>
+    </div>
+  </header>
+
+  <!-- =====================
+       مشاعرك
+  ===================== -->
+  <section id="feelings" class="today-section member-dashboard feelings-page">
+    <div class="feelings-hero">
+      <span class="member-kicker">مشاعرك</span>
+      <h2>افهم حالتك قبل أن تبدأ</h2>
+      <p>ثلاث إجابات قصيرة تعطيك صورة أوضح عمّا تحتاجه الآن، ثم توجهك إلى الخطوة الأنسب مباشرة.</p>
+    </div>
+
+    <div class="risk-check-card" id="riskCheckCard" aria-labelledby="riskCheckTitle">
+      <div class="risk-check-top">
+        <div>
+          <div class="risk-check-kicker">فحص 30 ثانية</div>
+          <div class="risk-check-title-row">
+            <h3 class="risk-check-title" id="riskCheckTitle">حالتي الآن</h3>
+            <span class="risk-level-pill is-neutral" id="riskLevelPill">لم يُفحص بعد</span>
+          </div>
+          <p class="risk-check-desc">
+            اختر حالتك بصدق، ثم دع المؤشر يرشّدك إلى الخطوة الأنسب الآن.
+          </p>
+        </div>
+        <div class="risk-card-meta" id="riskAnsweredAt">لم يُفحص بعد.</div>
+      </div>
+
+      <div class="risk-question-grid">
+        <div class="risk-question" aria-labelledby="riskQuestionMood">
+          <div class="risk-question-title" id="riskQuestionMood">كيف حالك الآن؟</div>
+          <div class="risk-option-row">
+            <button type="button" class="risk-option-btn" data-risk-group="mood" data-risk-value="calm">مطمئن</button>
+            <button type="button" class="risk-option-btn" data-risk-group="mood" data-risk-value="tired">متعب</button>
+            <button type="button" class="risk-option-btn" data-risk-group="mood" data-risk-value="threatened">مهدد</button>
+          </div>
+        </div>
+
+        <div class="risk-question" aria-labelledby="riskQuestionIsolation">
+          <div class="risk-question-title" id="riskQuestionIsolation">أين أنت الآن؟</div>
+          <div class="risk-option-row">
+            <button type="button" class="risk-option-btn" data-risk-group="isolation" data-risk-value="connected">بين الناس</button>
+            <button type="button" class="risk-option-btn" data-risk-group="isolation" data-risk-value="semi">شبه وحيد</button>
+            <button type="button" class="risk-option-btn" data-risk-group="isolation" data-risk-value="alone">وحيد</button>
+          </div>
+        </div>
+
+        <div class="risk-question" aria-labelledby="riskQuestionUrge">
+          <div class="risk-question-title" id="riskQuestionUrge">كيف هي الرغبة الآن؟</div>
+          <div class="risk-option-row">
+            <button type="button" class="risk-option-btn" data-risk-group="urge" data-risk-value="none">لا توجد</button>
+            <button type="button" class="risk-option-btn" data-risk-group="urge" data-risk-value="light">خفيفة</button>
+            <button type="button" class="risk-option-btn" data-risk-group="urge" data-risk-value="high">مرتفعة</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="risk-result" id="riskResultBox" aria-live="polite">
+        <div class="risk-result-head">
+          <div class="risk-result-title" id="riskResultTitle">ابدأ الفحص السريع أولًا</div>
+          <div class="risk-result-desc" id="riskResultDesc">
+            اختر إجابة واحدة من كل سطر ليظهر لك التدخل الأنسب فورًا.
+          </div>
+        </div>
+        <div class="risk-advice-list" id="riskAdviceList"></div>
+        <div class="risk-action-row">
+          <button class="btn" id="riskActionBreath" type="button">ابدأ التنفس الآن</button>
+          <button class="btn ghost" id="riskActionRescue" type="button">افتح مركز النجاة</button>
+          <button class="btn ghost" id="riskActionAzkar" type="button">افتح الأذكار</button>
+          <button class="btn ghost" id="riskResetBtn" type="button">إعادة التقييم</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="feelings-support-strip" aria-label="توجيهات سريعة">
+      <div class="feelings-support-item">اختر ما يصفك الآن، لا ما تتمناه.</div>
+      <div class="feelings-support-item">إذا تغيّر شعورك فأعد التقييم فورًا.</div>
+      <div class="feelings-support-item">إذا ارتفع المؤشر فتحرك مباشرة ولا تفاوض الرغبة.</div>
+    </div>
+  </section>
+
+    <!-- =====================
+       الأعضاء
+  ===================== -->
+  <section id="members" class="community-section member-canvas-inline-section">
+    <div class="community-section-head">
+    </div>
+
+    <div class="member-members-basmala">بسم الله الرحمن الرحيم</div>
+
+    <div class="slider-container">
+      <div class="slider" aria-live="polite"></div>
+    </div>
+
+    <div id="memberStatusAdminSlot" hidden></div>
+    <div id="memberStatusAdminWrap" class="panel" style="margin-top:22px; display:none" aria-hidden="true">
+      <div class="admin-panel-head">
+        <div class="panel-title">🎖️ إدارة تمييز الأعضاء</div>
+        <button class="admin-panel-close" type="button" data-admin-close="member-status">إغلاق</button>
+      </div>
+      <div class="status-legend">
+        <div class="status-legend-item elite">العضو المميز جدًا</div>
+        <div class="status-legend-item active">العضو الفعال</div>
+        <div class="status-legend-item lazy">العضو المتكاسل</div>
+      </div>
+
+      <div id="memberStatusAdminFeedback" class="panel-sub" style="margin-top:12px" role="status" aria-live="polite"></div>
+      <div id="memberStatusAdminList" class="status-admin-grid" aria-label="إدارة حالات الأعضاء"></div>
+    </div>
+
+    <div id="memberManageAdminSlot" hidden></div>
+    <div id="memberManageAdminWrap" class="panel" style="margin-top:22px; display:none" aria-hidden="true">
+      <div class="admin-panel-head">
+        <div class="panel-title">🧩 إدارة الأعضاء (أمجد)</div>
+        <button class="admin-panel-close" type="button" data-admin-close="member-manage">إغلاق</button>
+      </div>
+
+      <div class="member-manage-grid" style="margin-top:16px">
+        <aside class="member-manage-form">
+          <div class="panel-title" id="memberManageFormTitle">إضافة عضو جديد</div>
+          <img id="memberManagePreview" class="member-manage-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop stop-color='%23132633'/%3E%3Cstop offset='1' stop-color='%230e2430'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='160' rx='36' fill='url(%23g)'/%3E%3Ccircle cx='80' cy='58' r='28' fill='%23d8e6eb' fill-opacity='.92'/%3E%3Cpath d='M34 132c8-26 31-40 46-40s38 14 46 40' fill='%23d8e6eb' fill-opacity='.92'/%3E%3C/svg%3E" alt="معاينة صورة العضو" />
+          <input id="memberManageName" class="text-input" type="text" placeholder="اسم العضو" autocomplete="off" />
+
+
+          <input id="memberManageImage" class="text-input" type="file" accept="image/*" style="margin-top:10px" />
+          <div id="memberManageFormHint" class="panel-sub" style="margin-top:10px"></div>
+          <div class="member-manage-actions">
+            <button id="memberManageAddBtn" class="identity-btn" type="button">إضافة العضو</button>
+            <button id="memberManageResetBtn" class="identity-btn ghost" type="button">إعادة ضبط</button>
+          </div>
+          <div id="memberManageStatus" class="panel-sub" style="margin-top:12px"></div>
+        </aside>
+
+        <aside class="member-manage-list-wrap">
+          <div class="panel-title">الأعضاء الحاليون</div>
+          <div id="memberManageList" class="member-manage-list" aria-label="إدارة أعضاء القبيلة"></div>
+        </aside>
+      </div>
+    </div>
+
+    <div id="qaAdminSlot" hidden></div>
+    <div id="qaAdminWrap" class="panel" style="margin-top:22px; display:none" aria-hidden="true">
+      <div class="admin-panel-head">
+        <div class="panel-title">🗂️ تعديل صفحة سؤال وجواب (أمجد)</div>
+        <button class="admin-panel-close" type="button" data-admin-close="qa">إغلاق</button>
+      </div>
+
+      <div class="qa-admin-grid" style="margin-top:16px">
+        <aside class="qa-admin-side">
+          <div class="panel-title">القوائم</div>
+          <input id="qaAdminCategoryName" class="text-input" type="text" placeholder="اسم القائمة الجديدة" autocomplete="off" />
+          <div class="member-manage-actions">
+            <button id="qaAdminAddCategoryBtn" class="identity-btn" type="button">إضافة القائمة</button>
+            <button id="qaAdminResetCategoryBtn" class="identity-btn ghost" type="button">إفراغ</button>
+          </div>
+          <div id="qaAdminCategoryStatus" class="panel-sub" style="margin-top:12px"></div>
+          <div id="qaAdminCategoryList" class="qa-admin-category-list" aria-label="قوائم سؤال وجواب"></div>
+        </aside>
+
+        <aside class="qa-admin-main">
+          <div class="panel-title">الأسئلة والأجوبة</div>
+          <select id="qaAdminCategorySelect" class="text-input" aria-label="اختر القائمة"></select>
+          <textarea id="qaAdminQuestion" class="text-input qa-admin-textarea" placeholder="السؤال" style="margin-top:12px"></textarea>
+          <textarea id="qaAdminAnswer" class="text-input qa-admin-textarea qa-admin-answer" placeholder="الجواب" style="margin-top:12px"></textarea>
+          <div class="member-manage-actions">
+            <button id="qaAdminAddItemBtn" class="identity-btn" type="button">إضافة سؤال وجواب</button>
+            <button id="qaAdminResetItemBtn" class="identity-btn ghost" type="button">إفراغ الحقول</button>
+          </div>
+          <div id="qaAdminItemStatus" class="panel-sub" style="margin-top:12px"></div>
+          <div id="qaAdminItemList" class="qa-admin-item-list" aria-label="الأسئلة والأجوبة داخل القائمة"></div>
+        </aside>
+      </div>
+    </div>
+
+    <div id="libraryAdminSlot" hidden></div>
+    <div id="libraryAdminWrap" class="panel" style="margin-top:22px; display:none" aria-hidden="true">
+      <div class="admin-panel-head">
+        <div class="panel-title">📚 إدارة المكتبة</div>
+        <button class="admin-panel-close" type="button" data-admin-close="library">إغلاق</button>
+      </div>
+
+      <div class="library-admin-grid" style="margin-top:16px">
+        <aside class="library-admin-form">
+          <div class="panel-title">إضافة كتاب</div>
+          <input id="libraryAdminTitle" class="text-input" type="text" placeholder="اسم الكتاب" autocomplete="off" />
+          <input id="libraryAdminHref" class="text-input" type="url" inputmode="url" placeholder="رابط الكتاب العام أو المباشر" autocomplete="off" style="margin-top:10px" />
+          <div class="member-manage-actions">
+            <button id="libraryAdminAddBtn" class="identity-btn" type="button">إضافة الكتاب</button>
+            <button id="libraryAdminResetBtn" class="identity-btn ghost" type="button">إفراغ</button>
+          </div>
+          <div id="libraryAdminStatus" class="panel-sub" style="margin-top:12px" role="status" aria-live="polite"></div>
+        </aside>
+
+        <aside class="library-admin-list-wrap">
+          <div class="panel-title">الكتب الحالية</div>
+          <div id="libraryAdminList" class="library-admin-list" aria-label="إدارة الكتب الحالية"></div>
+        </aside>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- =====================
+       العهد
+  ===================== -->
+  <section id="ahd" class="community-section">
+    <div class="community-section-head">
+      <div>
+        <span class="member-kicker">مسابقة القبيلة</span>
+        <h2>عهد الثبات</h2>
+      </div>
+    </div>
+
+    <article class="steadfastness-challenge" aria-label="تفاصيل مسابقة عهد الثبات">
+      <div class="steadfastness-challenge-head">
+        <h3>صفر زلات حتى نهاية أكتوبر</h3>
+      </div>
+      <div class="steadfastness-challenge-facts">
+        <div class="steadfastness-challenge-fact"><span>الهدف</span><strong>صفر زلات</strong></div>
+        <div class="steadfastness-challenge-fact prize"><span>الجائزة</span><strong>100 دولار</strong></div>
+        <div class="steadfastness-challenge-fact"><span>الموعد</span><strong>نهاية أكتوبر 2026</strong></div>
+      </div>
+    </article>
+
+    <section id="countdown" class="countdown-section compact-countdown ahd-window-countdown" aria-label="الوقت المتبقي في عهد الثبات">
+      <div class="countdown-compact-label">الوقت المتبقي حتى نهاية أكتوبر</div>
+      <div class="countdown">
+        <div class="time-box">
+          <span id="days">--</span>
+          <small>يوم</small>
+        </div>
+        <div class="time-box">
+          <span id="hours">--</span>
+          <small>ساعة</small>
+        </div>
+        <div class="time-box">
+          <span id="minutes">--</span>
+          <small>دقيقة</small>
+        </div>
+        <div class="time-box seconds">
+          <span id="seconds">--</span>
+          <small>ثانية</small>
+        </div>
+      </div>
+    </section>
+
+    <div id="ahdStandaloneCountdownSlot" class="ahd-standalone-countdown-slot" hidden></div>
+
+    <article class="ahd-oath-copy">
+      <div>نعاهد أنفسنا وأعضاء القبيلة على الثبات حتى نهاية أكتوبر، وأن نواجه لحظات الضعف بصدق وخطة، متوكلين على الله ومستعينين به، وأن نعين بعضنا دون لوم أو إحراج.</div>
+      <p class="ahd-oath-verse">﴿وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ﴾ <span>الطلاق: ٣</span></p>
+    </article>
+
+    <div class="ahd-participants-title">المشاركون في عهد الثبات <span id="ahdCount" class="community-count" aria-live="polite">—</span></div>
+
+    <div class="slider-container ahd-slider-container">
+      <div id="ahdPublicList" class="slider ahd-slider" aria-label="المشاركون في عهد الثبات"></div>
+    </div>
+
+    <div id="ahdAdminSlot" hidden></div>
+    <div id="ahdAdminWrap" class="panel" style="margin-top:22px; display:none" aria-hidden="true">
+      <div class="admin-panel-head">
+        <div class="panel-title">إدارة عهد الثبات</div>
+        <button class="admin-panel-close" type="button" data-admin-close="ahd">إغلاق</button>
+      </div>
+
+      <div id="ahdManageBox" style="display:none; margin-top:16px">
+        <div id="ahdAdminFeedback" class="panel-sub" style="margin-bottom:12px" aria-live="polite"></div>
+
+        <div class="today-layout" style="gap:14px">
+          <aside class="today-side" style="flex:1">
+            <div class="panel-title" style="margin-bottom:10px">أعضاء القبيلة (غير مشاركين)</div>
+            <input id="ahdAdminSearch" class="text-input" type="text" placeholder="بحث..." autocomplete="off" style="margin-bottom:10px" />
+            <div id="tribeNotInAhdList" class="identity-grid" aria-label="أعضاء القبيلة غير المنضمين"></div>
+          </aside>
+
+          <aside class="today-side" style="flex:1">
+            <div class="panel-title" style="margin-bottom:10px">المشاركون في عهد الثبات</div>
+            <div id="ahdManageList" class="identity-grid" aria-label="المشاركون في عهد الثبات للإدارة"></div>
+            <div id="ahdOrphanWrap" style="display:none; margin-top:14px">
+              <div class="panel-title" style="margin-bottom:10px">عناصر قديمة غير مرتبطة بعضو</div>
+              <div id="ahdOrphanList" class="identity-grid" aria-label="عناصر قديمة في عهد الثبات"></div>
+            </div>
+          </aside>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <footer class="member-footer">
+    <div class="member-footer-tags">
+      <span>الصدق مع الله</span>
+      <span>الوعي قبل الفعل</span>
+      <span>الثبات أهم من الزخم</span>
+      <span>الدعم الأخوي</span>
+    </div>
+    <p>© 2026 الموحدون – واعي</p>
+  </footer>
+
+  <div class="member-mobile-dock" aria-label="شريط الهاتف السفلي">
+    <button class="mobile-dock-item qa" type="button" data-forward-click="#openFeelingsPage">مشاعرك</button>
+    <button class="mobile-dock-item rescue" type="button" data-forward-click="#openRescueCenter">النجدة</button>
+    <a class="mobile-dock-item report" href="daily_report.html?v=20260915report2">التقرير</a>
+    <button class="mobile-dock-item azkar" type="button" data-forward-click="#openMorningAzkar">الأذكار</button>
+    <button class="mobile-dock-item library" type="button" data-forward-click="#openRecoveryLibrary">المكتبة</button>
+  </div>
+
+  <div class="azkar-toast" id="azkarToast" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- =====================
+       Q&A Page
+  ===================== -->
+  <section id="qa" class="today-section member-dashboard qa-standalone-page">
+    <div class="qa-page-shell">
+      <div class="qa-page-hero">
+        <div class="qa-page-kicker">سؤال وجواب</div>
+        <div class="qa-page-title">مرجع سريع للتعافي</div>
+        <div class="qa-page-sub">اختر القائمة المناسبة، ثم افتح السؤال الذي تحتاجه فقط ليظهر لك الجواب مباشرة.</div>
+      </div>
+
+      <div class="qa-category-rail" id="qaCategoryRail" aria-label="قوائم سؤال وجواب"></div>
+
+      <div class="qa-question-panel" id="qaQuestionPanel" hidden>
+        <div class="qa-question-panel-head">
+          <a class="qa-back-btn" id="qaBackToCategories" href="index.html?view=qa">← العودة إلى القوائم</a>
+          <div class="qa-question-panel-copy">
+            <div class="qa-question-panel-kicker">الأسئلة</div>
+            <div class="qa-question-panel-title" id="qaCurrentCategoryName">—</div>
+            <div class="qa-question-panel-meta" id="qaCurrentCategoryMeta">—</div>
+          </div>
+        </div>
+        <div class="qa-question-list" id="qaQuestionList"></div>
+      </div>
+      <div class="qa-page-empty" id="qaPageEmpty" hidden>لا توجد قوائم مضافة بعد. عندما يضيف أمجد المحتوى سيظهر هنا فورًا.</div>
+    </div>
+  </section>
+
+  <!-- =====================
+       Hadith Modal (5/day)
+  ===================== -->
+  <div class="tafsir-modal-overlay" id="hadithModal" aria-hidden="true">
+    <div class="tafsir-modal-card" role="dialog" aria-modal="true" aria-labelledby="hadithModalTitle">
+      <div class="tafsir-modal-head">
+        <div>
+          <div class="tafsir-modal-title" id="hadithModalTitle">أحاديث اليوم (صحيحة)</div>
+          <div class="tafsir-modal-sub" id="hadithModalSub">—</div>
+        </div>
+
+        <div class="tafsir-modal-tools">
+          <button class="tafsir-tool-btn ghost" id="hadithCopy" type="button">نسخ الأحاديث</button>
+          <button class="tafsir-tool-btn" id="hadithMarkDone" type="button">تم ✅️</button>
+          <button type="button" class="tafsir-modal-close" id="closeHadithModal" aria-label="إغلاق">✕</button>
+        </div>
+      </div>
+
+      <div class="tafsir-modal-body">
+        <div class="tafsir-page-nav" id="hadithMeta"></div>
+        <div class="tafsir-pages" id="hadithList"></div>
+      </div>
+
+      <div class="tafsir-modal-foot">
+        <div class="tafsir-note">المصادر: صحيح البخاري وصحيح مسلم</div>
+        <button type="button" class="tafsir-modal-close-btn" id="closeHadithModal2">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================
+       Recovery Library Modal
+  ===================== -->
+  <div class="tafsir-modal-overlay" id="recoveryLibraryModal" aria-hidden="true">
+    <div class="tafsir-modal-card recovery-library-card" role="dialog" aria-modal="true" aria-labelledby="recoveryLibraryTitle">
+      <div class="tafsir-modal-head recovery-library-head">
+        <div class="tafsir-modal-title" id="recoveryLibraryTitle">مكتبة التعافي</div>
+        <button type="button" class="tafsir-modal-close" id="closeRecoveryLibraryModal" aria-label="إغلاق">✕</button>
+      </div>
+
+      <div class="tafsir-modal-body">
+        <div id="recoveryLibraryList" class="library-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================
+       Rescue Plan Modal
+  ===================== -->
+  <div class="tafsir-modal-overlay" id="rescuePlanModal" aria-hidden="true">
+    <div class="tafsir-modal-card" role="dialog" aria-modal="true" aria-labelledby="rescuePlanTitle">
+      <div class="tafsir-modal-head">
+        <div>
+          <div class="tafsir-modal-title" id="rescuePlanTitle">خطة النجاة</div>
+          <div class="tafsir-modal-sub">خطوات سريعة عندما تشعر بضعف أو اقتراب انتكاسة.</div>
+        </div>
+        <button type="button" class="tafsir-modal-close" id="closeRescuePlanModal" aria-label="إغلاق">✕</button>
+      </div>
+
+      <div class="tafsir-modal-body">
+        <div class="library-list">
+          <div class="library-item">
+            <div class="library-item-title">1. اقطع اللحظة فورًا</div>
+            <div class="library-item-desc">أغلق الجهاز أو غادر المكان أو غيّر وضعية جلوسك مباشرة خلال أول ثوانٍ.</div>
+          </div>
+          <div class="library-item">
+            <div class="library-item-title">2. تنفّس 60 ثانية</div>
+            <div class="library-item-desc">خذ شهيق 4 ثوانٍ، احبس 2، ثم زفير 6. كرر ذلك حتى يهبط التوتر الأول.</div>
+          </div>
+          <div class="library-item">
+            <div class="library-item-title">3. افتح بديلًا نافعًا</div>
+        <div class="library-item-desc">افتح الأذكار أو سؤالًا وجوابًا أو كتابًا من مكتبة التعافي بدل ترك نفسك في الفراغ.</div>
+          </div>
+          <div class="library-item">
+            <div class="library-item-title">4. اخرج من العزلة</div>
+            <div class="library-item-desc">تحرك لمكان مفتوح أو بجانب الناس أو أرسل رسالة قصيرة لشخص تثق به.</div>
+          </div>
+          <div class="library-item">
+            <div class="library-item-title">5. ذكّر نفسك بالسبب</div>
+            <div class="library-item-desc">قل لنفسك: هذه موجة مؤقتة، وأنا لا أريد لذة لحظة مقابل ندم طويل.</div>
+          </div>
+          <div class="library-item">
+            <div class="library-item-title">6. أكمل يومك</div>
+            <div class="library-item-desc">لا تحوّل التعثر النفسي إلى سقوط. ارجع مباشرة إلى مهمة صغيرة واكسب اليوم.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tafsir-modal-foot">
+        <div class="tafsir-note">الخطة ليست للمشاهدة فقط، بل للتنفيذ السريع بمجرد شعورك بالخطر.</div>
+        <button type="button" class="tafsir-modal-close-btn" id="closeRescuePlanModal2">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================
+       Rescue Center Page
+  ===================== -->
+  <section id="rescue" class="today-section member-dashboard rescue-standalone-page">
+    <div class="rescue-center-flow">
+      <section class="rescue-center-hero">
+        <div class="rescue-center-page-kicker">النجدة</div>
+        <div class="rescue-center-page-title" id="rescueCenterTitle">مركز النجاة</div>
+        <div class="rescue-center-kicker">كيف تستخدمه؟</div>
+        <div class="rescue-center-hero-title">إذا كنت تحت ضغط الآن، ابدأ من الأعلى فقط</div>
+        <div class="rescue-center-hero-sub">الترتيب بسيط: هدّئ اللحظة أولًا، افتح بديلًا نافعًا، ثم ارجع إلى خطتك الشخصية إذا احتجت.</div>
+
+        <div class="rescue-center-meta" aria-label="ملخص مركز النجاة">
+          <div class="rescue-center-meta-card">
+            <span class="rescue-center-meta-label">حالتك</span>
+            <strong class="rescue-center-meta-value" id="rescueCenterLevelMeta">لم يُفحص بعد</strong>
+          </div>
+          <div class="rescue-center-meta-card">
+            <span class="rescue-center-meta-label">خطتك</span>
+            <strong class="rescue-center-meta-value" id="rescueCenterPlanMeta">غير مكتوبة</strong>
+          </div>
+          <div class="rescue-center-meta-card">
+            <span class="rescue-center-meta-label">سجلك</span>
+            <strong class="rescue-center-meta-value" id="rescueCenterLogMeta">فارغ</strong>
+          </div>
+        </div>
+
+        <div class="rescue-center-route" aria-label="مسار النجاة السريع">
+          <div class="rescue-center-route-item">
+            <span>١</span>
+            <strong>هدّئ اللحظة</strong>
+          </div>
+          <div class="rescue-center-route-item">
+            <span>٢</span>
+            <strong>افتح بديلًا نافعًا</strong>
+          </div>
+          <div class="rescue-center-route-item">
+            <span>٣</span>
+            <strong>ارجع لخطتك</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="rescue-center-section priority">
+        <div class="rescue-center-section-kicker">ابدأ الآن</div>
+        <div class="rescue-center-section-title">ماذا تحتاج هذه اللحظة؟</div>
+        <div class="rescue-center-section-sub">اختر أول خطوة فقط. لا تحتاج قراءة كل شيء قبل أن تتحرك.</div>
+
+        <div class="rescue-center-status">
+          <div class="rescue-center-status-box" id="rescueCenterStatusBox">
+            <span class="rescue-center-status-pill" id="rescueCenterStatusPill">لم يُفحص بعد</span>
+            <div class="rescue-center-status-title" id="rescueCenterStatusTitle">ابدأ بالفحص السريع أولًا</div>
+            <div class="rescue-center-status-desc" id="rescueCenterStatusDesc">عندما تجيب عن الأسئلة الثلاثة، يعرض لك المركز أولويات التدخل مباشرة.</div>
+          </div>
+          <div class="rescue-center-actions">
+            <button class="rescue-center-action-card primary" id="rescueCenterBreathBtn" type="button">
+              <span class="rescue-center-action-step">١</span>
+              <span class="rescue-center-action-body">
+                <span class="rescue-center-action-title" id="rescueCenterBreathTitle">دقيقة تهدئة</span>
+                <span class="rescue-center-action-desc" id="rescueCenterBreathDesc">ابدأ بالتنفس لتكسر التوتر الأول.</span>
+              </span>
+            </button>
+            <button class="rescue-center-action-card" id="rescueCenterAzkarBtn" type="button">
+              <span class="rescue-center-action-step">٢</span>
+              <span class="rescue-center-action-body">
+                <span class="rescue-center-action-title">الأذكار</span>
+                <span class="rescue-center-action-desc">اشغل قلبك ولسانك بشيء نافع مباشرة.</span>
+              </span>
+            </button>
+            <button class="rescue-center-action-card" id="rescueCenterLibraryBtn" type="button">
+              <span class="rescue-center-action-step">٣</span>
+              <span class="rescue-center-action-body">
+                <span class="rescue-center-action-title">مكتبة التعافي</span>
+                <span class="rescue-center-action-desc">ابق مشغولًا ببديل هادئ إذا احتجت مساحة آمنة.</span>
+              </span>
+            </button>
+          </div>
+          <button class="rescue-center-inline-link" id="rescueCenterClassicPlanBtn" type="button">أحتاج الخطة المختصرة جدًا</button>
+
+          <div class="rescue-center-advice-block">
+            <div class="rescue-center-advice-title">الترتيب المقترح الآن</div>
+            <div class="rescue-center-advice" id="rescueCenterAdviceList"></div>
+          </div>
+        </div>
+      </section>
+
+      <details class="rescue-center-panel" id="rescueCenterPlanPanel">
+        <summary class="rescue-center-panel-summary">
+          <div class="rescue-center-panel-copy">
+            <div class="rescue-center-panel-kicker">خطتك الشخصية</div>
+            <div class="rescue-center-panel-title">ما الذي ينفعك أنت تحديدًا؟</div>
+            <div class="rescue-center-panel-sub" id="rescueCenterPlanSummaryText">اكتبها مرة واحدة، ثم ارجع إليها وقت الضعف بدل أن تبدأ من الصفر.</div>
+          </div>
+          <span class="rescue-center-panel-badge">افتح</span>
+        </summary>
+
+        <div class="rescue-center-panel-body">
+          <div class="rescue-center-plan-preview" id="rescueCenterPlanPreview"></div>
+
+          <div class="rescue-center-form">
+            <div class="rescue-center-field">
+              <label class="rescue-center-label" for="rescuePlanDangerTime">متى يشتد عليك الضعف؟</label>
+              <input id="rescuePlanDangerTime" class="text-input" type="text" placeholder="مثال: بعد 11 مساءً أو بعد الاستيقاظ" />
+            </div>
+            <div class="rescue-center-field">
+              <label class="rescue-center-label" for="rescuePlanDangerPlace">أين أو في أي وضع يشتد عليك؟</label>
+              <input id="rescuePlanDangerPlace" class="text-input" type="text" placeholder="مثال: وحدي في الغرفة مع الهاتف" />
+            </div>
+            <div class="rescue-center-field">
+              <label class="rescue-center-label" for="rescuePlanFirstSign">ما أول علامة تعرف بها أنك بدأت تنجرف؟</label>
+              <textarea id="rescuePlanFirstSign" class="text-input rescue-center-textarea" placeholder="مثال: تشتت، ملل، بحث بلا هدف، توتر مفاجئ"></textarea>
+            </div>
+            <div class="rescue-center-field">
+              <label class="rescue-center-label" for="rescuePlanBestReplacement">ما أسرع بديل نافع ينفعك؟</label>
+              <textarea id="rescuePlanBestReplacement" class="text-input rescue-center-textarea" placeholder="مثال: دقيقة تنفس ثم أذكار ثم أخرج من المكان"></textarea>
+            </div>
+            <div class="rescue-center-field">
+              <label class="rescue-center-label" for="rescuePlanSupportPerson">من يثبتك أو يذكرك إذا احتجته؟</label>
+              <input id="rescuePlanSupportPerson" class="text-input" type="text" placeholder="اسم شخص أو وصف مختصر" />
+            </div>
+            <button class="btn" id="saveRescuePlanBtn" type="button">حفظ الخطة الشخصية</button>
+          </div>
+        </div>
+      </details>
+
+      <details class="rescue-center-panel" id="rescueCenterLogPanel">
+        <summary class="rescue-center-panel-summary">
+          <div class="rescue-center-panel-copy">
+            <div class="rescue-center-panel-kicker">سجل النجاة</div>
+            <div class="rescue-center-panel-title">ما الذي أنقذك من قبل؟</div>
+            <div class="rescue-center-panel-sub" id="rescueCenterLogSummaryText">كل محاولة نجاة تسجلها هنا ستجعلك تفهم نمطك أسرع.</div>
+          </div>
+          <span class="rescue-center-panel-badge">افتح</span>
+        </summary>
+
+        <div class="rescue-center-panel-body">
+          <div class="rescue-center-form">
+            <div class="rescue-center-field">
+              <label class="rescue-center-label" for="rescueLogTrigger">ما الذي كان يضغط عليك؟</label>
+              <textarea id="rescueLogTrigger" class="text-input rescue-center-textarea" placeholder="مثال: فراغ، سهر، غضب، وحدة، هاتف بلا هدف"></textarea>
+            </div>
+            <div class="rescue-center-field">
+              <label class="rescue-center-label" for="rescueLogHelped">ما الذي نفعك هذه المرة؟</label>
+              <textarea id="rescueLogHelped" class="text-input rescue-center-textarea" placeholder="مثال: خرجت من الغرفة، تنفست، فتحت الأذكار، تحدثت مع شخص"></textarea>
+            </div>
+            <button class="btn" id="saveRescueLogBtn" type="button">إضافة للسجل</button>
+          </div>
+
+          <div class="rescue-center-log-list" id="rescueCenterLogList"></div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+
+
+  <!-- =====================
+       Admin Login Modal (Amjad)
+  ===================== -->
+  <div class="tafsir-modal-overlay" id="adminLoginModal" aria-hidden="true">
+    <div class="tafsir-modal-card" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle">
+      <div class="tafsir-modal-head">
+        <div>
+          <div class="tafsir-modal-title" id="adminLoginTitle">دخول الإدارة</div>
+          <div class="tafsir-modal-sub" id="adminLoginSub">أدخل بيانات الدخول للوحة الإدارة.</div>
+        </div>
+        <button type="button" class="tafsir-modal-close" id="closeAdminLoginModal" aria-label="إغلاق">×</button>
+      </div>
+
+      <div class="tafsir-modal-body">
+        <div class="identity-guest" style="gap:10px; flex-wrap:wrap; justify-content:center">
+          <input id="adminLoginEmail" class="text-input" type="email" inputmode="email" placeholder="البريد الإلكتروني" autocomplete="username" style="min-width:240px" />
+          <input id="adminLoginPassword" class="text-input" type="password" placeholder="كلمة المرور" autocomplete="current-password" style="min-width:200px" />
+          <button id="adminLoginSubmitBtn" class="identity-btn" type="button">تسجيل الدخول</button>
+          <button id="adminLoginCancelBtn" class="identity-btn ghost" type="button">إلغاء</button>
+        </div>
+      <div id="adminLoginStatus" class="panel-sub" style="margin-top:10px; text-align:center"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tafsir-modal-overlay" id="adminPanelModal" aria-hidden="true">
+    <div class="tafsir-modal-card admin-panel-modal-card" role="dialog" aria-modal="true" aria-labelledby="adminPanelModalTitle">
+      <div class="tafsir-modal-head">
+        <div>
+          <div class="tafsir-modal-title" id="adminPanelModalTitle">الإعدادات</div>
+          <div class="tafsir-modal-sub" id="adminPanelModalSub">اختر اللوحة التي تريد العمل عليها من اختصارات الإدارة.</div>
+        </div>
+        <button type="button" class="tafsir-modal-close" id="closeAdminPanelModal" aria-label="إغلاق">✕</button>
+      </div>
+
+      <div class="tafsir-modal-body admin-panel-modal-body">
+        <div id="adminPanelModalMount"></div>
+      </div>
+
+      <div class="tafsir-modal-foot admin-panel-modal-foot">
+        <button type="button" class="tafsir-modal-close-btn" id="closeAdminPanelModal2">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================
+       JavaScript
+  ===================== -->
+  
+  </div>
+
+  <script src="js/main.js?v=20260915settings3"></script>
+  <script src="js/auth-ui.js?v=20260914library1"></script>
+  <script src="js/member-status.js?v=20260914qawhite1"></script>
+  <script src="js/ahd.js?v=20260914library1"></script>
+  <script src="js/qa.js?v=20260914qa3"></script>
+  <script src="js/azkar-canvas.js?v=20260914azkar1"></script>
+  <script src="js/recovery-tools.js?v=20260914library3"></script>
+  <script src="js/hadith.js?v=20260914qawhite1"></script>
+</body>
+</html>

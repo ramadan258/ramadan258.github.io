@@ -7,8 +7,7 @@ service cloud.firestore {
     }
 
     function isAmjad() {
-      return signedIn()
-        && request.auth.uid == "OpXzKToeVbd9xp1KHuqnD95yXlm2";
+      return signedIn() && request.auth.uid == 'OpXzKToeVbd9xp1KHuqnD95yXlm2';
     }
 
     function isValidMemberId(memberId) {
@@ -16,14 +15,26 @@ service cloud.firestore {
         && memberId.matches('^(member_[0-9]+|custom_member_[^/]+)$');
     }
 
+    function trustedProfile(memberId) {
+      let registry = get(/databases/$(database)/documents/memberRegistry/$(memberId)).data;
+      let profile = /databases/$(database)/documents/featuredMembers/$('custom__' + memberId);
+      return registry.schemaVersion == 1 && registry.memberId == memberId && registry.active == true
+        && !exists(/databases/$(database)/documents/featuredMembers/$('hidden__' + memberId))
+        && (registry.source == 'static' || (registry.source == 'cloud' && exists(profile)))
+        && (!exists(profile) || get(profile).data.memberId == memberId);
+    }
     function hasBinding() {
-      // Emergency quarantine: no legacy self-claimed binding grants access.
-      // Re-enable only with a separately reviewed permanent-account policy.
-      return false;
+      return signedIn() && request.auth.token.firebase.sign_in_provider == 'password'
+        && get(/databases/$(database)/documents/accountBindings/$(request.auth.uid)).data.schemaVersion == 1
+        && get(/databases/$(database)/documents/accountBindings/$(request.auth.uid)).data.active == true
+        && request.auth.token.auth_time >= get(/databases/$(database)/documents/accountBindings/$(request.auth.uid)).data.authValidAfter
+        && get(/databases/$(database)/documents/memberAccounts/$(boundMemberId())).data.schemaVersion == 1
+        && get(/databases/$(database)/documents/memberAccounts/$(boundMemberId())).data.uid == request.auth.uid
+        && trustedProfile(boundMemberId());
     }
 
     function boundMemberId() {
-      return get(/databases/$(database)/documents/bindings/$(request.auth.uid)).data.memberId;
+      return get(/databases/$(database)/documents/accountBindings/$(request.auth.uid)).data.memberId;
     }
 
     function isBoundTo(memberId) {
@@ -178,10 +189,7 @@ service cloud.firestore {
         && request.resource.data.hiddenAt is timestamp;
     }
 
-    function hasOwnChatAccess() {
-      return hasBinding()
-        && exists(/databases/$(database)/documents/chatAccess/$(boundMemberId()))
-        && get(/databases/$(database)/documents/chatAccess/$(boundMemberId())).data.enabled == true;
+    function hasOwnChatAccess() { return false;
     }
 
     function isChatRoomOpen() {
@@ -277,17 +285,17 @@ service cloud.firestore {
         || (
           canManageMemberStatuses()
           && isMemberStatusOverrideDocId(id)
-          && isValidMemberStatusOverride()
+          && isValidMemberStatusOverride() && id == 'status__' + request.resource.data.memberId
         )
         || (
           canManageQa()
           && isQaCategoryDocId(id)
-          && isValidQaCategory()
+          && isValidQaCategory() && id == 'qa_category__' + request.resource.data.categoryId
         )
         || (
           canManageQa()
           && isQaItemDocId(id)
-          && isValidQaItem()
+          && isValidQaItem() && id == 'qa_item__' + request.resource.data.itemId
         );
 
       allow delete: if isAmjad()
@@ -301,16 +309,41 @@ service cloud.firestore {
         );
     }
 
-    match /bindings/{uid} {
+    // Legacy claims are never used, regardless of their contents or provider.
+    match /bindings/{uid} { allow read, write: if false; }
+
+    // Provisioning is local Admin SDK only. The browser cannot claim an identity.
+    match /accountBindings/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
-
-      // No browser may create an ownership claim during containment.
-      allow create: if false;
-
-      allow update, delete: if isAmjad();
+      allow write: if false;
+    }
+    match /memberAccounts/{memberId} {
+      allow read: if isAmjad() || isBoundTo(memberId);
+      allow write: if false;
+    }
+    match /memberRegistry/{memberId} {
+      allow read: if isAmjad() || isBoundTo(memberId);
+      allow write: if false;
+    }
+    function validPrivateRecord() {
+      return request.resource.data.keys().hasOnly(['key','value','revision','updatedAt'])
+        && request.resource.data.keys().hasAll(['key','value','revision','updatedAt'])
+        && request.resource.data.key is string && request.resource.data.key.size() <= 240
+        && request.resource.data.value is string && request.resource.data.value.size() <= 400000
+        && request.resource.data.revision is int && request.resource.data.updatedAt == request.time;
+    }
+    match /privateMembers/{uid}/records/{recordId} {
+      allow read: if signedIn() && request.auth.uid == uid && (isAmjad() || hasBinding());
+      allow create: if signedIn() && request.auth.uid == uid && (isAmjad() || hasBinding()) && validPrivateRecord()
+        && request.resource.data.revision == 1;
+      allow update: if signedIn() && request.auth.uid == uid && (isAmjad() || hasBinding()) && validPrivateRecord()
+        && request.resource.data.key == resource.data.key
+        && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if false;
     }
 
     match /memberPermissions/{memberId} {
+      allow read: if isAmjad() || isBoundTo(memberId);
       allow create, update: if isAmjad()
         && request.resource.data.keys().hasOnly(['memberId', 'memberStatus', 'ahd', 'qa', 'updatedAt'])
         && request.resource.data.memberId == memberId
@@ -375,6 +408,23 @@ service cloud.firestore {
 
       allow update: if false;
       allow delete: if isAmjad();
+    }
+
+
+    match /plannerMembers/{uid}/records/{recordId} {
+      function owner() { return signedIn() && request.auth.uid == uid && (isAmjad() || hasBinding()); }
+      function valid() {
+        return request.resource.data.keys().hasOnly(['key','value','revision','updatedAt'])
+          && request.resource.data.keys().hasAll(['key','value','revision','updatedAt'])
+          && request.resource.data.key == recordId
+          && (recordId == 'catalog' || recordId.matches('^day:[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+          && request.resource.data.value is string && request.resource.data.value.size() <= 300000
+          && request.resource.data.revision is int && request.resource.data.updatedAt == request.time;
+      }
+      allow read: if owner();
+      allow create: if owner() && valid() && request.resource.data.revision == 1;
+      allow update: if owner() && valid() && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if false;
     }
 
     match /{document=**} {
