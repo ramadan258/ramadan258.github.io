@@ -17,8 +17,9 @@ service cloud.firestore {
     }
 
     function hasBinding() {
-      return signedIn()
-        && exists(/databases/$(database)/documents/bindings/$(request.auth.uid));
+      // Emergency quarantine: no legacy self-claimed binding grants access.
+      // Re-enable only with a separately reviewed permanent-account policy.
+      return false;
     }
 
     function boundMemberId() {
@@ -303,11 +304,8 @@ service cloud.firestore {
     match /bindings/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
 
-      allow create: if signedIn()
-        && request.auth.uid == uid
-        && !exists(/databases/$(database)/documents/bindings/$(uid))
-        && request.resource.data.keys().hasOnly(['memberId', 'createdAt'])
-        && isValidMemberId(request.resource.data.memberId);
+      // No browser may create an ownership claim during containment.
+      allow create: if false;
 
       allow update, delete: if isAmjad();
     }

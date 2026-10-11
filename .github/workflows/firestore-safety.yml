@@ -1,0 +1,14 @@
+name: Firestore Safety
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  approved-containment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test scripts/security/verify-rules.test.cjs
+      - run: node scripts/security/verify-rules.cjs

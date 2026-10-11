@@ -1,0 +1,15 @@
+'use strict';
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const { readFileSync } = require('node:fs');
+const { resolve } = require('node:path');
+const { verify, hook } = require('./verify-rules.cjs');
+const source = readFileSync(resolve(__dirname, '../../firestore.rules'), 'utf8');
+const config = { firestore: { rules: 'firestore.rules', predeploy: [hook] } };
+test('approved safe rules accepted', () => verify(source, config));
+test('safe CRLF checkout accepted', () => verify(source.replace(/\r?\n/g, '\r\n'), config));
+test('old binding privileges cannot be restored', () => assert.throws(() => verify(source.replace('return false;', 'return true;'), config)));
+test('browser ownership claim cannot be restored', () => assert.throws(() => verify(source.replace('allow create: if false;', 'allow create: if signedIn();'), config)));
+test('protected admin UID cannot change silently', () => assert.throws(() => verify(source.replace('OpXzKToeVbd9xp1KHuqnD95yXlm2', 'unreviewed-admin'), config)));
+test('alternate rules file rejected', () => assert.throws(() => verify(source, { firestore: { rules: 'old.rules', predeploy: [hook] } })));
+test('removed predeploy guard rejected', () => assert.throws(() => verify(source, { firestore: { rules: 'firestore.rules' } })));
