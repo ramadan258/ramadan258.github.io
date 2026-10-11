@@ -207,8 +207,9 @@ function wireIdentityConfirmModal() {
       const session = await window.WA3I_SESSION.login(member, password);
       syncStoredPermissionsForCurrentUser();
       saveCurrentUser(session.member); closeIdentityConfirm(); startApp();
-    } catch {
+    } catch (failure) {
       const error = qs('#identityConfirmError'); error.textContent = 'تعذر الدخول. تحقق من كلمة المرور والاتصال.'; error.classList.remove('is-hidden');
+      error.dataset.reason = failure.message;
     } finally { password = ''; yes.disabled = false; no.disabled = false; }
   });
 }

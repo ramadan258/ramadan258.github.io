@@ -105,7 +105,8 @@
       const slug=Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,'0')).join('').slice(0,24);
       try{await authMod.signInWithEmailAndPassword(auth,email||`m-${slug}@members.wa3i.test`,password);
         const session=await verify(member.id,generation);await enter(session,generation);return session;
-      }catch(error){clearPrivateState();await authMod.signOut(auth);throw new Error(String(error.code||'LOGIN_REJECTED'));}
+      }catch(error){clearPrivateState();await authMod.signOut(auth);
+        throw new Error(String(error.code||(/^[A-Z_]+$/.test(error.message||'')?error.message:'LOGIN_REJECTED')));}
       finally{password='';document.body.classList.remove('session-pending');}
     });
     SESSION.login=(member,password)=>login(member,password);
