@@ -1,11 +1,12 @@
 import { planner } from './planner-store.js';
 import { dateKey,addDays,monday,weekday,weekdays,dayStats,goalStats,goalPeriod,versionAt } from './model.mjs';
-import { createHarvest } from './harvest-ui.js';
 const $=selector=>document.querySelector(selector),$$=selector=>[...document.querySelectorAll(selector)];
 const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const number=value=>value.toLocaleString('ar-SA',{maximumFractionDigits:1}),percent=value=>value===null?'—':number(value)+'٪';
+const numberFormat=new Intl.NumberFormat('ar-SA',{maximumFractionDigits:1});
+const dateFormat=new Intl.DateTimeFormat('ar-SA',{calendar:'gregory',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+const number=value=>numberFormat.format(value),percent=value=>value===null?'—':number(value)+'٪';
 const icon=name=>`<svg class="icon" aria-hidden="true"><use href="#icon-${name}"/></svg>`;
-const fullDate=key=>new Date(key+'T12:00:00Z').toLocaleDateString('ar-SA',{calendar:'gregory',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+const fullDate=key=>dateFormat.format(new Date(key+'T12:00:00Z'));
 const uid=()=>crypto.randomUUID();
 const store=await planner().catch(error=>{
   document.body.classList.remove('session-pending');document.body.replaceChildren();
@@ -14,13 +15,22 @@ const store=await planner().catch(error=>{
 });
 let {catalog,days}=store.snapshot(),today=dateKey(),selectedDate=today,tab='day',detail=null,harvestDate=today;
 let archivedHabits=false,archivedGoals=false,expanded={habits:false,tasks:false},editor=null,goalYear=today.slice(0,4);
+let weekCounts=new Map();
+let harvest=null,harvestPromise=null;
+function ensureHarvest(){
+  if(!harvestPromise)harvestPromise=import('./harvest-ui.js').then(({createHarvest})=>{
+    if(!window.WA3I_SESSION.session)throw Error('STALE_SESSION');
+    return harvest=createHarvest({root:$('#panel-harvest'),store,today,showDay:renderDayDetails});
+  });
+  return harvestPromise;
+}
 const currentDay=()=>dayStats(catalog,days,selectedDate,today);
 const actions=(kind,id,archived=false)=>`<div class="item-actions"><button type="button" data-edit="${kind}" data-id="${id}">تعديل</button><button type="button" data-archive="${kind}" data-id="${id}">${archived?'استعادة':'أرشفة'}</button><button type="button" data-delete="${kind}" data-id="${id}" class="danger">حذف</button></div>`;
 function run(command) {
   try{store.dispatch(command);return true;}catch(e){alert(e.message==='INVALID_SCHEDULE'?'اختر يومًا واحدًا على الأقل.':'راجع الحقول والأرقام والهدف المرتبط.');return false;}
 }
 function saveStatus() {
-  const state=store.status();$('#saveStatus').textContent=state.error==='CONFLICT'?'تعارض مع جلسة أخرى؛ مسودتك محفوظة هنا':state.error?'لم يكتمل الحفظ؛ مسودتك محفوظة على هذا الجهاز':state.pending?'جارٍ الحفظ…':'محفوظ في الحساب';
+  const state=store.status();$('#saveStatus').textContent=state.error==='CONFLICT'?'تعارض مع جلسة أخرى؛ مسودتك محفوظة هنا':state.error?'لم يكتمل الحفظ؛ أعد المحاولة قبل المغادرة':state.pending?'جارٍ الحفظ…':state.local?'محفوظ على هذا الجهاز فقط':'محفوظ في الحساب';
   $('#retrySave').hidden=!state.error;$('#saveStatus').dataset.error=!!state.error;
   if(state.error==='CONFLICT'&&!$('#resolveConflict')) {
     const button=document.createElement('button');button.className='list-toggle';button.id='resolveConflict';button.textContent='مراجعة التعارض';button.onclick=resolveConflict;$('.window-footer').append(button);
@@ -40,10 +50,20 @@ function renderDaily() {
   $('#dailyHabitList').innerHTML=day.habits.length?day.habits.map(h=>`<label class="habit-row${days[selectedDate]?.habitStatus[h.id]==='done'?' is-complete':''}"><input type="checkbox" data-habit="${h.id}" ${days[selectedDate]?.habitStatus[h.id]==='done'?'checked':''}><span class="check-indicator">${icon('check')}</span><span class="row-name">${escape(h.name)}</span></label>`).join(''):'<p class="list-empty">أضف عادتك الأولى</p>';
 }
 function habitWeekCount(id) {
-  const dates=Array.from({length:7},(_,i)=>addDays(monday(today),i)).filter(k=>k<=today&&dayStats(catalog,days,k,today).habits.some(h=>h.id===id));
-  return {required:dates.length,done:dates.filter(k=>days[k]?.habitStatus[id]==='done').length};
+  return weekCounts.get(id)||{required:0,done:0};
+}
+function updateWeekCounts(){
+  weekCounts=new Map();
+  for(let i=0;i<7;i++){
+    const date=addDays(monday(today),i);if(date>today)break;
+    for(const habit of dayStats(catalog,days,date,today).habits){
+      const count=weekCounts.get(habit.id)||{required:0,done:0};count.required++;
+      if(days[date]?.habitStatus[habit.id]==='done')count.done++;weekCounts.set(habit.id,count);
+    }
+  }
 }
 function renderHabits() {
+  updateWeekCounts();
   const habits=catalog.habits.filter(h=>!h.deletedAt&&(!versionAt(h,today)?.active)===archivedHabits);
   $('#habitTotal').textContent=number(habits.length)+' عادات';$('#archivedHabits').textContent=archivedHabits?'العودة للعادات':'المؤرشفة';
   $('#habitDirectory').innerHTML=habits.length?habits.map(h=>{
@@ -70,9 +90,10 @@ function renderGoals() {
   $('#planTools').innerHTML=`<div class="plan-actions"><button class="list-toggle" data-edit="plan">${catalog.plans[year]?'تعديل الخطة':'إنشاء خطة'}</button><button class="list-toggle" data-edit="area">مجال جديد</button><span class="section-count">${catalog.areas.map(a=>escape(a.name)).join(' · ')}</span></div>`;
   $('#archivedGoals').textContent=archivedGoals?'العودة للأهداف':'المؤرشفة';
   $('#goalList').innerHTML=goals.length?goals.map(g=>{
-    const stats=goalStats(catalog,days,g,today),area=catalog.areas.find(a=>a.id===g.areaId),level={annual:'سنوي',monthly:'شهري',weekly:'أسبوعي'}[g.level];
+    const area=catalog.areas.find(a=>a.id===g.areaId),level={annual:'سنوي',monthly:'شهري',weekly:'أسبوعي'}[g.level];
     const period=goalPeriod(g),end=period.end<today?period.end:today;
     if(g.metric==='linked'&&period.start<=end&&!store.hasRange(period.start,end))return `<details class="goal-card"><summary><span class="goal-mark">${icon('target')}</span><span class="goal-info"><strong>${escape(g.name)}</strong><small>بيانات التقدم غير مكتملة</small></span><span class="goal-progress">—</span></summary>${actions('goal',g.id,g.archived)}</details>`;
+    const stats=goalStats(catalog,days,g,today);
     return `<details class="goal-card"><summary><span class="goal-mark">${icon('target')}</span><span class="goal-info"><small>${escape(area?.name)} · ${level} · ${escape(g.period)}</small><strong>${escape(g.name)}</strong><span class="goal-track"><span style="width:${stats.percentage}%"></span></span></span><span class="goal-progress"><strong>${percent(stats.percentage)}</strong><small>${number(stats.done)} / ${number(stats.total)}</small></span>${icon('chevron')}</summary><div class="goal-stages"><div class="goal-stage"><span>${g.metric==='linked'?'إنجازات العادات والمهام المرتبطة':'تقدم مسجل يدويًا'}</span><strong>${number(stats.done)} / ${number(stats.total)}</strong></div><div class="goal-stage"><span>الهدف الأعلى</span><strong>${escape(catalog.goals.find(p=>p.id===g.parentId)?.name||'مستقل')}</strong></div></div>${actions('goal',g.id,g.archived)}</details>`;
   }).join(''):'<p class="list-empty">لا توجد أهداف</p>';
 }
@@ -92,13 +113,20 @@ function renderDayDetails(date=harvestDate,open=false) {
   $('#selectedDayHabits').innerHTML=dayList('habits',day.habits,date);$('#selectedDayTasks').innerHTML=dayList('tasks',day.tasks,date);
   $('#selectedDayAnnouncement').textContent=weekdays[weekday(date)]+' '+percent(percentage);
 }
-function render(){({catalog,days}=store.snapshot());if(tab==='day')renderDaily();if(tab==='habits')renderHabits();if(tab==='goals')renderGoals();if(tab==='harvest')harvest.render();saveStatus();}
+function render(){({catalog,days}=store.snapshot());if(tab==='day')renderDaily();if(tab==='habits')renderHabits();if(tab==='goals')renderGoals();if(tab==='harvest')harvest?.render();saveStatus();}
 function selectTab(name,focus=false) {
   tab=name;closeEditor();detail=null;toggleDetail();
   $$('[data-tab]').forEach(button=>{const active=button.dataset.tab===name;button.classList.toggle('is-active',active);button.setAttribute('aria-selected',active);button.tabIndex=active?0:-1;$('#panel-'+button.dataset.tab).hidden=!active;if(active&&focus)button.focus();});
   $('#windowContent').scrollTop=0;
-  render();if(name==='harvest')harvest.activate();else harvest.deactivate();
-  if(name==='goals'&&catalog.goals.some(g=>g.metric==='linked'&&g.period.startsWith(goalYear)))void loadRange(goalYear+'-01-01',goalYear+'-12-31');
+  render();if(name==='harvest')void ensureHarvest().then(value=>{if(tab==='harvest')value.activate();})
+    .catch(()=>{$('#harvestLoadStateText').textContent='تعذر تحميل حصادي. أعد المحاولة.';});else harvest?.deactivate();
+  if(name==='goals')loadGoalRanges();
+}
+function loadGoalRanges(){
+  for(const goal of catalog.goals.filter(goal=>goal.metric==='linked'&&!goal.deletedAt&&goal.period.startsWith(goalYear))){
+    const period=goalPeriod(goal),end=period.end<today?period.end:today;
+    if(period.start<=end&&!store.hasRange(period.start,end))void loadRange(period.start,end);
+  }
 }
 async function loadRange(start,end=start) {
   if(end>today)end=today;
@@ -154,7 +182,7 @@ document.addEventListener('change',async event=>{
     catch{input.value=selectedDate;alert('تعذر تحميل اليوم. بقيت البيانات السابقة دون تغيير.');}
     finally{input.disabled=false;}
   }
-  if(input.id==='planYear'){goalYear=input.value;renderGoals();if(catalog.goals.some(g=>g.metric==='linked'&&g.period.startsWith(goalYear)))void loadRange(goalYear+'-01-01',goalYear+'-12-31');}
+  if(input.id==='planYear'){goalYear=input.value;renderGoals();loadGoalRanges();}
   if(editor&&input.name==='level') {
     const period=editor.elements.period;period.type=input.value==='annual'?'number':input.value==='monthly'?'month':'date';
     period.value=input.value==='annual'?goalYear:input.value==='monthly'?today.slice(0,7):monday(today);editor.elements.parentId.value='';
@@ -185,7 +213,7 @@ $('.tabs').addEventListener('keydown',event=>{
   if(next!==null){event.preventDefault();selectTab(names[next],true);}
 });
 $('#khutayWindow').addEventListener('cancel',event=>{event.preventDefault();if(editor)closeEditor();else void leave();});
-async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html';}
+async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=ac1041764fef8905';}
 $('#closePreview').onclick=leave;$('#launchPreview').onclick=()=>$('#khutayWindow').showModal();
 $('#accountLabel').textContent=window.WA3I_SESSION.session.member.name;
 window.addEventListener('wa3i-session-cleared',()=>{document.body.replaceChildren();});
@@ -194,6 +222,12 @@ async function resolveConflict() {
   link.href=url;link.download='khutay-my-draft.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   if(confirm('تم تجهيز نسخة من مسودتك. هل تريد تحميل بيانات الخادم بدل التعديلات المتعارضة؟'))await store.reloadServer();
 }
-const harvest=createHarvest({root:$('#panel-harvest'),store,today,showDay:renderDayDetails});
-store.subscribe(render);render();$('#khutayWindow').showModal();
+let renderedVersion=-1,renderedReadError=null,frame=0;
+store.subscribe(()=>{
+  saveStatus();const state=store.status();
+  if(state.dataVersion===renderedVersion&&state.readError===renderedReadError)return;
+  if(frame)return;frame=requestAnimationFrame(()=>{frame=0;renderedVersion=store.status().dataVersion;renderedReadError=store.status().readError;render();});
+});
+renderedVersion=store.status().dataVersion;render();$('#khutayWindow').showModal();
+window.addEventListener('wa3i-session-cleared',()=>{cancelAnimationFrame(frame);frame=0;});
 setInterval(()=>{if(dateKey()!==today)location.reload();},60000);

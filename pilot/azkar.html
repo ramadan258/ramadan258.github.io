@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>الأذكار | واعي</title>
   <meta name="theme-color" content="#0c1320" />
-  <link rel="stylesheet" href="style.css?v=20260914qawhite1" />
-  <link rel="stylesheet" href="today.css?v=20260914qawhite1" />
+  <link rel="stylesheet" href="style.css?v=1338266da4e0" />
+  <link rel="stylesheet" href="today.css?v=4bca1ef27dcb" />
   <link rel="icon" href="favicon.ico?v=20260914qawhite1" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260914qawhite1" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=20260914qawhite1" />
@@ -369,11 +369,11 @@
       }
     }
   </style>
-<script src="session-config.js"></script><script src="session-runtime.js"></script><link rel="stylesheet" href="session.css"></head>
+<script src="session-config.js?v=5ab97cf39147"></script><script src="session-runtime.js?v=b5b8eb660d3e"></script><link rel="stylesheet" href="session.css?v=9ee192b5d8cc"></head>
 <body data-session-private-page class="session-pending">
   <div class="azkar-page">
     <div class="azkar-topbar">
-      <a class="azkar-back" id="azkarBackHome" href="index.html?resume=1&v=20260914qawhite1">← العودة للصفحة الرئيسية</a>
+      <a class="azkar-back" id="azkarBackHome" href="index.html?resume=1&v=20260914qawhite1&release=ac1041764fef8905">← العودة للصفحة الرئيسية</a>
     </div>
 
     <section class="azkar-shell">
@@ -410,7 +410,7 @@
     </section>
   </div>
 
-  <script src="azkar-data.js?v=20260914qawhite1"></script>
+  <script src="azkar-data.js?v=b9cdc2a29623"></script>
   <script>(async()=>{await window.WA3I_SESSION.ready;if(!window.WA3I_SESSION.session)return;
     (function () {
       const qs = (sel) => document.querySelector(sel);
@@ -444,7 +444,7 @@
       }
 
       function buildHomeUrl() {
-        const homeUrl = new URL("index.html", window.location.href);
+        const homeUrl = new URL("index.html?release=ac1041764fef8905", window.location.href);
         homeUrl.search = "";
         homeUrl.hash = "";
         homeUrl.searchParams.set("resume", "1");
@@ -456,7 +456,7 @@
       }
 
       function buildAzkarTypeUrl(nextType) {
-        const pageUrl = new URL("azkar.html", window.location.href);
+        const pageUrl = new URL("azkar.html?release=ac1041764fef8905", window.location.href);
         pageUrl.search = "";
         pageUrl.hash = "";
         pageUrl.searchParams.set("type", nextType === "evening" ? "evening" : "morning");

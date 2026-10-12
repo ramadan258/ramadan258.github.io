@@ -4,12 +4,12 @@ import { openOutbox } from './outbox.js';
 
 export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=()=>{},outbox=openOutbox(projectId,uid),today=dateKey(),delay=240}) {
   const records=new Map(),revisions=new Map(),pending=new Map(),listeners=new Set();
-  let closed=false,error=null,operation=null,timer,sequence=0,catalogError=null;
+  let closed=false,error=null,operation=null,timer,sequence=0,catalogError=null,dataVersion=0;
   const intervals=[];
   const current=()=>!closed&&isCurrent();
   const assertCurrent=()=>{if(!current())throw Error('STALE_SESSION');};
   const collection=fs.collection(db,'plannerMembers',uid,'records');
-  const status=()=>({pending:pending.size,error,saving:!!operation,readError:catalogError,loading:intervals.filter(i=>i.state==='loading').length});
+  const status=()=>({pending:pending.size,error,saving:!!operation,readError:catalogError,loading:intervals.filter(i=>i.state==='loading').length,dataVersion});
   function notify(){if(current()){onState(status());listeners.forEach(fn=>fn());}}
   const parse=snap=>{
     if(!snap.exists())return null;const r=snap.data();
@@ -22,25 +22,29 @@ export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=
     if(pending.has(snap.id)) {
       if(revision!==pending.get(snap.id).revision && !operation){error='CONFLICT';notify();}return;
     }
-    if(record){records.set(snap.id,record.value);revisions.set(snap.id,revision);}
+    if(record){if(revisions.get(snap.id)===revision)return;records.set(snap.id,record.value);revisions.set(snap.id,revision);dataVersion++;}
     else {
+      if(revisions.has(snap.id))dataVersion++;
       if(snap.id==='catalog')records.set('catalog',emptyCatalog(today));
       else records.delete(snap.id);
       revisions.delete(snap.id);
     }
   }
-  const catalogSnap=await fs.getDocFromServer(fs.doc(collection,'catalog'));assertCurrent();accept(catalogSnap);
-  records.set('catalog',records.get('catalog')||emptyCatalog(today));
-  const recovered=await outbox.load();assertCurrent();
+  records.set('catalog',emptyCatalog(today));
+  const recovery=outbox.load();
+  let catalogResolve,catalogReject;
+  const catalogReady=new Promise((resolve,reject)=>{catalogResolve=resolve;catalogReject=reject;});
+  catalogReady.catch(()=>{});
+  const stopCatalog=fs.onSnapshot(fs.doc(collection,'catalog'),{includeMetadataChanges:true},snap=>{
+    if(!current()||snap.metadata.fromCache||snap.metadata.hasPendingWrites)return;
+    try{accept(snap);catalogError=null;catalogResolve();notify();}catch(error){catalogError='INVALID_RECORD';catalogReject(error);notify();}
+  },error=>{catalogError='READ_FAILED';catalogReject(error);notify();});
+  const recovered=await recovery;assertCurrent();
   // Only this project and authenticated UID's app-created journal is considered, never legacy reports.
   for(const draft of recovered||[]) {
     if(!/^(catalog|day:\d{4}-\d{2}-\d{2})$/.test(draft.key)||!Number.isSafeInteger(draft.revision)||draft.value?.schema!==1)throw Error('INVALID_DRAFT');
-    pending.set(draft.key,{...draft,sequence:++sequence});records.set(draft.key,draft.value);
+    pending.set(draft.key,{...draft,sequence:++sequence});records.set(draft.key,draft.value);dataVersion++;
   }
-  const stopCatalog=fs.onSnapshot(fs.doc(collection,'catalog'),{includeMetadataChanges:true},snap=>{
-    if(!current()||snap.metadata.fromCache||snap.metadata.hasPendingWrites)return;
-    try{accept(snap);catalogError=null;notify();}catch{catalogError='INVALID_RECORD';notify();}
-  },()=>{catalogError='READ_FAILED';notify();});
   function hasRange(start,end=today) {
     return !catalogError && !missingRanges(start,end,intervals.filter(i=>i.state==='ready')).length;
   }
@@ -54,7 +58,7 @@ export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=
         if(snap.metadata.fromCache||snap.metadata.hasPendingWrites)return;
         try {
           if(snap.size>=63)throw Error('INCOMPLETE_PAGE');
-          snap.docs.forEach(accept);interval.state='ready';
+          snap.docs.forEach(accept);if(interval.state!=='ready')dataVersion++;interval.state='ready';
           if(!ready){ready=true;resolve();}notify();
         }catch(e){interval.state='error';interval.stop?.();notify();if(!ready)reject(e);}
       },e=>{interval.state='error';interval.stop?.();notify();if(!ready)reject(e);});
@@ -67,17 +71,21 @@ export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=
     const pages=missingRanges(start,end,intervals).flatMap(i=>rangePages(i.start,i.end));
     const reservations=pages.map(p=>({...p,state:'loading',promise:null,stop:null,reject:null}));intervals.push(...reservations);
     const work=(async()=>{
-      try{for(const reservation of reservations){
-        const index=intervals.indexOf(reservation);if(index>=0)intervals.splice(index,1);
+      let cursor=0;
+      const worker=async()=>{while(cursor<reservations.length){
+        const reservation=reservations[cursor++],index=intervals.indexOf(reservation);if(index>=0)intervals.splice(index,1);
         await loadPage(reservation.start,reservation.end);assertCurrent();
-      }}catch(e){reservations.forEach(r=>{if(intervals.includes(r))r.state='error';});notify();throw e;}
+      }};
+      try{await Promise.all(Array.from({length:Math.min(4,reservations.length)},worker));}
+      catch(e){reservations.forEach(r=>{if(intervals.includes(r))r.state='error';});notify();throw e;}
     })();
     reservations.forEach(r=>{r.promise=work;});
     const waiting=intervals.filter(i=>i.state==='loading'&&i.end>=start&&i.start<=end).map(i=>i.promise).filter(Boolean);
     await Promise.all([work,...waiting]);assertCurrent();
     if(!hasRange(start,end))throw Error('READ_FAILED');
   }
-  await ensureRange(addDays(today,-6),today);
+  try{await Promise.all([catalogReady,ensureRange(addDays(today,-6),today)]);}
+  catch(error){stopCatalog();intervals.forEach(i=>i.stop?.());outbox.close();throw error;}
   for(const key of pending.keys())if(key.startsWith('day:'))await ensureRange(key.slice(4),key.slice(4));
   assertCurrent();
   const journal=()=>outbox.save([...pending].map(([key,item])=>({key,...item})));
@@ -88,11 +96,13 @@ export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=
   }
   function dispatch(command) {
     assertCurrent();if(command.date&&!hasRange(command.date,command.date))throw Error('DATE_NOT_LOADED');
-    const {catalog,days}=snapshot(),changed=applyCommand(catalog,days,command,today);
+    // A command changes at most one day; do not clone the entire loaded history.
+    const days=command.date?{[command.date]:records.get('day:'+command.date)}:{};
+    const changed=applyCommand(records.get('catalog'),days,command,today);
     for(const [key,value] of Object.entries(changed)) {
       records.set(key,value);pending.set(key,{value,revision:pending.get(key)?.revision??revisions.get(key)??0,sequence:++sequence});
     }
-    if(error!=='CONFLICT')error=null;
+    dataVersion++;if(error!=='CONFLICT')error=null;
     void journal().catch(()=>{error='DRAFT_STORAGE_FAILED';notify();});notify();schedule();
   }
   async function commit() {
@@ -140,8 +150,10 @@ export async function planner() {
   await window.WA3I_SESSION.ready;
   if(!window.WA3I_SESSION.session)throw Error('AUTH_REQUIRED');
   if(!instance) {
-    const {uid}=window.WA3I_SESSION.session,fs=window.FB;
-    instance=createPlannerStore({fs,db:fs.db,uid,projectId:fs.projectId,isCurrent:()=>window.WA3I_SESSION.session?.uid===uid});
+    const session=window.WA3I_SESSION.session,{uid}=session,fs=window.FB;
+    const isCurrent=()=>window.WA3I_SESSION.session===session;
+    instance=session.kind==='guest'?import('./guest-store.js').then(({createGuestPlanner})=>createGuestPlanner({namespace:window.WA3I_SESSION.guestNamespace,isCurrent})):
+      createPlannerStore({fs,db:fs.db,uid,projectId:fs.projectId,isCurrent});
     window.WA3I_SESSION.planner=await instance;
   }
   return instance;

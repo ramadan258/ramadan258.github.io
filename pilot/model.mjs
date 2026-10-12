@@ -23,10 +23,16 @@ export function emptyDay(date) {
   return {schema:1,date,habitStatus:{},tasks:[],report:{dayNo:'',gratitude:'',feeling:'',summary:'',avoided:'',motivation:'',notes:'',finalized:false}};
 }
 export function versionAt(habit,date) {
-  return habit.versions.filter(v=>v.effective<=date).sort((a,b)=>a.effective.localeCompare(b.effective)).at(-1);
+  let latest;
+  for(const version of habit.versions)if(version.effective<=date&&(!latest||version.effective>=latest.effective))latest=version;
+  return latest;
 }
 export function habitsFor(catalog,date) {
-  return catalog.habits.map(h=>({id:h.id,...versionAt(h,date)})).filter(h=>h.active && h.days.includes(weekday(date)));
+  const day=weekday(date),result=[];
+  for(const habit of catalog.habits){const version=versionAt(habit,date);
+    if(version?.active&&version.days.includes(day))result.push({id:habit.id,...version});
+  }
+  return result;
 }
 export function dayStats(catalog,days,date,today=dateKey()) {
   const habits=habitsFor(catalog,date),day=days[date]||emptyDay(date),tasks=day.tasks.filter(t=>!t.deleted);
@@ -132,21 +138,4 @@ export function applyCommand(catalog,days,cmd,today=dateKey()) {
   if(!['habitStatus','task','taskStatus','taskDelete','report'].includes(cmd.type))changed.catalog=c;
   for(const value of Object.values(changed))requireValue(JSON.stringify(value).length<280000,'RECORD_TOO_LARGE');
   return changed;
-}
-export function sampleData(now=new Date(),initial='أ') {
-  const today=dateKey(now),start=addDays(monday(today),-28),year=today.slice(0,4);
-  const catalog=emptyCatalog(start);catalog.plans[year]='خطتي '+year;
-  catalog.areas=[{id:'spiritual',name:'روحي'},{id:'learning',name:'تعلم'},{id:'health',name:'صحة'}];
-  catalog.goals=[{id:'learning-goal',name:'إنجاز ٢٠ جلسة قراءة',areaId:'learning',level:'monthly',period:today.slice(0,7),parentId:'',metric:'linked',target:20,value:0,archived:false,deletedAt:null},
-    {id:'annual-goal',name:'قراءة ١٢ كتابًا',areaId:'learning',level:'annual',period:year,parentId:'',metric:'manual',target:12,value:3,archived:false,deletedAt:null}];
-  catalog.habits=['قراءة القرآن','قراءة ٢٠ دقيقة','المشي','الدراسة','النوم مبكرًا','كتابة اليوميات'].map((name,i)=>({id:'habit-'+i,deletedAt:null,
-    versions:[{effective:start,name,days:i===2?[0,2,4,6]:[0,1,2,3,4,5,6],goalId:i===1?'learning-goal':'',active:true}]}));
-  const data={catalog};
-  for(const [i,date] of range(start,today).entries()) {
-    const day=emptyDay(date);habitsFor(catalog,date).forEach((h,j)=>{day.habitStatus[h.id]=j<(date===today?2:(i%5)+1)?'done':j%2?'no':'unanswered';});
-    day.tasks=[{id:'task-'+i,name:date===today?'جلسة دراسة':'مهمة تجريبية',priority:true,state:date===today?'unanswered':'done',goalId:'',deleted:false},
-      {id:'task-small-'+i,name:'ترتيب المكتب',priority:false,state:'unanswered',goalId:'',deleted:false}];
-    day.report.summary=`ملخص وهمي خاص بالعضو ${initial}`;data['day:'+date]=day;
-  }
-  return data;
 }

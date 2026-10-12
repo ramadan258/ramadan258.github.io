@@ -1,47 +1,94 @@
 import { planner } from './planner-store.js';
 import { dateKey,dayStats,emptyDay } from './model.mjs';
+import {reportSteps,reportStepIndex,reportProgress,habitAnswer,reportCursorKey} from './report-wizard.mjs';
 const $=selector=>document.querySelector(selector);
 const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const store=await planner().catch(error=>{
   document.body.classList.remove('session-pending');document.body.replaceChildren();
   const main=document.createElement('main');main.className='preview-home';main.innerHTML='<p>تعذر تحميل بيانات الحساب.</p><button class="save-button" type="button">إعادة المحاولة</button>';
   main.querySelector('button').onclick=()=>location.reload();document.body.append(main);throw error;
-}),today=dateKey();let selected=today,message='';
-function render() {
-  const {catalog,days}=store.snapshot(),record=days[selected]||emptyDay(selected),day=dayStats(catalog,days,selected,today);
-  $('#reportDay').value=selected;$('#reportDay').max=today;
-  $('#reportDate').textContent=new Date(selected+'T12:00:00Z').toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long',year:'numeric',calendar:'islamic-umalqura',timeZone:'UTC'});
-  $('#reportCount').textContent=`${day.completed.toLocaleString('ar-SA')} من ${day.required.toLocaleString('ar-SA')}`;
-  $('#reportHabits').innerHTML=day.habits.length?day.habits.map(h=>`<div class="report-habit"><span>${escape(h.name)}</span><div class="answer-options" role="group" aria-label="${escape(h.name)}">${[['done','نعم'],['no','لا'],['unanswered','دون إجابة']].map(([state,label])=>`<button type="button" data-habit="${h.id}" data-answer="${state}" aria-pressed="${(record.habitStatus[h.id]||'unanswered')===state}">${label}</button>`).join('')}</div></div>`).join(''):'<a class="list-toggle" href="khutay.html">أضف عاداتك في خُطاي</a>';
-  for(const input of $('#reportFields').querySelectorAll('input,textarea'))if(document.activeElement!==input)input.value=record.report[input.name]||'';
+}),today=dateKey();
+let selected=today,message='',cursorId='',stepIndex=0,mounted='',cached=null,renderedVersion=-1,frame=0;
+const numbers=new Intl.NumberFormat('ar-SA');
+const dates=new Intl.DateTimeFormat('ar-SA',{weekday:'long',day:'numeric',month:'long',year:'numeric',calendar:'islamic-umalqura',timeZone:'UTC'});
+const cursorKey=()=>reportCursorKey(window.WA3I_SESSION.session.kind==='guest'?window.WA3I_SESSION.guestNamespace:window.WA3I_SESSION.projectId||window.FB.projectId,window.WA3I_SESSION.session.uid,selected);
+function restoreCursor(){try{cursorId=sessionStorage.getItem(cursorKey())||'';}catch{cursorId='';}stepIndex=0;}
+function rememberCursor(){try{sessionStorage.setItem(cursorKey(),cursorId);}catch{}}
+function view(){
+  const version=store.status().dataVersion;
+  if(!cached||cached.version!==version||cached.date!==selected){
+    const {catalog,days}=store.snapshot();
+    cached={version,date:selected,catalog,days,record:days[selected]||emptyDay(selected),day:dayStats(catalog,days,selected,today),steps:reportSteps(catalog,selected)};
+  }
+  return cached;
+}
+function saveStatus() {
   const state=store.status();$('#saveStatus').dataset.error=!!state.error;
-  $('#saveStatus').textContent=state.error==='CONFLICT'?'تعارض مع جلسة أخرى؛ مسودتك محفوظة هنا':state.error?'لم يكتمل الحفظ؛ مسودتك محفوظة على هذا الجهاز':state.pending?'جارٍ الحفظ…':message||'محفوظ في الحساب';
+  $('#saveStatus').textContent=state.error==='CONFLICT'?'تعارض مع جلسة أخرى؛ مسودتك محفوظة هنا':state.error?'لم يكتمل الحفظ؛ أعد المحاولة قبل المغادرة':state.pending?'جارٍ الحفظ…':message||(state.local?'محفوظ على هذا الجهاز فقط':'محفوظ في الحساب');
   $('#retrySave').hidden=!state.error;$('#resolveConflict').hidden=state.error!=='CONFLICT';
-  if(!$('#reportText').hidden)$('#reportText').value=reportText();
+}
+function render() {
+  const {record,day,steps,version}=view();
+  stepIndex=reportStepIndex(steps,cursorId,stepIndex);const step=steps[stepIndex];cursorId=step.id;
+  $('#reportDay').value=selected;$('#reportDay').max=today;
+  $('#reportDate').textContent=dates.format(new Date(selected+'T12:00:00Z'));
+  $('#reportCount').textContent=`${numbers.format(day.completed)} من ${numbers.format(day.required)}`;
+  $('#stepSection').textContent=step.section;$('#reportQuestion').textContent=step.title;
+  const percent=reportProgress(stepIndex,steps.length);
+  $('#stepCount').textContent=`الخطوة ${numbers.format(stepIndex+1)} من ${numbers.format(steps.length)}`;
+  $('#stepPercent').textContent=numbers.format(percent)+'٪';$('#stepProgress').value=percent;
+  $('#reportHabits').hidden=step.kind!=='habit';$('#reportFields').hidden=step.kind!=='field';$('#reportReview').hidden=step.kind!=='review';
+  const mountKey=selected+'|'+step.id;
+  if(mounted!==mountKey){
+    $('#reportHabits').replaceChildren();$('#reportFields').replaceChildren();
+    if(step.kind==='habit')$('#reportHabits').innerHTML=`<div class="answer-options" role="group" aria-label="${escape(step.title)}">${[['done','نعم'],['no','لا'],['unanswered','دون إجابة']].map(([state,label])=>`<button type="button" data-habit="${escape(step.habitId)}" data-answer="${state}" aria-pressed="false">${label}</button>`).join('')}</div>`;
+    if(step.kind==='field')$('#reportFields').innerHTML=`<label class="add-field">${step.input?`<input id="reportAnswer" name="${step.name}" type="${step.input}" ${step.input==='number'?'min="0" max="100000"':'maxlength="10000"'} aria-label="${escape(step.label)}">`:`<textarea id="reportAnswer" name="${step.name}" maxlength="10000" aria-label="${escape(step.label)}"></textarea>`}</label>`;
+    mounted=mountKey;
+  }
+  if(step.kind==='habit')for(const button of $('#reportHabits').querySelectorAll('[data-answer]'))button.setAttribute('aria-pressed',String(button.dataset.answer===habitAnswer(record,step.habitId)));
+  const input=$('#reportAnswer');if(input&&document.activeElement!==input)input.value=record.report[step.name]||'';
+  $('#previousQuestion').disabled=stepIndex===0;$('#nextQuestion').hidden=step.kind==='review';
+  $('#nextQuestion').textContent=steps[stepIndex+1]?.kind==='review'?'عرض التقرير':'التالي';
+  $('#copyReport').hidden=step.kind!=='review';
+  if(step.kind==='review')$('#reportText').value=reportText();
+  renderedVersion=version;
+  saveStatus();
 }
 function reportText() {
-  const {catalog,days}=store.snapshot(),record=days[selected]||emptyDay(selected),day=dayStats(catalog,days,selected,today),r=record.report;
+  const {record,day}=view(),r=record.report;
   const group=state=>day.habits.filter(h=>(record.habitStatus[h.id]||'unanswered')===state).map(h=>`${state==='done'?'✅':state==='no'?'❌':'⬜'} ${h.name}`).join('\n')||'—';
   return `🧭 تقرير التعافي اليومي\n\n📆 اليوم: ${$('#reportDate').textContent}\n🕰️ اليوم رقم: ${r.dayNo||'—'} في رحلة التعافي\n\n🌿 جوانب التعافي\n\n✅ العادات التي التزمت بها اليوم:\n${group('done')}\n\n❌ العادات التي لم ألتزم بها:\n${group('no')}\n\n⬜ عادات دون إجابة:\n${group('unanswered')}\n\n🚫 جانب «لا تقربوا»\n${r.avoided||'—'}\n\n🤲 الحمد\n${r.gratitude||'—'}\n\n⭐ التقييم اليومي\n📈 عدد العادات المنجزة: ${day.completed} من أصل ${day.required}\n😌 شعوري العام: ${r.feeling||'—'}\n\n🗒️ ملخص يومي\n${r.summary||'—'}\n\n🎁 التحفيز الذاتي\n${r.motivation||'—'}\n\n📌 ملاحظات مهمة\n${r.notes||'—'}\n\n#قبيلة_الموحدون`;
 }
-$('#reportHabits').onclick=event=>{const button=event.target.closest('[data-answer]');if(!button)return;message='';store.dispatch({type:'habitStatus',date:selected,id:button.dataset.habit,status:button.dataset.answer});};
+$('#reportHabits').onclick=event=>{
+  const button=event.target.closest('[data-answer]');if(!button)return;
+  const current=view(),step=current.steps[stepIndex];if(step?.kind!=='habit'||step.habitId!==button.dataset.habit)return;
+  if(habitAnswer(current.record,step.habitId)===button.dataset.answer)return;
+  message='';store.dispatch({type:'habitStatus',date:selected,id:step.habitId,status:button.dataset.answer});
+  cancelAnimationFrame(frame);frame=0;render();
+};
 $('#reportFields').addEventListener('input',event=>{
-  if(!event.target.name)return;message='';store.dispatch({type:'report',date:selected,fields:{[event.target.name]:event.target.value}});
+  if(!event.target.name||view().record.report[event.target.name]===event.target.value)return;
+  message='';store.dispatch({type:'report',date:selected,fields:{[event.target.name]:event.target.value}});
 });
+function moveQuestion(direction){
+  const {steps}=view();stepIndex=Math.max(0,Math.min(steps.length-1,stepIndex+direction));cursorId=steps[stepIndex].id;rememberCursor();
+  render();$('#reportQuestion').focus({preventScroll:true});$('.window-content').scrollTop=0;
+}
+$('#previousQuestion').onclick=()=>moveQuestion(-1);$('#nextQuestion').onclick=()=>moveQuestion(1);
 $('#reportDay').onchange=async event=>{
-  const input=event.target,date=input.value;if(!date||date>today)return;
+  const input=event.target,date=input.value;if(!date||date>today||date===selected)return;
   input.value=selected;input.disabled=true;
-  try{await store.ensureRange(date,date);selected=date;message='';render();}catch{input.value=selected;alert('تعذر تحميل التقرير؛ لم نغيّر البيانات.');}
+  try{await store.ensureRange(date,date);selected=date;message='';restoreCursor();render();}catch{input.value=selected;alert('تعذر تحميل التقرير؛ لم نغيّر البيانات.');}
   finally{input.disabled=false;}
 };
 $('#saveReport').onclick=async()=>{
   $('#saveReport').disabled=true;message='';
-  try{store.dispatch({type:'report',date:selected,fields:{finalized:true}});await store.flush();message='تم تأكيد الحفظ من الخادم';}
-  catch{message='';}finally{$('#saveReport').disabled=false;render();}
+  try{store.dispatch({type:'report',date:selected,fields:{finalized:true}});await store.flush();message=store.status().local?'تم الحفظ على هذا الجهاز':'تم تأكيد الحفظ من الخادم';}
+  catch{message='';}finally{if($('#saveReport')){$('#saveReport').disabled=false;saveStatus();}}
 };
 $('#copyReport').onclick=async()=>{
-  const text=reportText();$('#reportText').value=text;$('#reportText').hidden=false;
-  try{await navigator.clipboard.writeText(text);message='تم النسخ';render();}catch{$('#reportText').focus();$('#reportText').select();}
+  const text=reportText();$('#reportText').value=text;
+  try{await navigator.clipboard.writeText(text);message='تم النسخ';saveStatus();}catch{$('#reportText').focus();$('#reportText').select();}
 };
 $('#retrySave').onclick=()=>{void store.flush().catch(()=>{});};
 $('#resolveConflict').onclick=async()=>{
@@ -49,9 +96,13 @@ $('#resolveConflict').onclick=async()=>{
   link.href=url;link.download='my-report-draft.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   if(confirm('تم تجهيز نسخة مسودتك. هل تريد تحميل نسخة الخادم بدل التعديلات المتعارضة؟'))await store.reloadServer();
 };
-async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html';}
+async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=ac1041764fef8905';}
 $('#closeReport').onclick=leave;$('#reportWindow').addEventListener('cancel',event=>{event.preventDefault();void leave();});
 $('#accountLabel').textContent=window.WA3I_SESSION.session.member.name;
-window.addEventListener('wa3i-session-cleared',()=>document.body.replaceChildren());
-store.subscribe(render);render();$('#reportWindow').showModal();
+window.addEventListener('wa3i-session-cleared',()=>{cancelAnimationFrame(frame);frame=0;cached=null;cursorId='';document.body.replaceChildren();});
+store.subscribe(()=>{
+  saveStatus();if(store.status().dataVersion===renderedVersion||frame)return;
+  frame=requestAnimationFrame(()=>{frame=0;renderedVersion=store.status().dataVersion;render();});
+});
+restoreCursor();render();$('#reportWindow').showModal();
 setInterval(()=>{if(dateKey()!==today)location.reload();},60000);

@@ -727,27 +727,7 @@ function renderIdentityGrid(members) {
     grid.querySelectorAll('[data-user-id]').forEach((btn) => btn.addEventListener('click', () => openIdentityConfirm(members.find((m) => m.id === btn.dataset.userId))));
   }
 
-function wireGuestEntry() {
-  if (wireGuestEntry._wired) return;
-  wireGuestEntry._wired = true;
-
-  const btn = qs("#enterGuestBtn");
-  const input = qs("#guestName");
-
-  const enter = () => {
-    const raw = (input?.value || "").trim();
-    const name = raw || "ضيف";
-    const id = raw ? `guest_${slugifyName(raw)}` : "guest";
-    saveCurrentUser({ id, name, kind: "guest" });
-    if (input) input.value = "";
-    startApp();
-  };
-
-  btn?.addEventListener("click", enter);
-  input?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") enter();
-  });
-}
+function wireGuestEntry() {}
 
 function userKey(suffix) {
   return `wa3i_${currentUserId()}_${suffix}`;
@@ -803,12 +783,10 @@ function isPermissionDeniedError(error) {
   );
 }
 
-async function getFreshFirebaseIdToken() {
-  if (!fbAvailable()) throw new Error("FB_NOT_READY");
-  const user = window.FB.auth?.currentUser || await ensureAnonSignedIn();
-  if (!user?.getIdToken) throw new Error("AUTH_USER_MISSING");
-  return user.getIdToken(true);
-}
+async function getFreshFirebaseIdToken(){
+    if(window.WA3I_SESSION.session?.kind==='guest')throw Error('GUEST_READ_ONLY');
+    const user=window.FB?.auth?.currentUser;if(!user?.getIdToken)throw Error('AUTH_REQUIRED');return user.getIdToken(true);
+  }
 
 function firestoreRestDocUrl(collectionName, docId) {
   const projectId = String(
@@ -2566,7 +2544,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html", window.location.href);
+      const url = new URL("azkar.html?release=ac1041764fef8905", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {
@@ -2736,6 +2714,8 @@ function previousISODate(isoDate) {
     }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    initMemberDirectorySystem({activateRemote:false,renderMembers:false});initIdentityGate();
+    document.body.classList.remove('session-pending');
     try { await window.WA3I_SESSION.ready;
       initMemberDirectorySystem({activateRemote:true,renderMembers:false}); initMemberStatusSystem();
       if(window.WA3I_SESSION.session){saveCurrentUser(window.WA3I_SESSION.session.member);startApp();}else initIdentityGate();

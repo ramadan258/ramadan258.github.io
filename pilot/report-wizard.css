@@ -1,0 +1,20 @@
+.report-progress-label { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; margin-bottom: 7px; }
+.report-progress progress { appearance: none; display: block; width: 100%; height: 5px; border: 0; border-radius: 20px; overflow: hidden; background: var(--line); accent-color: var(--primary); }
+.report-progress progress::-webkit-progress-bar { background: var(--line); }
+.report-progress progress::-webkit-progress-value { background: var(--primary); border-radius: 20px; }
+.report-progress progress::-moz-progress-bar { background: var(--primary); border-radius: 20px; }
+.report-question-card { padding: 20px; border: 1px solid var(--line-teal); border-radius: 18px; background: var(--panel); min-width: 0; }
+.report-question-card .section-heading { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+.report-question-card h2 { font-size: 21px; margin-bottom: 20px; overflow-wrap: anywhere; }
+.report-question-card .answer-options { width: 100%; }
+.report-question-card .answer-options button { flex: 1; min-height: 48px; font-size: 13px; }
+.report-question-card .add-field { display: block; }
+.report-question-card .add-field textarea { min-height: 150px; }
+.report-navigation { display: grid; grid-template-columns: 1fr 1fr; direction: ltr; gap: 12px; }
+.report-navigation button { direction: rtl; min-height: 46px; }
+.report-window .report-buttons { align-items: center; }
+.report-window .report-buttons > button { flex: 1; }
+@media (max-width:700px) {
+  .report-question-card { padding: 17px; }
+  .report-question-card h2 { font-size: 20px; }
+}

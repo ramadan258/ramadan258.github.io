@@ -1,14 +1,18 @@
 import {analyze,comparisonWindow,dayCount,quickPeriod,validatePeriod} from './harvest-model.mjs';
 import {addDays,weekdays,weekday,dateKey} from './model.mjs';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const number=value=>new Intl.NumberFormat('ar-SA',{maximumFractionDigits:1}).format(value);
+const numberFormat=new Intl.NumberFormat('ar-SA',{maximumFractionDigits:1});
+const shortDateFormat=new Intl.DateTimeFormat('ar-SA',{calendar:'gregory',day:'numeric',month:'short',timeZone:'UTC'});
+const monthFormat=new Intl.DateTimeFormat('ar-SA',{calendar:'gregory',month:'short',timeZone:'UTC'});
+const number=value=>numberFormat.format(value);
 const percent=value=>value===null?'—':number(value)+'٪';
-const shortDate=key=>new Date(key+'T12:00:00Z').toLocaleDateString('ar-SA',{calendar:'gregory',day:'numeric',month:'short',timeZone:'UTC'});
+const shortDate=key=>shortDateFormat.format(new Date(key+'T12:00:00Z'));
 const dates=(start,end)=>start===end?shortDate(start):shortDate(start)+' — '+shortDate(end);
 export function createHarvest({root,store,today=dateKey(),showDay}) {
   const $=selector=>root.querySelector(selector);
   let principal=quickPeriod(7,today),view={...principal,unit:null,selected:6},stack=[],quick=7,data=null;
   let active=false,loading=false,loadError=null,request=0,listsOpen=false;
+  let analyzedKey='';
   let trendVisible=innerWidth>700,trendChosen=false;
   const chart=$('#weekChart'),scroll=$('#chartScroll');
   const titleUnit={day:'الأيام',week:'الأسابيع',month:'الشهور'};
@@ -22,7 +26,7 @@ export function createHarvest({root,store,today=dateKey(),showDay}) {
   async function load() {
     const generation=++request;loading=true;loadError=null;render();
     try{
-      for(const range of targetRanges())if(range.start<=range.end)await store.ensureRange(range.start,range.end);
+      await Promise.all(targetRanges().filter(range=>range.start<=range.end).map(range=>store.ensureRange(range.start,range.end)));
       if(generation!==request)return;
     }catch{if(generation!==request)return;loadError='READ_FAILED';}
     finally{if(generation===request){loading=false;render();}}
@@ -52,8 +56,10 @@ export function createHarvest({root,store,today=dateKey(),showDay}) {
     $('#harvestLoadStateText').textContent=loadError||readError||!loading&&!available()?'تعذر تحميل الفترة كاملة':'جارٍ تحميل الفترة…';
     $('#harvestRetry').hidden=loading;root.setAttribute('aria-busy',loading);
     if(!ready)return;
+    const analyticKey=[store.status().dataVersion,view.start,view.end,view.unit,root.clientWidth>=700?'wide':'narrow'].join(':');
+    if(analyticKey===analyzedKey&&data){renderSelection();return;}
     const {catalog,days}=store.snapshot();
-    data=analyze({catalog,days,...view,today,width:root.clientWidth});
+    data=analyze({catalog,days,...view,today,width:root.clientWidth});analyzedKey=analyticKey;
     if(!data.groups.length){$('#harvestContent').hidden=true;$('#harvestLoadState').hidden=false;$('#harvestLoadStateText').textContent='لا توجد أيام متاحة';$('#harvestRetry').hidden=true;return;}
     view.selected=Math.min(Math.max(0,view.selected),data.groups.length-1);
     const analytic=dayCount(view.start,view.end)>14;
@@ -67,7 +73,7 @@ export function createHarvest({root,store,today=dateKey(),showDay}) {
     $('#chartCanvas').style.minWidth=compact?data.groups.length*38+'px':'';
     const previousFocus=Number(document.activeElement?.dataset.harvestColumn);
     chart.innerHTML=data.groups.map((group,i)=>{
-      const label=data.unit==='day'?dayCount(view.start,view.end)<=7?weekdays[weekday(group.start)]:number(Number(group.start.slice(-2))):data.unit==='week'?compact?number(i+1):shortDate(group.start):new Date(group.start+'T12:00:00Z').toLocaleDateString('ar-SA',{calendar:'gregory',month:'short',timeZone:'UTC'});
+      const label=data.unit==='day'?dayCount(view.start,view.end)<=7?weekdays[weekday(group.start)]:number(Number(group.start.slice(-2))):data.unit==='week'?compact?number(i+1):shortDate(group.start):monthFormat.format(new Date(group.start+'T12:00:00Z'));
       return `<button class="chart-column${group.required?'':' is-empty'}" type="button" data-harvest-column="${i}" aria-label="${dates(group.start,group.end)}: ${percent(group.percentage)}${data.unit==='day'?'':'، فتح التفاصيل'}"><span class="column-percent">${compact?'':percent(group.percentage)}</span><span class="column-track"><span class="column-bar" style="--height:${group.percentage||0}%"></span><span class="column-badge" style="bottom:calc(${group.percentage||0}% + 9px)">${percent(group.percentage)}</span></span><span class="column-day">${escape(label)}</span></button>`;
     }).join('');
     if(Number.isInteger(previousFocus))chart.querySelector(`[data-harvest-column="${Math.min(previousFocus,data.groups.length-1)}"]`)?.focus({preventScroll:true});
@@ -168,7 +174,7 @@ export function createHarvest({root,store,today=dateKey(),showDay}) {
   let width=root.clientWidth;
   const resize=new ResizeObserver(()=>{
     if(!active||width===root.clientWidth)return;width=root.clientWidth;
-    if(!trendChosen)trendVisible=width>650;render();
+    if(!trendChosen)trendVisible=width>650;analyzedKey='';render();
   });resize.observe(root);
   $('#periodFrom').value=principal.start;$('#periodTo').value=principal.end;
   return {render,activate(){active=true;void load();},deactivate(){active=false;},

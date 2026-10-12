@@ -4,8 +4,8 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow"><title>التقرير اليومي — الموحدون</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="planner.css"><link rel="stylesheet" href="session.css"><link rel="stylesheet" href="extension.css">
-  <script src="session-config.js"></script><script src="session-runtime.js"></script><script type="module" src="report-ui.js"></script>
+  <link rel="stylesheet" href="planner.css?v=353e61758dbf"><link rel="stylesheet" href="session.css?v=9ee192b5d8cc"><link rel="stylesheet" href="extension.css?v=f3001815b949"><link rel="stylesheet" href="report-wizard.css?v=36afc0d243e8">
+  <script src="session-config.js?v=5ab97cf39147"></script><script src="session-runtime.js?v=b5b8eb660d3e"></script><script type="module" src="client/report-ui-R6PDKRLV.js?v=dc7948febb0d"></script>
 </head>
 <body class="session-pending" data-session-private-page>
   <dialog class="khutay-window report-window" id="reportWindow" aria-labelledby="reportTitle">
@@ -14,18 +14,22 @@
     </header>
     <div class="window-content">
       <div class="report-date"><span id="reportDate"></span><input type="date" id="reportDay" class="date-picker" aria-label="تاريخ التقرير"></div>
-      <section class="section-block"><div class="section-heading"><h3>عادات التعافي</h3><span class="section-count" id="reportCount"></span></div><div id="reportHabits"></div></section>
-      <section class="section-block report-layout" id="reportFields">
-        <label class="add-field"><span>اليوم رقم في رحلة التعافي</span><input name="dayNo" type="number" min="0" max="100000"></label>
-        <label class="add-field"><span>شعوري العام</span><input name="feeling" maxlength="10000"></label>
-        <label class="add-field"><span>جانب «لا تقربوا»</span><textarea name="avoided" maxlength="10000"></textarea></label>
-        <label class="add-field"><span>الحمد</span><textarea name="gratitude" maxlength="10000"></textarea></label>
-        <label class="add-field report-wide"><span>ملخص يومي</span><textarea name="summary" maxlength="10000"></textarea></label>
-        <label class="add-field"><span>التحفيز الذاتي</span><textarea name="motivation" maxlength="10000"></textarea></label>
-        <label class="add-field"><span>ملاحظات مهمة</span><textarea name="notes" maxlength="10000"></textarea></label>
+      <div class="report-progress">
+        <div class="report-progress-label"><span id="stepCount"></span><span id="stepPercent"></span></div>
+        <progress id="stepProgress" max="100" value="0" aria-label="التقدم في التقرير"></progress>
+      </div>
+      <section class="report-question-card" id="reportStep" aria-labelledby="reportQuestion">
+        <div class="section-heading"><span id="stepSection"></span><span class="section-count" id="reportCount"></span></div>
+        <h2 id="reportQuestion" tabindex="-1"></h2>
+        <div id="reportHabits" hidden></div>
+        <div id="reportFields" hidden></div>
+        <div id="reportReview" hidden><textarea class="export-preview" id="reportText" aria-label="نص التقرير" readonly></textarea></div>
       </section>
-      <div class="report-buttons"><button class="save-button" id="saveReport">حفظ التقرير</button><button class="cancel-button" id="copyReport">نسخ التقرير</button><a class="list-toggle" href="khutay.html">خُطاي</a></div>
-      <textarea class="export-preview" id="reportText" aria-label="نص التقرير" readonly hidden></textarea>
+      <nav class="report-navigation" aria-label="التنقل بين أسئلة التقرير">
+        <button class="cancel-button" id="previousQuestion" type="button">السابق</button>
+        <button class="save-button" id="nextQuestion" type="button">التالي</button>
+      </nav>
+      <div class="report-buttons"><button class="save-button" id="saveReport">حفظ التقرير</button><button class="cancel-button" id="copyReport" hidden>نسخ التقرير</button><a class="list-toggle" href="khutay.html?release=ac1041764fef8905">خُطاي</a></div>
     </div>
     <footer class="window-footer"><span id="saveStatus" role="status"></span><button class="list-toggle" id="retrySave" hidden>إعادة الحفظ</button><button class="list-toggle" id="resolveConflict" hidden>مراجعة التعارض</button></footer>
   </dialog>

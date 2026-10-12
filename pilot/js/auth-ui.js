@@ -37,8 +37,6 @@ function bootstrapPostLoginSystems() {
   if (typeof initMemberStatusSystem === "function") initMemberStatusSystem();
   if (typeof setupQaPage === "function") setupQaPage();
   if (typeof setupRecoveryLibrary === "function") setupRecoveryLibrary();
-  if (typeof setupRescuePlanModal === "function") setupRescuePlanModal();
-  if (typeof setupRescueCenterModal === "function") setupRescueCenterModal();
 }
 function startApp() {
   warmFirebaseSoon();
@@ -62,20 +60,22 @@ function startApp() {
   if (APP_HOME_BOOTSTRAP_TIMER) {
     clearTimeout(APP_HOME_BOOTSTRAP_TIMER);
   }
-  APP_HOME_BOOTSTRAP_TIMER = setTimeout(() => {
+  APP_HOME_BOOTSTRAP_TIMER = setTimeout(async () => {
     APP_HOME_BOOTSTRAP_TIMER = null;
     initCountdown();
-    initDailyFlow();
     if (typeof initQaPage === "function") initQaPage();
     setupAzkarModal();
     wireDashboardQuickActions();
     initAhdPage();
+    bootstrapPostLoginSystems();
 
-    if ("requestAnimationFrame" in window) {
-      requestAnimationFrame(() => bootstrapPostLoginSystems());
-    } else {
-      setTimeout(bootstrapPostLoginSystems, 0);
-    }
+    const session = window.WA3I_SESSION.session;
+    try { await window.WA3I_SESSION.formsReady?.(); }
+    catch { showIdentityToast('تعذر تحميل المسودات. أعد المحاولة قبل تعديلها.'); return; }
+    if (window.WA3I_SESSION.session !== session) return;
+    initDailyFlow();
+    if (typeof setupRescuePlanModal === "function") setupRescuePlanModal();
+    if (typeof setupRescueCenterModal === "function") setupRescueCenterModal();
   }, 0);
 }
 function showIdentityToast(message) {
@@ -161,7 +161,16 @@ function initIdentityGate() {
   showGate();
   IDENTITY_MEMBERS_CACHE = readMembersFromDOM();
   renderIdentityGrid(IDENTITY_MEMBERS_CACHE);
-  wireSwitchUserButton(); wireIdentityConfirmModal();
+  wireSwitchUserButton(); wireIdentityConfirmModal();wireGuestEntry();
+}
+function wireGuestEntry(){
+  const button=qs('#enterGuestBtn');if(!button||button.dataset.wired)return;button.dataset.wired='true';
+  button.onclick=async()=>{
+    if(button.disabled)return;button.disabled=true;
+    try{const session=await window.WA3I_SESSION.enterGuest();syncStoredPermissionsForCurrentUser();saveCurrentUser(session.member);startApp();}
+    catch{showIdentityToast('تعذر فتح التخزين المحلي. تحقق من إعدادات المتصفح.');}
+    finally{button.disabled=false;}
+  };
 }
 function memberNameById(id) { return memberById(id)?.name || ''; }
 function memberById(id) { return IDENTITY_MEMBERS_CACHE.find((m) => m.id === id) || null; }
@@ -204,6 +213,7 @@ function wireIdentityConfirmModal() {
     qs('#identityConfirmPassword').value = '';
     yes.disabled = true; no.disabled = true;
     try {
+      await window.WA3I_SESSION.ready;
       const session = await window.WA3I_SESSION.login(member, password);
       syncStoredPermissionsForCurrentUser();
       saveCurrentUser(session.member); closeIdentityConfirm(); startApp();
@@ -232,7 +242,7 @@ async function submitAdminLogin(){
     const button=qs('#adminLoginSubmitBtn'),status=qs('#adminLoginStatus');if(button.disabled)return;
     let email=qs('#adminLoginEmail').value.trim(),password=qs('#adminLoginPassword').value;button.disabled=true;
     qs('#adminLoginPassword').value='';
-    try{const session=await window.WA3I_SESSION.loginAdmin(email,password);syncStoredPermissionsForCurrentUser();saveCurrentUser(session.member);closeAdminLoginModal();startApp();}
+    try{await window.WA3I_SESSION.ready;const session=await window.WA3I_SESSION.loginAdmin(email,password);syncStoredPermissionsForCurrentUser();saveCurrentUser(session.member);closeAdminLoginModal();startApp();}
     catch{status.textContent='تعذر الدخول. تحقق من بيانات حساب أمجد والاتصال.';}
     finally{email='';password='';button.disabled=false;}
   }
