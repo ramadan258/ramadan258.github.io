@@ -757,12 +757,12 @@
     ::-webkit-scrollbar-thumb { background: rgba(78,205,196,.2); border-radius: 999px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(78,205,196,.35); }
   </style>
-</head>
-<body>
+<script src="session-config.js?v=ef65dcb6817a"></script><script src="session-runtime.js?v=d6b557c7228b"></script><link rel="stylesheet" href="session.css?v=9ee192b5d8cc"></head>
+<body data-session-private-page data-session-forms-page class="session-pending">
 
 <!-- Back nav -->
   <div class="back-bar">
-    <a href="index.html?resume=1&v=20260914qawhite1" class="back-link">← العودة إلى الصفحة الرئيسية</a>
+    <a href="index.html?resume=1&v=20260914qawhite1&release=3751ad4ea4c98ff8" class="back-link">← العودة إلى الصفحة الرئيسية</a>
   </div>
 
 <!-- Page Header -->
@@ -794,7 +794,7 @@
 
 <div class="toast" id="toast">تم ✅</div>
 
-<script>
+<script>(async()=>{await window.WA3I_SESSION.ready;if(!window.WA3I_SESSION.session)return;
 (function(){
   const $ = (q)=>document.querySelector(q);
   const REPORT_STORAGE_PREFIX = window.location.pathname.toLowerCase().includes("ramadan_report")
@@ -819,26 +819,26 @@
 
   const loadState = ()=>{
     try{
-      const raw = localStorage.getItem(STATE_STORAGE_KEY) || localStorage.getItem(LEGACY_STATE_STORAGE_KEY);
+      const raw = window.WA3I_SESSION.storage.getItem(STATE_STORAGE_KEY) || window.WA3I_SESSION.storage.getItem(LEGACY_STATE_STORAGE_KEY);
       if(!raw) return null;
       return JSON.parse(raw);
     }catch(e){ return null; }
   };
 
   const saveState = ()=>{
-    localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(state));
+    window.WA3I_SESSION.storage.setItem(STATE_STORAGE_KEY, JSON.stringify(state));
   };
 
   const loadArchive = ()=>{
     try{
-      const raw = localStorage.getItem(ARCHIVE_STORAGE_KEY) || localStorage.getItem(LEGACY_ARCHIVE_STORAGE_KEY) || "[]";
+      const raw = window.WA3I_SESSION.storage.getItem(ARCHIVE_STORAGE_KEY) || window.WA3I_SESSION.storage.getItem(LEGACY_ARCHIVE_STORAGE_KEY) || "[]";
       const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed.filter(item => item && item.report).slice(0,90) : [];
     }catch(e){ return []; }
   };
 
   const saveArchive = (archive)=>{
-    localStorage.setItem(ARCHIVE_STORAGE_KEY, JSON.stringify((Array.isArray(archive) ? archive : []).slice(0,90)));
+    window.WA3I_SESSION.storage.setItem(ARCHIVE_STORAGE_KEY, JSON.stringify((Array.isArray(archive) ? archive : []).slice(0,90)));
   };
 
   const escapeHtml = (str)=>{
@@ -1815,8 +1815,8 @@ ${notesLines}
 
     $("#clear").onclick = ()=>{
       if(confirm("متأكد تمسح كل شيء؟")){
-        localStorage.removeItem(STATE_STORAGE_KEY);
-        localStorage.removeItem(LEGACY_STATE_STORAGE_KEY);
+        window.WA3I_SESSION.storage.removeItem(STATE_STORAGE_KEY);
+        window.WA3I_SESSION.storage.removeItem(LEGACY_STATE_STORAGE_KEY);
         toast("تم المسح");
         location.reload();
       }
@@ -1841,7 +1841,8 @@ ${notesLines}
 
   render();
 })();
-</script>
+
+})();</script>
 </body>
 </html>
 

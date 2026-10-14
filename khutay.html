@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0c1422">
+  <meta name="robots" content="noindex, nofollow">
+  <title>خُطاي — الموحدون</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="planner.css?v=353e61758dbf"><link rel="stylesheet" href="session.css?v=9ee192b5d8cc"><link rel="stylesheet" href="extension.css?v=f3001815b949"><link rel="stylesheet" href="harvest.css?v=99b6e9b2c526"><link rel="stylesheet" href="mobile-shell.css?v=84473fbba950"><link rel="stylesheet" href="planning.css?v=638f601519cd">
+  <script src="session-config.js?v=ef65dcb6817a"></script><script src="session-runtime.js?v=d6b557c7228b"></script><script type="module" src="client/planner-ui-2IAWC4ER.js?v=4e1a42b75554"></script>
+<link rel="stylesheet" href="bracelet.css?v=cb4403670d6d"><script type="module" src="client/bracelet-ui-RCWKAVMR.js?v=88c43eaa09bd"></script></head>
+<body class="session-pending" data-session-private-page>
+  <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+    <symbol id="icon-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="icon-habit" viewBox="0 0 24 24"><path d="M19 8a8 8 0 0 0-13-2L3 9m0-5v5h5m-3 7a8 8 0 0 0 13 2l3-3m0 5v-5h-5"/></symbol>
+    <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M4 3v17h17M8 15V9m5 6V5m5 10v-4"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1.1 6.2L12 17.3l-5.7 2.9 1.1-6.2L2.9 9.6l6.3-.9Z"/></symbol>
+  </svg>
+
+  <main class="preview-home"><a href="./index.html?release=3751ad4ea4c98ff8">الواجهة الرئيسية</a>
+    <p class="site-name">الموحدون</p>
+    <button type="button" class="launch-button" id="launchPreview">
+      <svg class="icon" aria-hidden="true"><use href="#icon-target"/></svg>
+      <span>خُطاي</span>
+      <svg class="icon launch-arrow" aria-hidden="true"><use href="#icon-arrow"/></svg>
+    </button>
+    
+  </main>
+
+  <dialog id="khutayWindow" class="khutay-window" aria-labelledby="windowTitle">
+    <header class="window-header">
+      <button type="button" class="icon-button back-button" id="detailBack" aria-label="العودة إلى العادات" hidden>
+        <svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg>
+      </button>
+      <div class="window-title">
+        <h1 id="windowTitle">خُطاي</h1>
+      </div>
+      <button type="button" class="icon-button close-button" id="closePreview" aria-label="إغلاق خُطاي">
+        <svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg>
+      </button>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="أقسام خُطاي">
+      <button type="button" class="tab is-active" id="tab-day" role="tab" aria-selected="true" aria-controls="panel-day" data-tab="day">
+        <svg class="icon" aria-hidden="true"><use href="#icon-sun"/></svg><span>يومي</span>
+      </button>
+      <button type="button" class="tab" id="tab-habits" role="tab" aria-selected="false" aria-controls="panel-habits" tabindex="-1" data-tab="habits">
+        <svg class="icon" aria-hidden="true"><use href="#icon-habit"/></svg><span>عاداتي</span>
+      </button>
+      <button type="button" class="tab" id="tab-harvest" role="tab" aria-selected="false" aria-controls="panel-harvest" tabindex="-1" data-tab="harvest">
+        <svg class="icon" aria-hidden="true"><use href="#icon-chart"/></svg><span>حصادي</span>
+      </button>
+    </nav>
+
+    <div class="window-content" id="windowContent">
+      <section class="tab-panel" id="panel-day" role="tabpanel" aria-labelledby="tab-day" tabindex="0">
+        <div class="page-heading">
+          <div><span class="eyebrow" id="todayWeekday"></span><h2 id="todayDate"></h2></div>
+          <input id="dayPicker" class="date-picker" type="date" aria-label="تاريخ اليوم">
+        </div>
+
+        <div class="day-layout">
+          <section class="section-block priority-section" aria-labelledby="prioritiesTitle">
+            <div class="section-heading"><h3 id="prioritiesTitle">أولوياتي</h3><span class="section-count" id="priorityCount"></span></div>
+            <div class="task-list priorities" id="priorityList"></div>
+          </section>
+
+          <section class="section-block habit-section" aria-labelledby="dailyHabitsTitle">
+            <div class="section-heading"><h3 id="dailyHabitsTitle">عادات اليوم</h3><button class="add-button" type="button" data-add="habit" data-form-mount="#dailyHabitForm">عادة <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg></button><span class="progress-number" id="dailyPercent" aria-live="polite"></span></div>
+            <div id="dailyHabitForm" class="form-mount"></div>
+            <div class="daily-progress" id="dailyProgress" role="progressbar" aria-label="إنجاز عادات اليوم" aria-valuemin="0" aria-valuemax="100"><span id="dailyProgressFill"></span></div>
+            <div class="progress-caption"><span id="dailyHabitCount"></span><span id="dailyRemaining"></span></div>
+            <div class="habit-list" id="dailyHabitList"></div>
+          </section>
+
+          <section class="section-block remaining-tasks" aria-labelledby="tasksTitle">
+            <div class="section-heading"><h3 id="tasksTitle">مهامي</h3><span class="section-count" id="taskCount"></span><button class="add-button" type="button" data-add="task" data-form-mount="#taskForm">مهمة <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg></button></div>
+            <div id="taskForm" class="form-mount"></div>
+            <div class="task-list" id="taskList"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="panel-goals" aria-label="أهدافي — متوقف مؤقتًا" hidden inert>
+        <div class="page-heading"><h2>أهدافي</h2><button class="add-button" type="button" data-add="area">مجال <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg></button></div>
+        <div class="plan-period" id="planPeriod"></div><div id="planTools"></div>
+        <div id="goalForm" class="form-mount"></div>
+        <button class="list-toggle" id="archivedGoals">المؤرشفة</button><p id="planningError" class="planning-error" role="alert"></p><div class="goal-list" id="goalList"></div>
+      </section>
+
+      <section class="tab-panel" id="panel-habits" role="tabpanel" aria-labelledby="tab-habits" tabindex="0" hidden>
+        <div id="habitOverview">
+          <div class="page-heading"><div><span class="eyebrow" id="habitTotal"></span><h2>عاداتي</h2></div><button class="add-button" type="button" data-add="habit" data-form-mount="#habitForm">عادة <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg></button></div>
+          <button class="list-toggle" id="archivedHabits">المؤرشفة</button><div id="habitForm" class="form-mount"></div>
+          <div class="habit-directory" id="habitDirectory"></div>
+        </div>
+        <div id="habitDetail" hidden>
+          <div class="page-heading"><div><span class="eyebrow" id="detailSchedule"></span><h2 id="detailTitle"></h2></div><span class="small-tag">هذا الأسبوع</span></div>
+          <div class="section-block habit-history-block">
+            <div class="section-heading"><h3>سجل الأسبوع</h3><span class="section-count" id="detailHabitCount"></span></div>
+            <div class="habit-week" id="habitWeek"></div>
+            <div class="calendar-legend"><span><i class="legend-dot is-done"></i>مكتملة</span><span><i class="legend-dot"></i>مطلوبة</span><span><i class="legend-dot is-unscheduled"></i>غير مجدولة</span></div>
+          </div>
+          <div id="detailHabitForm" class="form-mount"></div><div id="habitActions"></div><div class="linked-goal"><span class="eyebrow">الهدف المرتبط</span><strong id="detailGoal"></strong></div>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="panel-harvest" role="tabpanel" aria-labelledby="tab-harvest" tabindex="0" hidden>
+        <div class="page-heading harvest-heading"><div><span class="eyebrow" id="harvestWeekLabel" hidden></span><h2 id="harvestHeading">حصادي</h2></div>
+          <button type="button" class="period-trigger" id="periodTrigger" popovertarget="periodMenu" aria-haspopup="menu" aria-expanded="false"><span id="periodChoice">٧ أيام</span><span aria-hidden="true">⌄</span></button>
+        </div>
+        <div id="periodMenu" class="period-menu" role="menu" popover="auto" aria-label="الفترة الزمنية">
+          <button type="button" role="menuitemradio" data-period="7" aria-checked="true">٧ أيام</button><button type="button" role="menuitemradio" data-period="14" aria-checked="false">١٤ يومًا</button>
+          <button type="button" role="menuitemradio" data-period="30" aria-checked="false">٣٠ يومًا</button><button type="button" role="menuitemradio" data-period="60" aria-checked="false">٦٠ يومًا</button>
+          <button type="button" role="menuitemradio" data-period="90" aria-checked="false">٩٠ يومًا</button><button type="button" role="menuitemradio" data-period="custom" aria-checked="false">فترة مخصصة</button>
+          <button type="button" role="menuitem" id="chooseHistoricalPeriod">استعراض فترة سابقة</button>
+        </div>
+        <form id="customPeriod" class="custom-period" hidden>
+          <label>من تاريخ<input type="date" id="periodFrom" required></label><label>إلى تاريخ<input type="date" id="periodTo" required></label>
+          <button type="submit" class="save-button">عرض</button><p id="periodError" role="alert"></p>
+        </form>
+        <form id="historicalPeriod" class="historical-period" hidden><label>تاريخ ضمن الفترة<input type="date" id="historicalDate" required></label><button type="submit" class="save-button">عرض</button><p id="historicalError" role="alert"></p></form>
+        <div class="week-navigation">
+          <button type="button" class="icon-button" id="harvestBack" aria-label="العودة للفترة السابقة" hidden><svg class="icon" aria-hidden="true"><use href="#icon-arrow"/></svg></button>
+          <span id="weekPeriod"></span>
+        </div>
+        <span id="harvestPath" class="harvest-path"></span>
+        <div id="harvestLoadState" class="section-block harvest-loading" role="status"><span id="harvestLoadStateText">جارٍ تحميل الفترة…</span><button type="button" class="list-toggle" id="harvestRetry" hidden>إعادة المحاولة</button></div>
+        <div id="harvestContent" hidden>
+        <section class="chart-section" aria-labelledby="chartTitle">
+          <div class="chart-heading"><h3 id="chartTitle">الالتزام بالعادات</h3></div>
+          <label id="trendControl" class="trend-control" hidden><input type="checkbox" id="trendToggle">الاتجاه</label>
+          <div class="chart-wrap">
+            <div class="chart-axis" aria-hidden="true"><span style="--tick:0">١٠٠٪</span><span style="--tick:.25">٥٠٪</span><span style="--tick:.5">٠</span><span style="--tick:.75">٥٠٪</span><span style="--tick:1">١٠٠٪</span></div>
+            <div id="chartScroll" class="chart-scroll" dir="rtl" tabindex="0" aria-label="الرسم؛ الأقدم يمينًا والأحدث يسارًا">
+            <div class="chart-grid" id="chartCanvas">
+              <div class="chart-lines" aria-hidden="true"><span></span><span></span><span class="chart-zero"></span><span></span><span></span></div>
+              <svg id="chartLines" viewBox="0 0 1000 400" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <div class="week-chart" id="weekChart" role="group" aria-label="أعمدة الإنجاز"></div>
+            </div>
+            </div>
+          </div>
+          <span id="chartAxisTitle" class="chart-axis-title"></span>
+          <div class="chart-legend" id="chartLegend"><span><i class="bar-key"></i>منجزة</span><span><i class="remaining-key"></i>لم تُسجّل منجزة</span><span id="legendAverage"><i class="average-key"></i>متوسط الفترة</span><span id="legendTrend"><i class="trend-key"></i>اتجاه التقدم</span></div>
+        </section>
+        <section class="section-block period-summary" aria-label="ملخص الفترة"><div class="summary-heading"><h3>ملخص الفترة</h3><span id="summaryScope"></span></div><div class="summary-grid" id="summaryMetrics">
+          <div><span>الالتزام</span><strong id="summaryPercent"></strong></div><div><span>الإنجازات</span><strong id="summaryHabits"></strong></div>
+          <div><span>أيام مجدولة</span><strong id="summaryDays"></strong></div>
+        </div><p id="summaryNote" class="summary-note" hidden></p></section>
+        <dialog class="harvest-day-dialog" id="dayDetails" aria-labelledby="selectedDayDate">
+          <header class="day-dialog-header"><div><span>تفاصيل اليوم</span><h3 id="selectedDayDate"></h3></div><button type="button" class="icon-button" id="closeDayDetails" aria-label="إغلاق تفاصيل اليوم"><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button></header>
+          <div class="day-dialog-content">
+            <span class="day-status" id="selectedDayStatus"></span>
+            <div id="selectedDaySummary" class="selected-day-summary"></div>
+            <section class="detail-list-section" aria-labelledby="selectedHabitsTitle"><h4 id="selectedHabitsTitle">العادات المجدولة</h4><div id="selectedDayHabits"></div></section>
+            <p class="sr-only" id="selectedDayAnnouncement" role="status" aria-live="polite"></p>
+          </div>
+        </dialog>
+        <details class="calculation-note"><summary>أساس الحساب</summary><p>الالتزام: مجموع الإنجازات ÷ مجموع العادات المجدولة المؤهلة، وليس متوسط النسب اليومية. الأحمر يشمل «لا» و«دون إجابة» دون تغيير حالتهما. المستقبل والأيام بلا جدولة لا تُحسب إخفاقًا. نستخدم الجدول التاريخي لكل عادة، والمتوسط والاتجاه مرجّحان بالمجدول.</p></details>
+        </div>
+      </section>
+    </div>
+    <footer class="window-footer"><span id="saveStatus" role="status">جارٍ التحميل…</span><button class="list-toggle" id="retrySave" hidden>إعادة الحفظ</button></footer>
+  </dialog>
+
+  <template id="addFormTemplate">
+    <form class="inline-add-form">
+      <label class="add-field"><span class="add-field-label"></span><input type="text" name="name" maxlength="120" autocomplete="off" required></label>
+      <div class="add-form-actions"><button class="save-button" type="submit">إضافة</button><button class="cancel-button" type="button" data-cancel-add>إلغاء</button></div>
+    </form>
+  </template>
+</body>
+</html>

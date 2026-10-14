@@ -1,0 +1,122 @@
+#panel-harvest { --bar:#25c780; --remaining:#f65b64; --selected-bar:#9df1e6; --average:#c8ac72; --trend:#cbe4e6; --plot-height:260px; --head-space:30px; }
+#panel-harvest .period-picker { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px; margin-bottom:18px; }
+#panel-harvest .period-picker button { min-height:42px; padding:6px 8px; border:1px solid var(--line); border-radius:11px; color:var(--muted); background:rgba(0,0,0,.12); font-size:12px; }
+#panel-harvest .period-picker button[aria-pressed="true"] { color:#9df1e6; border-color:var(--line-teal); background:var(--primary-soft); }
+#panel-harvest .custom-period { display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:end; margin-bottom:18px; }
+#panel-harvest .custom-period label { display:grid; gap:5px; font-size:11px; color:var(--muted); min-width:0; }
+#panel-harvest .custom-period input { width:100%; min-width:0; min-height:42px; background:#0c1b25; color:var(--text); border:1px solid var(--line-teal); border-radius:10px; padding:7px 9px; font:inherit; }
+#periodError { grid-column:1/-1; font-size:11px; color:var(--gold); }
+#periodError:empty { display:none; }
+#panel-harvest .harvest-path { display:block; margin:-9px 0 15px; font-size:10px; color:var(--muted); }
+#panel-harvest .harvest-path:empty { display:none; }
+#panel-harvest .harvest-loading { min-height:280px; display:flex; flex-direction:column; gap:10px; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
+#panel-harvest .chart-section { position:relative; background:linear-gradient(140deg,#122830,#101c24 75%); padding:21px 22px 17px; }
+#panel-harvest .chart-heading { margin-bottom:8px; }
+#panel-harvest .chart-heading h3 { font-size:16px; }
+#panel-harvest .weekly-value > strong { font-size:27px; }
+#panel-harvest.is-analytic .weekly-value > strong { font-size:21px; font-weight:700; color:#70d8d0; }
+#panel-harvest .trend-control { display:flex; align-items:center; gap:6px; justify-content:flex-end; color:var(--muted); font-size:10px; min-height:30px; margin-bottom:2px; }
+#trendToggle { accent-color:var(--primary); width:15px; height:15px; }
+#panel-harvest .chart-wrap { direction:ltr; grid-template-columns:32px minmax(0,1fr); gap:10px; }
+#panel-harvest .chart-scroll { overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; scrollbar-width:thin; scrollbar-color:#397b7d transparent; padding-top:4px; }
+#panel-harvest .chart-grid { width:100%; padding-top:0; }
+#panel-harvest .chart-lines { top:var(--head-space); height:var(--plot-height); }
+#panel-harvest .chart-lines > span { border-top:1px dashed rgba(159,207,212,.14); }
+#panel-harvest .chart-lines > .chart-zero { border-top:1px solid rgba(215,234,233,.65); }
+#panel-harvest .chart-axis { display:block; padding:0; height:calc(var(--head-space) + var(--plot-height)); font-size:9px; direction:rtl; unicode-bidi:isolate; }
+#panel-harvest .chart-axis > span { position:absolute; right:0; top:calc(var(--head-space) + var(--plot-height) * var(--tick)); transform:translateY(-50%); }
+#panel-harvest .week-chart { gap:10px; }
+#panel-harvest .chart-column { direction:rtl; unicode-bidi:isolate; }
+#panel-harvest .column-track { display:block; height:var(--plot-height); margin-top:var(--head-space); position:relative; border-radius:0; }
+#panel-harvest .column-positive, #panel-harvest .column-negative { display:block; position:absolute; left:50%; transform:translateX(-50%); width:min(100%,46px); transition:height .2s ease; }
+#panel-harvest .column-positive { bottom:50%; height:var(--done-height); background:linear-gradient(180deg,#2bd18b,#16a86e); border-radius:8px 8px 0 0; }
+#panel-harvest .column-negative { top:50%; height:var(--remaining-height); background:linear-gradient(180deg,#df4653,#f56a6b); border-radius:0 0 8px 8px; }
+#panel-harvest .is-selected .column-positive { background:linear-gradient(180deg,#5ce4a4,#22be7d); }
+#panel-harvest .is-selected .column-negative { background:linear-gradient(180deg,#ec5460,#ff8180); }
+#panel-harvest .column-value { position:absolute; left:50%; transform:translateX(-50%); font-size:11px; font-weight:700; line-height:1.4; white-space:nowrap; z-index:3; }
+#panel-harvest .column-done-label { display:none; bottom:calc(50% + var(--done-height) + 5px); color:#a6efd0; }
+#panel-harvest .column-remaining-label { display:none; top:calc(50% + max(10px, var(--remaining-height) / 2)); transform:translate(-50%,-50%); color:#fff3f3; text-shadow:0 1px 2px #912b36; }
+#panel-harvest .has-done .column-done-label, #panel-harvest .has-remaining .column-remaining-label { display:block; }
+#panel-harvest .column-empty { display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:var(--muted); background:#101f28; padding:0 3px; }
+#panel-harvest .is-empty .column-empty { display:block; }
+#panel-harvest .is-empty .column-positive, #panel-harvest .is-empty .column-negative { display:none; }
+#panel-harvest .is-compact .column-value { display:none; }
+#panel-harvest .is-compact .is-selected.has-done .column-done-label, #panel-harvest .is-compact .is-selected.has-remaining .column-remaining-label { display:block; }
+#panel-harvest .column-day { font-size:10px; font-weight:600; min-height:30px; margin-top:8px; white-space:nowrap; }
+#panel-harvest .is-compact .column-day { font-size:9px; }
+#panel-harvest #chartLines { position:absolute; inset:var(--head-space) 0 auto; height:var(--plot-height); width:100%; overflow:visible; pointer-events:none; z-index:2; }
+#panel-harvest #chartLines line, #panel-harvest #chartLines polyline { fill:none; vector-effect:non-scaling-stroke; stroke-linecap:round; }
+#panel-harvest .average-line { stroke:var(--average); stroke-width:2; stroke-dasharray:8 7; opacity:.85; }
+#panel-harvest .trend-line { stroke:var(--trend); stroke-width:3; stroke-dasharray:7 8; }
+#panel-harvest .chart-axis-title { display:block; text-align:center; color:var(--muted); font-size:11px; margin-top:4px; }
+#panel-harvest .chart-legend { display:flex; align-items:center; justify-content:center; gap:15px; flex-wrap:wrap; color:#b3c9cd; font-size:10px; margin-top:13px; }
+#panel-harvest .chart-legend > span { display:flex; align-items:center; gap:6px; }
+#panel-harvest .chart-legend i { display:inline-block; width:20px; }
+#panel-harvest .bar-key { width:11px !important; height:9px; background:var(--bar); border-radius:3px; }
+#panel-harvest .remaining-key { width:11px !important; height:9px; background:var(--remaining); border-radius:3px; }
+#panel-harvest .average-key { border-top:2px dashed var(--average); }
+#panel-harvest .trend-key { border-top:2px dashed var(--trend); }
+#panel-harvest .period-details { margin-top:16px; display:flex; align-items:center; gap:15px; flex-wrap:wrap; }
+#panel-harvest .period-details > div { flex:1; }
+#panel-harvest .period-details .section-count { display:block; }
+#panel-harvest .habit-state-summary { margin-top:-8px; }
+#panel-harvest .habit-state-summary dt { font-size:10px; }
+#panel-harvest .habit-state-summary dd { font-size:14px; }
+#panel-harvest .habit-state-summary > div:nth-child(1) dd { color:#a6efd0; }
+#panel-harvest .habit-state-summary > div:nth-child(2) dd { color:#ff9b9d; }
+#panel-harvest .period-details > strong { color:var(--selected-bar); font-size:21px; }
+#panel-harvest .period-comparison, #panel-harvest .period-insights { margin-top:16px; }
+#panel-harvest .comparison-values { display:flex; align-items:center; gap:16px; flex-wrap:wrap; font-size:11px; color:var(--muted); }
+#panel-harvest .comparison-values strong { color:var(--text); font-size:14px; margin-inline-start:5px; }
+#panel-harvest .comparison-values .comparison-delta { color:var(--primary); margin-inline-start:auto; }
+#panel-harvest .period-comparison small { display:block; color:var(--muted); font-size:10px; margin-top:8px; }
+#panel-harvest .period-insights { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:17px; }
+#panel-harvest .period-insights div { display:grid; gap:5px; }
+#panel-harvest .period-insights span, #panel-harvest .period-insights small { color:var(--muted); font-size:10px; }
+#panel-harvest .period-insights strong { font-size:13px; font-weight:700; }
+#panel-harvest .consistency-section > summary { cursor:pointer; font-size:13px; }
+#panel-harvest .consistency-section[open] > summary { margin-bottom:17px; }
+#panel-harvest .calculation-note { margin:15px 3px 0; font-size:10px; color:var(--muted); }
+#panel-harvest .calculation-note summary { cursor:pointer; min-height:32px; }
+#panel-harvest .calculation-note p { line-height:1.9; margin-top:6px; }
+.harvest-day-dialog { display:none; width:min(580px,calc(100vw - 24px)); max-width:calc(100vw - 24px); max-height:calc(100dvh - 36px); padding:0; margin:auto; border:1px solid #31515c; border-radius:20px; background:#10232d; color:var(--text); font-family:Cairo,sans-serif; direction:rtl; box-shadow:0 16px 45px #0006; }
+.harvest-day-dialog[open] { display:flex; flex-direction:column; }
+.harvest-day-dialog::backdrop { background:#030a10b3; }
+.day-dialog-header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-shrink:0; padding:14px 16px; border-bottom:1px solid var(--line-teal); }
+.day-dialog-header>div { min-width:0; }.day-dialog-header span { color:var(--muted); font-size:11px; }.day-dialog-header h3 { font-size:15px; margin:3px 0 0; line-height:1.8; }
+.day-dialog-header .icon-button { width:44px; height:44px; flex-shrink:0; }
+.day-dialog-content { padding:16px; overflow-y:auto; overscroll-behavior:contain; min-height:0; }
+.harvest-day-dialog .day-status:empty { display:none; }
+.harvest-day-dialog dl { display:grid; gap:8px; margin:0 0 14px; }.harvest-day-dialog dl>div { text-align:center; padding:10px 5px; min-width:0; }
+.harvest-day-dialog dt { color:var(--muted); font-size:10px; }.harvest-day-dialog dd { margin:4px 0 0; font-size:18px; font-weight:700; }
+.harvest-day-dialog .day-detail-totals { grid-template-columns:repeat(2,minmax(0,1fr)); border-bottom:1px solid var(--line-teal); }.harvest-day-dialog .day-detail-totals dd { color:#a6efd0; }
+.harvest-day-dialog .habit-state-summary { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.harvest-day-dialog .detail-list-section h4 { font-size:12px; margin:12px 0 8px; }.harvest-day-dialog .detail-row { gap:10px; font-size:12px; }
+.harvest-day-dialog .detail-row span:first-child { overflow-wrap:anywhere; }.harvest-day-dialog .detail-row .detail-state { flex-shrink:0; }
+#panel-harvest #harvestContent { animation:harvest-reveal .18s ease; }
+@keyframes harvest-reveal { from { opacity:.6; transform:translateY(3px); } to { opacity:1; transform:translateY(0); } }
+@media(max-width:700px) {
+  #panel-harvest { --plot-height:224px; --head-space:26px; }
+  #panel-harvest .period-picker { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-bottom:14px; }
+  #panel-harvest .period-picker button { min-height:44px; font-size:11px; }
+  #panel-harvest .custom-period { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+  #panel-harvest .custom-period > button { grid-column:1/-1; }
+  #panel-harvest .chart-section { padding:16px 13px; }
+  #panel-harvest .chart-heading h3 { font-size:12px; }
+  #panel-harvest .weekly-value > strong { font-size:25px; }
+  #panel-harvest.is-analytic .weekly-value > strong { font-size:18px; }
+  #panel-harvest .chart-total { font-size:10px; }
+  #panel-harvest .chart-wrap { grid-template-columns:25px minmax(0,1fr); gap:5px; }
+  #panel-harvest .week-chart { gap:6px; }
+  #panel-harvest .chart-axis { font-size:8px; }
+  #panel-harvest .column-positive { border-radius:5px 5px 0 0; }
+  #panel-harvest .column-negative { border-radius:0 0 5px 5px; }
+  #panel-harvest .column-value { font-size:10px; }
+  #panel-harvest .column-day { font-size:8px; }
+  #panel-harvest .chart-legend { gap:10px; font-size:9px; }
+  #panel-harvest .comparison-values { gap:8px; }
+  #panel-harvest .comparison-values strong { font-size:12px; }
+  #panel-harvest .period-insights { grid-template-columns:minmax(0,1fr); gap:13px; }
+  #panel-harvest .period-insights > div+div { border-top:1px solid var(--line); padding-top:12px; }
+}
+@media(prefers-reduced-motion:reduce) { #panel-harvest *, #panel-harvest #harvestContent { animation:none!important; transition:none!important; } }

@@ -98,7 +98,7 @@ function applyQaContent(categories, items) {
 
 function loadQaCache() {
   try {
-    const raw = localStorage.getItem(LOCAL_QA_CACHE_KEY);
+    const raw = window.WA3I_SESSION.storage.getItem(LOCAL_QA_CACHE_KEY);
     const cached = raw ? JSON.parse(raw) : null;
     const savedAt = Number(cached?.savedAt || 0);
     if (!cached || !savedAt || Date.now() - savedAt > QA_CACHE_MAX_AGE_MS) return false;
@@ -116,7 +116,7 @@ function loadQaCache() {
 
 function saveQaCache() {
   try {
-    localStorage.setItem(LOCAL_QA_CACHE_KEY, JSON.stringify({
+    window.WA3I_SESSION.storage.setItem(LOCAL_QA_CACHE_KEY, JSON.stringify({
       savedAt: Date.now(),
       categories: QA_STATE.categories,
       items: QA_STATE.items,
@@ -844,8 +844,8 @@ function attachQaFirestoreListeners() {
 
     const { db, onSnapshot, collection } = window.FB;
 
-    const unsubContent = onSnapshot(
-      collection(db, FIRESTORE_QA_BUCKET),
+    const unsubContent = window.FB.publicBucketSnapshot(
+      ['qa_category__','qa_item__'],
       (snap) => {
         const categories = [];
         const items = [];

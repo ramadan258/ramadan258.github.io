@@ -20,7 +20,8 @@ service cloud.firestore {
       let profile = /databases/$(database)/documents/featuredMembers/$('custom__' + memberId);
       return registry.schemaVersion == 1 && registry.memberId == memberId && registry.active == true
         && !exists(/databases/$(database)/documents/featuredMembers/$('hidden__' + memberId))
-        && (registry.source == 'static' || (registry.source == 'cloud' && exists(profile)))
+        && registry.source == 'cloud' && memberId.matches('^custom_member_new_[a-f0-9]{32}$') && exists(profile)
+        && get(profile).data.schemaVersion == 2 && get(profile).data.managementState == 'ready'
         && (!exists(profile) || get(profile).data.memberId == memberId);
     }
     function hasBinding() {
@@ -42,11 +43,7 @@ service cloud.firestore {
         && boundMemberId() == memberId;
     }
 
-    function canManageMemberStatuses() {
-      return hasBinding()
-        && exists(/databases/$(database)/documents/memberPermissions/$(boundMemberId()))
-        && get(/databases/$(database)/documents/memberPermissions/$(boundMemberId())).data.memberStatus == true;
-    }
+    function canManageMemberStatuses() { return false; }
 
     function canManageQa() {
       return hasBinding()
@@ -279,9 +276,12 @@ service cloud.firestore {
     }
 
     match /featuredMembers/{id} {
-      allow read: if true;
+      // Legacy access hashes and manual ratings are not public content.
+      allow get: if resource == null && id.matches('^(custom__|hidden__).+')
+        || resource.data.type in ['custom_member','hidden_member','qa_category','qa_item'];
+      allow list: if resource.data.type in ['custom_member','hidden_member','qa_category','qa_item'];
 
-      allow create, update: if isAmjad()
+      allow create, update: if (isAmjad() && !id.matches('^(custom__|hidden__|access__|status__).+'))
         || (
           canManageMemberStatuses()
           && isMemberStatusOverrideDocId(id)
@@ -298,7 +298,7 @@ service cloud.firestore {
           && isValidQaItem() && id == 'qa_item__' + request.resource.data.itemId
         );
 
-      allow delete: if isAmjad()
+      allow delete: if (isAmjad() && !id.matches('^(custom__|hidden__|access__|status__).+'))
         || (
           canManageMemberStatuses()
           && isMemberStatusOverrideDocId(id)

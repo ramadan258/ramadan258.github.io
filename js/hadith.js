@@ -43,7 +43,7 @@ function normalizeRemoteHadith(bookLabel, item) {
 }
 
 async function loadHadithBank() {
-  const cachedRaw = localStorage.getItem(HADITH_CFG.CACHE_KEY);
+  const cachedRaw = window.WA3I_SESSION.storage.getItem(HADITH_CFG.CACHE_KEY);
   const cached = cachedRaw ? safeJsonParse(cachedRaw, null) : null;
 
   if (cached?.savedAt && Array.isArray(cached?.data)) {
@@ -75,7 +75,7 @@ async function loadHadithBank() {
 
     if (bank.length < 50) throw new Error("Hadith bank too small");
 
-    localStorage.setItem(HADITH_CFG.CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data: bank }));
+    window.WA3I_SESSION.storage.setItem(HADITH_CFG.CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data: bank }));
     return bank;
   } catch {
     return HADITH_CFG.FALLBACK;
@@ -101,7 +101,7 @@ async function getHadithOfDay(todayISO) {
   const dailyKey = userKey(`hadith_daily_${todayISO}_v1`);
   const usedKey = userKey("hadith_used_v1");
 
-  const stored = safeJsonParse(localStorage.getItem(dailyKey) || "", null);
+  const stored = safeJsonParse(window.WA3I_SESSION.storage.getItem(dailyKey) || "", null);
   if (stored?.ids && Array.isArray(stored.ids) && stored.ids.length === 5) {
     const bank = await loadHadithBank();
     const map = new Map(bank.map((h) => [h.id, h]));
@@ -112,21 +112,21 @@ async function getHadithOfDay(todayISO) {
   const bank = await loadHadithBank();
   const allIds = bank.map((h) => h.id);
 
-  const usedArr = safeJsonParse(localStorage.getItem(usedKey) || "", []);
+  const usedArr = safeJsonParse(window.WA3I_SESSION.storage.getItem(usedKey) || "", []);
   const usedSet = new Set(Array.isArray(usedArr) ? usedArr : []);
 
   const ids = pickDailyHadithIds(todayISO, allIds, usedSet);
   const map = new Map(bank.map((h) => [h.id, h]));
   const hadiths = ids.map((id) => map.get(id)).filter(Boolean);
 
-  localStorage.setItem(dailyKey, JSON.stringify({ ids, savedAt: Date.now() }));
+  window.WA3I_SESSION.storage.setItem(dailyKey, JSON.stringify({ ids, savedAt: Date.now() }));
 
   const nextUsed = new Set(usedSet);
   if (hadiths.length === 5) hadiths.forEach((h) => nextUsed.add(h.id));
   if (allIds.filter((id) => !usedSet.has(id)).length < 5) {
-    localStorage.setItem(usedKey, JSON.stringify(hadiths.map((h) => h.id)));
+    window.WA3I_SESSION.storage.setItem(usedKey, JSON.stringify(hadiths.map((h) => h.id)));
   } else {
-    localStorage.setItem(usedKey, JSON.stringify(Array.from(nextUsed)));
+    window.WA3I_SESSION.storage.setItem(usedKey, JSON.stringify(Array.from(nextUsed)));
   }
 
   return hadiths.length === 5 ? hadiths : HADITH_CFG.FALLBACK.slice(0, 5);

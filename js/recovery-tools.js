@@ -42,13 +42,13 @@ function rescueCenterStorageKey() {
 }
 
 function getRescueCenterState() {
-  const raw = localStorage.getItem(rescueCenterStorageKey());
+  const raw = window.WA3I_SESSION.storage.getItem(rescueCenterStorageKey());
   if (!raw) return defaultRescueCenterState();
   return normalizeRescueCenterState(safeJsonParse(raw, defaultRescueCenterState()));
 }
 
 function setRescueCenterState(state) {
-  localStorage.setItem(rescueCenterStorageKey(), JSON.stringify(normalizeRescueCenterState(state)));
+  window.WA3I_SESSION.storage.setItem(rescueCenterStorageKey(), JSON.stringify(normalizeRescueCenterState(state)));
 }
 
 function formatRescueLogDate(isoString) {
@@ -299,81 +299,7 @@ function saveRescueLogEntry() {
   showToast("تمت إضافة النجاة إلى السجل ✅");
 }
 
-function setupRescueCenterModal() {
-  const page = qs("#rescue");
-  const openBtn = qs("#openRescueCenter");
-  const breathBtn = qs("#rescueCenterBreathBtn");
-  const azkarBtn = qs("#rescueCenterAzkarBtn");
-  const libraryBtn = qs("#rescueCenterLibraryBtn");
-  const classicPlanBtn = qs("#rescueCenterClassicPlanBtn");
-  const savePlanBtn = qs("#saveRescuePlanBtn");
-  const saveLogBtn = qs("#saveRescueLogBtn");
-  if (!page) return;
-
-  qsa("#rescue .rescue-center-panel").forEach((panel) => {
-    panel.addEventListener("toggle", () => syncRescueCenterPanelBadges());
-  });
-
-  function openPage() {
-    if (typeof getStandalonePageUrl === "function") {
-      window.location.href = getStandalonePageUrl("rescue");
-      return;
-    }
-
-    try {
-      const url = new URL(window.location.href);
-      url.search = "";
-      url.searchParams.set("view", "rescue");
-      window.location.href = `${url.pathname}${url.search}`;
-    } catch {
-      window.location.href = "index.html?view=rescue";
-    }
-  }
-
-  if (openBtn) openBtn.onclick = () => openPage();
-
-  if (typeof getStandaloneView === "function" && getStandaloneView() === "rescue") {
-    const snapshot = renderRescueCenterModal();
-    setRescueCenterPanelDefaults(snapshot.state, snapshot.evaluation);
-  }
-
-  if (breathBtn) {
-    breathBtn.onclick = () => {
-      const todayISO = WA3I_CTX.todayISO;
-      const state = WA3I_CTX.state;
-      if (!todayISO || !state) return;
-      if (!state.breathRunning) {
-        startBreathTimer(todayISO, state);
-        renderRescueCenterOverview(getRescueCenterState(), getCurrentRescueCenterEvaluation());
-      } else {
-        showToast("مؤقت التنفس يعمل بالفعل.");
-      }
-    };
-  }
-
-  if (azkarBtn) {
-    azkarBtn.onclick = () => {
-      openAzkarReader(chooseRiskAzkarConfig(WA3I_CTX.state));
-    };
-  }
-
-  if (libraryBtn) {
-    libraryBtn.onclick = () => {
-      qs("#openRecoveryLibrary")?.click();
-    };
-  }
-
-  if (classicPlanBtn) {
-    classicPlanBtn.onclick = () => {
-      if (typeof window.openRescuePlanModal === "function") {
-        window.openRescuePlanModal();
-      }
-    };
-  }
-
-  if (savePlanBtn) savePlanBtn.onclick = () => saveRescueCenterPlan();
-  if (saveLogBtn) saveLogBtn.onclick = () => saveRescueLogEntry();
-}
+function setupRescueCenterModal() {}
 
 // ---------------------------
 // Recovery Library
@@ -707,28 +633,4 @@ function setupRecoveryLibrary() {
 // ---------------------------
 // Rescue Plan
 // ---------------------------
-function setupRescuePlanModal() {
-  const modal = qs("#rescuePlanModal");
-  const closeBtn = qs("#closeRescuePlanModal");
-  const closeBtn2 = qs("#closeRescuePlanModal2");
-
-  function openModal() {
-    modal.classList.add("open");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-  }
-
-  function closeModal() {
-    modal.classList.remove("open");
-    modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-  }
-
-  window.openRescuePlanModal = openModal;
-  window.closeRescuePlanModal = closeModal;
-  closeBtn?.addEventListener("click", closeModal);
-  closeBtn2?.addEventListener("click", closeModal);
-  modal?.addEventListener("click", (e) => {
-    if (e.target === modal) closeModal();
-  });
-}
+function setupRescuePlanModal() {}

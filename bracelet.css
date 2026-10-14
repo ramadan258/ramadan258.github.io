@@ -1,0 +1,25 @@
+.member-avatar.habit-ring-neutral, .member-avatar.habit-ring-gold, .member-avatar.habit-ring-green, .member-avatar.habit-ring-blue, .member-avatar.habit-ring-red {
+  --ring-color:#617785;
+  border-color:var(--ring-color)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--ring-color) 20%,transparent)!important;
+  filter:none!important;
+  animation:none!important;
+  transition:border-color .18s ease,box-shadow .18s ease;
+}
+.member-avatar.habit-ring-gold { --ring-color:#f0cf72; box-shadow:0 0 0 3px #f0cf7233,0 0 16px #f0cf722b!important; }
+.member-avatar.habit-ring-blue { --ring-color:#71b8f5; }
+.member-avatar.habit-ring-green { --ring-color:#70cca0; }
+.member-avatar.habit-ring-red { --ring-color:#eb858c; }
+.personal-bracelet-avatar { width:26px!important; height:26px!important; min-width:26px; border:2px solid; border-radius:50%; object-fit:cover; vertical-align:middle; margin-inline-end:9px; }
+.window-title .personal-bracelet-avatar { display:inline-block; margin-top:7px; }
+.bracelet-visibility-notice { font-size:12px; line-height:1.6; color:#a9bbc5; margin:6px 0 0; font-weight:400; }
+@media(prefers-reduced-motion:reduce) { .member-avatar[class*="habit-ring-"] { transition:none; } }
+/* A private, current-day meter; the public bracelet always describes yesterday. */
+.main-progress{--achievement:#617785;display:grid;direction:rtl;grid-template-columns:25% 75%;height:154px;margin:12px 0;border:1px solid #294650;border-radius:18px;background:linear-gradient(135deg,#102831,#0b1722);overflow:hidden}
+.main-progress{padding:0;width:100%;box-sizing:border-box;box-shadow:none;animation:none}.main-progress::before{display:none}
+.main-progress[data-tier="gold"]{--achievement:#f0cf72}.main-progress[data-tier="green"]{--achievement:#70cca0}.main-progress[data-tier="blue"]{--achievement:#71b8f5}.main-progress[data-tier="red"]{--achievement:#eb858c}
+.main-progress-meter,.main-progress-chart{display:flex;align-items:center;justify-content:center;min-width:0;position:relative;text-decoration:none;color:#afc6d0}.main-progress-meter{border-inline-end:1px solid #294650}.main-progress-meter [role="progressbar"]{position:relative;height:112px;width:18px;border-radius:12px;background:color-mix(in srgb,var(--achievement) 12%,#ffffff08);overflow:hidden}.main-progress-meter [role="progressbar"] span{position:absolute;bottom:0;left:0;right:0;background:var(--achievement);border-radius:12px;transition:height .18s ease}
+.main-progress-chart{padding:12px 16px 20px}.mini-chart{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));direction:rtl;width:100%;height:112px;gap:7px;position:relative}.mini-chart::before{content:"";position:absolute;top:50%;width:100%;height:1px;background:#a7c6d877}.mini-column{height:100%;position:relative;min-width:0}.mini-column i{position:absolute;inset-inline:18%;border-radius:5px;min-width:3px}.mini-done{bottom:50%;height:var(--mini-done);background:#27c477}.mini-remaining{top:50%;height:var(--mini-remaining);background:#ff565b}.mini-column small{position:absolute;top:100%;width:100%;font:10px Cairo,sans-serif;text-align:center}.mini-column.is-future::after,.mini-column.is-empty::after{content:"";position:absolute;left:49%;top:34%;height:32%;border-left:1px solid #7593a32b}
+.main-progress[data-phase="loading"] .mini-chart{opacity:.4;background:repeating-linear-gradient(90deg,transparent 0 12%,#7394a31a 12% 14%)}.main-progress a:focus-visible{outline:2px solid #4ecdc4;outline-offset:-4px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.main-progress *{transition:none!important}}

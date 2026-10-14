@@ -210,7 +210,7 @@ const MEMBER_AUTH_DEVICE_KEY = "wa3i_member_auth_device_v1";
 
 function readPersistedMemberAuthorization() {
   try {
-    const raw = localStorage.getItem(MEMBER_AUTH_DEVICE_KEY);
+    const raw = window.WA3I_SESSION.storage.getItem(MEMBER_AUTH_DEVICE_KEY);
     if (!raw) return "";
     const parsed = JSON.parse(raw);
     const id = String(parsed?.memberId || "").trim();
@@ -220,104 +220,31 @@ function readPersistedMemberAuthorization() {
   }
 }
 
-function hasPersistedLocalAdminAccess(memberId) {
-  const id = String(memberId || "").trim();
-  if (!id) return false;
-  try {
-    const raw = localStorage.getItem(LOCAL_ADMIN_ACCESS_STORAGE_KEY);
-    if (!raw) return false;
-    const parsed = JSON.parse(raw);
-    const owner = String(parsed?.owner || "").trim();
-    if (!owner || owner !== id) return false;
-    return Boolean(parsed?.memberStatus || parsed?.ahd || parsed?.memberManage || parsed?.qa);
-  } catch {
-    return false;
-  }
-}
+function hasPersistedLocalAdminAccess() { return false; }
 
-function markMemberSessionAuthorized(memberId) {
-  const id = String(memberId || "").trim();
-  if (!id) return;
-  try { sessionStorage.setItem(MEMBER_AUTH_SESSION_KEY, id); } catch {}
-  try {
-    localStorage.setItem(MEMBER_AUTH_DEVICE_KEY, JSON.stringify({
-      memberId: id,
-      grantedAt: Date.now(),
-    }));
-  } catch {}
-}
+function markMemberSessionAuthorized() {}
 
-function hasMemberSessionAuthorization(memberId) {
-  const id = String(memberId || "").trim();
-  if (!id) return false;
-  const boundMemberId = readLocalMemberBinding();
-  if (boundMemberId && boundMemberId !== id) return false;
+function hasMemberSessionAuthorization(id) { return window.WA3I_SESSION.session?.member.id === id; }
 
-  try {
-    if (String(sessionStorage.getItem(MEMBER_AUTH_SESSION_KEY) || "").trim() === id) {
-      return true;
-    }
-  } catch {
-    // Continue to the persisted device authorization fallback below.
-  }
+function clearMemberSessionAuthorization() {}
 
-  const persistedId = readPersistedMemberAuthorization();
-  if (persistedId !== id) return false;
+function readCurrentUser() { return window.WA3I_SESSION.session?.member || null; }
 
-  try { sessionStorage.setItem(MEMBER_AUTH_SESSION_KEY, id); } catch {}
-  return true;
-}
-
-function clearMemberSessionAuthorization() {
-  try { sessionStorage.removeItem(MEMBER_AUTH_SESSION_KEY); } catch {}
-  try { localStorage.removeItem(MEMBER_AUTH_DEVICE_KEY); } catch {}
-}
-
-function readCurrentUser() {
-  try {
-    const raw = localStorage.getItem(USER_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object") return null;
-    if (typeof parsed.id !== "string" || typeof parsed.name !== "string") return null;
-    if (!parsed.id) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function saveCurrentUser(user) {
-  WA3I_USER = user;
-  try { localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user)); } catch {}
-  updateUserBar();
-}
+function saveCurrentUser(user) { if (user?.id !== window.WA3I_SESSION.session?.member.id) throw new Error('UNVERIFIED_IDENTITY'); WA3I_USER = user; updateUserBar(); }
 
 function clearCurrentUser() {
   WA3I_USER = null;
-  try { localStorage.removeItem(USER_STORAGE_KEY); } catch {}
+  try { window.WA3I_SESSION.storage.removeItem(USER_STORAGE_KEY); } catch {}
   clearMemberSessionAuthorization();
   try { resetLocalAdminAccess(); } catch {}
   updateUserBar();
 }
 
-function readLocalMemberBinding() {
-  try {
-    return String(localStorage.getItem(LOCAL_MEMBER_BINDING_KEY) || "").trim();
-  } catch {
-    return "";
-  }
-}
+function readLocalMemberBinding() { return window.WA3I_SESSION.session?.member.id || ''; }
 
-function writeLocalMemberBinding(memberId) {
-  const id = String(memberId || "").trim();
-  if (!id) return;
-  try { localStorage.setItem(LOCAL_MEMBER_BINDING_KEY, id); } catch {}
-}
+function writeLocalMemberBinding() {}
 
-function clearLocalMemberBinding() {
-  try { localStorage.removeItem(LOCAL_MEMBER_BINDING_KEY); } catch {}
-}
+function clearLocalMemberBinding() {}
 
 function createBoundToOtherMemberError(boundMemberId) {
   const err = new Error("BOUND_TO_OTHER_MEMBER");
@@ -365,7 +292,7 @@ const FIRESTORE_MEMBER_ACCESS = "featuredMembers";
 const FIRESTORE_MEMBER_PERMISSIONS = "memberPermissions";
 const LOCAL_MEMBER_DIRECTORY_CUSTOM_KEY = "wa3i_member_directory_custom_v1";
 const LOCAL_MEMBER_DIRECTORY_HIDDEN_KEY = "wa3i_member_directory_hidden_v1";
-const LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY = "wa3i_member_directory_remote_cache_v1";
+const LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY = "wa3i_dynamic_member_directory_cache_v3";
 const REMOTE_MEMBER_DIRECTORY_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 const LOCAL_LEGACY_MEMBER_CLEANUP_KEY = "wa3i_legacy_member_cleanup_v1";
 const MEMBER_DIRECTORY_STATE = {
@@ -432,9 +359,7 @@ function isLegacyRemovedStaticMemberId(memberId) {
   return LEGACY_REMOVED_STATIC_MEMBER_IDS.has(String(memberId || "").trim());
 }
 
-const STATIC_BASE_MEMBERS = [
-  { id: AMJAD_MEMBER_ID, name: AMJAD_MEMBER_NAME, src: DEFAULT_MEMBER_AVATAR_SRC, source: "static" },
-];
+const STATIC_BASE_MEMBERS = [{"id":"member_9","name":"أمجد","src":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop stop-color='%23132633'/%3E%3Cstop offset='1' stop-color='%230e2430'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='160' rx='36' fill='url(%23g)'/%3E%3Ccircle cx='80' cy='58' r='28' fill='%23d8e6eb' fill-opacity='.92'/%3E%3Cpath d='M34 132c8-26 31-40 46-40s38 14 46 40' fill='%23d8e6eb' fill-opacity='.92'/%3E%3C/svg%3E","source":"static"}];
 
 function extractMembersFromCards(cards) {
   const out = [];
@@ -472,7 +397,6 @@ function memberPermissionsDocId(memberId) {
 }
 
 const ASSIGNABLE_MEMBER_PERMISSIONS = Object.freeze({
-  memberStatus: "تقييم الأعضاء",
   ahd: "إدارة عهد الثبات",
   qa: "سؤال وجواب",
 });
@@ -515,19 +439,11 @@ function memberAccessRecordFromData(docId, data = {}) {
   };
 }
 
-function getMemberAccessRecord(memberId) {
-  const id = String(memberId || "").trim();
-  if (!id) return null;
-  return MEMBER_DIRECTORY_STATE.remoteAccessById.get(id) || null;
-}
+function getMemberAccessRecord(id) { return id === 'member_9' || window.WA3I_SESSION.accounts.has(id) ? {accountManaged:true} : null; }
 
-function memberHasAccessPin(memberId) {
-  return Boolean(getMemberAccessRecord(memberId)?.passwordHash);
-}
+function memberHasAccessPin() { return true; }
 
-function getMemberPermissions(memberId) {
-  return normalizeMemberPermissions(getMemberAccessRecord(memberId)?.permissions);
-}
+function getMemberPermissions(id) { return window.WA3I_SESSION.permissions.get(id) || normalizeMemberPermissions(); }
 
 async function sha256Hex(value) {
   const text = String(value || "");
@@ -539,74 +455,11 @@ async function sha256Hex(value) {
   return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-async function resolveMemberAccessRecord(memberId) {
-  const id = String(memberId || "").trim();
-  if (!id) return null;
+async function resolveMemberAccessRecord(id) { return getMemberAccessRecord(id); }
 
-  const existing = getMemberAccessRecord(id);
-  if (existing) return existing;
-  if (!fbAvailable()) throw new Error("ACCESS_CHECK_UNAVAILABLE");
+async function queueLegacyMemberAccessCleanup(){}
 
-  try {
-    const { db, doc, getDoc } = window.FB;
-    const snap = await getDoc(doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id)));
-    if (!snap.exists()) return null;
-    const record = memberAccessRecordFromData(snap.id, snap.data() || {});
-    if (!record) return null;
-    MEMBER_DIRECTORY_STATE.remoteAccessById.set(id, record);
-    return record;
-  } catch (error) {
-    throw error || new Error("ACCESS_CHECK_FAILED");
-  }
-}
-
-function queueLegacyMemberAccessCleanup(memberId) {
-  const id = String(memberId || "").trim();
-  if (!id || !FB_STATE.isAdmin || !fbAvailable()) return;
-
-  MEMBER_DIRECTORY_STATE.pendingLegacyAccessCleanupIds.add(id);
-  if (MEMBER_DIRECTORY_STATE.legacyAccessCleanupTimer) return;
-
-  MEMBER_DIRECTORY_STATE.legacyAccessCleanupTimer = window.setTimeout(async () => {
-    const ids = Array.from(MEMBER_DIRECTORY_STATE.pendingLegacyAccessCleanupIds);
-    MEMBER_DIRECTORY_STATE.pendingLegacyAccessCleanupIds.clear();
-    MEMBER_DIRECTORY_STATE.legacyAccessCleanupTimer = null;
-    if (!ids.length || !FB_STATE.isAdmin || !fbAvailable()) return;
-
-    const { db, doc, setDoc, deleteField, serverTimestamp } = window.FB;
-    await Promise.allSettled(ids.map((memberIdValue) => (
-      setDoc(
-        doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(memberIdValue)),
-        {
-          passwordPlain: deleteField(),
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      )
-    )));
-  }, 200);
-}
-
-async function canResumeMemberSession(memberId) {
-  const id = String(memberId || "").trim();
-  if (!id) return false;
-  if (isLegacyRemovedStaticMemberId(id)) return false;
-  if (!getAllMembersList().some((member) => String(member.id || "").trim() === id)) return false;
-  if (hasMemberSessionAuthorization(id)) return true;
-  if (hasPersistedLocalAdminAccess(id)) return true;
-
-  try {
-    const cachedAccessRecord = getMemberAccessRecord(id);
-    if (cachedAccessRecord) {
-      return !cachedAccessRecord.passwordHash;
-    }
-
-    const accessRecord = await resolveMemberAccessRecord(id);
-    return !accessRecord?.passwordHash;
-  } catch {
-    return false;
-  }
-}
+async function canResumeMemberSession(id) { return window.WA3I_SESSION.session?.member.id === id; }
 
 function persistLocalMemberDirectoryState() {
   try {
@@ -616,49 +469,16 @@ function persistLocalMemberDirectoryState() {
       src: String(member.src || "").trim(),
       source: "custom",
     })).filter((member) => member.id && member.name && member.src);
-    localStorage.setItem(LOCAL_MEMBER_DIRECTORY_CUSTOM_KEY, JSON.stringify(custom));
+    window.WA3I_SESSION.storage.setItem(LOCAL_MEMBER_DIRECTORY_CUSTOM_KEY, JSON.stringify(custom));
   } catch {}
 
   try {
     const hidden = Array.from(MEMBER_DIRECTORY_STATE.localHiddenMemberIds.values()).map((id) => String(id || "").trim()).filter(Boolean);
-    localStorage.setItem(LOCAL_MEMBER_DIRECTORY_HIDDEN_KEY, JSON.stringify(hidden));
+    window.WA3I_SESSION.storage.setItem(LOCAL_MEMBER_DIRECTORY_HIDDEN_KEY, JSON.stringify(hidden));
   } catch {}
 }
 
-function loadLocalMemberDirectoryState() {
-  try {
-    const rawCustom = localStorage.getItem(LOCAL_MEMBER_DIRECTORY_CUSTOM_KEY);
-    const arr = rawCustom ? JSON.parse(rawCustom) : [];
-    const next = new Map();
-    if (Array.isArray(arr)) {
-      arr.forEach((member) => {
-        const id = String(member?.id || "").trim();
-        const name = String(member?.name || "").trim();
-        const src = String(member?.src || "").trim();
-        if (!id || !name || !src || isLegacyRemovedStaticMemberId(id)) return;
-        next.set(id, { id, name, src, source: "custom" });
-      });
-    }
-    MEMBER_DIRECTORY_STATE.localCustomMembers = next;
-  } catch {
-    MEMBER_DIRECTORY_STATE.localCustomMembers = new Map();
-  }
-
-  try {
-    const rawHidden = localStorage.getItem(LOCAL_MEMBER_DIRECTORY_HIDDEN_KEY);
-    const arr = rawHidden ? JSON.parse(rawHidden) : [];
-    const next = new Set();
-    if (Array.isArray(arr)) {
-      arr.forEach((id) => {
-        const value = String(id || "").trim();
-        if (value) next.add(value);
-      });
-    }
-    MEMBER_DIRECTORY_STATE.localHiddenMemberIds = next;
-  } catch {
-    MEMBER_DIRECTORY_STATE.localHiddenMemberIds = new Set();
-  }
-}
+function loadLocalMemberDirectoryState(){}
 
 function saveRemoteMemberDirectoryCache() {
   try {
@@ -672,7 +492,7 @@ function saveRemoteMemberDirectoryCache() {
       .map((id) => String(id || "").trim())
       .filter(Boolean);
 
-    localStorage.setItem(LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY, JSON.stringify({
+    window.WA3I_SESSION.storage.setItem(LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY, JSON.stringify({
       updatedAt: Date.now(),
       custom,
       hidden,
@@ -682,7 +502,7 @@ function saveRemoteMemberDirectoryCache() {
 
 function loadRemoteMemberDirectoryCache() {
   try {
-    const raw = localStorage.getItem(LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY);
+    const raw = window.WA3I_SESSION.storage.getItem(LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY);
     const cached = raw ? JSON.parse(raw) : null;
     const updatedAt = Number(cached?.updatedAt || 0);
     if (!cached || !updatedAt || Date.now() - updatedAt > REMOTE_MEMBER_DIRECTORY_CACHE_MAX_AGE_MS) {
@@ -816,52 +636,7 @@ function refreshMemberDirectoryUI(options = {}) {
   }
 }
 
-async function cleanupLegacyRemovedMembersCloudOnce() {
-  if (!FB_STATE.isAdmin || !fbAvailable() || MEMBER_DIRECTORY_STATE.legacyRemovedMembersCleanupRunning) return;
-  try {
-    if (localStorage.getItem(LOCAL_LEGACY_MEMBER_CLEANUP_KEY) === "1") return;
-  } catch {}
-
-  MEMBER_DIRECTORY_STATE.legacyRemovedMembersCleanupRunning = true;
-  try {
-    const { db, doc, setDoc, deleteDoc, serverTimestamp } = window.FB;
-    const ops = [];
-
-    LEGACY_REMOVED_STATIC_MEMBER_IDS.forEach((id) => {
-      ops.push(setDoc(
-        doc(db, FIRESTORE_HIDDEN_MEMBERS, hiddenMemberDocId(id)),
-        {
-          type: "hidden_member",
-          memberId: id,
-          hiddenAt: serverTimestamp(),
-          name: id,
-        },
-        { merge: true }
-      ));
-      ops.push(deleteDoc(doc(db, FIRESTORE_CUSTOM_MEMBERS, customMemberDocId(id))));
-      ops.push(deleteDoc(doc(db, "ahdMembers", id)));
-      ops.push(deleteDoc(doc(db, FIRESTORE_STREAKS, id)));
-      ops.push(deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, id)));
-      ops.push(deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "elite"))));
-      ops.push(deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "active"))));
-      ops.push(deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "lazy"))));
-      ops.push(deleteDoc(doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id))));
-      ops.push(deleteDoc(doc(db, FIRESTORE_MEMBER_PERMISSIONS, memberPermissionsDocId(id))));
-    });
-
-    const results = await Promise.allSettled(ops);
-    if (results.some((item) => item.status === "rejected")) {
-      console.warn("Some legacy member cleanup operations failed", results);
-      return;
-    }
-
-    try {
-      localStorage.setItem(LOCAL_LEGACY_MEMBER_CLEANUP_KEY, "1");
-    } catch {}
-  } finally {
-    MEMBER_DIRECTORY_STATE.legacyRemovedMembersCleanupRunning = false;
-  }
-}
+async function cleanupLegacyRemovedMembersCloudOnce(){}
 
 function showGate() {
   qs("#identityGate")?.classList.remove("is-hidden");
@@ -888,116 +663,23 @@ function readMembersFromDOM() {
 
 
 function decorateMemberCardsWithStreaks() {
-  const cards = qsa("#members .slide-card");
-  cards.forEach((card, idx) => {
-    // Keep stable IDs (member_0..), but visually sort by member status first.
-    if (!card.dataset.origIndex) card.dataset.origIndex = String(idx);
-    const orig = parseInt(card.dataset.origIndex || "0", 10);
+    qsa('#members .slide-card').forEach((card,index)=>{
+      if(!card.dataset.origIndex)card.dataset.origIndex=String(index);
+      const id=card.dataset.memberId||'member_'+card.dataset.origIndex,img=card.querySelector('img');
+      card.style.order=card.dataset.origIndex;
+      card.classList.remove('member-status-elite','member-status-active','member-status-lazy');
+      if(img){img.classList.remove('member-status-elite','member-status-active','member-status-lazy');img.classList.add('member-avatar');img.dataset.braceletMemberId=id;}
+    });refreshMemberStatusUI();
+  }
 
-    const nameEl = card.querySelector("h3");
-    if (!nameEl) return;
+function renderIdentityGrid(members) {
+    const grid = qs('#identityGrid'); if (!grid) return;
+    grid.innerHTML = members.map((m) => '<button class="identity-item" data-user-id="'+escapeHtml(m.id)+'" aria-label="'+escapeHtml(m.name)+'"><img class="identity-avatar member-avatar habit-ring-neutral" data-bracelet-member-id="'+escapeHtml(m.id)+'" src="'+escapeHtml(m.src)+'" alt=""/><div class="identity-name">'+escapeHtml(m.name)+'</div></button>').join('');
+    grid.querySelectorAll('[data-user-id]').forEach((btn) => btn.addEventListener('click', () => openIdentityConfirm(members.find((m) => m.id === btn.dataset.userId))));
+    refreshMemberStatusUI();
+  }
 
-    let row = card.querySelector(".member-name-row");
-    if (!row) {
-      row = document.createElement("div");
-      row.className = "member-name-row";
-      nameEl.parentNode?.insertBefore(row, nameEl);
-      row.appendChild(nameEl);
-    }
-    const explicitMemberId = String(card.getAttribute("data-member-id") || "").trim();
-    const memberId = explicitMemberId || `member_${Number.isFinite(orig) ? orig : idx}`;
-    const status = getMemberStatus(memberId);
-    const orderKey = (memberStatusPriority(status) * 100000) + (Number.isFinite(orig) ? orig : idx);
-    card.style.order = String(orderKey);
-
-    const img = card.querySelector("img");
-    card.classList.remove("member-status-elite", "member-status-active", "member-status-lazy");
-    if (img) img.classList.remove("member-avatar", "member-status-elite", "member-status-active", "member-status-lazy");
-    if (status) {
-      card.classList.add(memberStatusClass(status));
-      if (img) {
-        img.classList.add("member-avatar", memberStatusClass(status));
-        img.setAttribute("title", memberStatusLabel(status));
-      }
-    } else if (img) {
-      img.classList.add("member-avatar");
-      img.removeAttribute("title");
-    }
-  });
-}
-
-function renderIdentityGrid(members, filterText = "") {
-  const grid = qs("#identityGrid");
-  if (!grid) return;
-
-  const q = String(filterText || "").trim();
-  const list = q ? members.filter((m) => m.name.includes(q)) : members;
-
-  const sorted = list.slice().sort((a, b) => {
-    const statusCmp = compareMembersByStatusThenName(a, b);
-    if (statusCmp !== 0) return statusCmp;
-    return (a.name || "").localeCompare(b.name || "", "ar");
-  });
-  grid.innerHTML = sorted.length
-    ? sorted
-        .map((m) => {
-          const status = getMemberStatus(m.id);
-          const avatarClass = status ? `identity-avatar member-avatar ${memberStatusClass(status)}` : "identity-avatar member-avatar";
-          return `
-        <button class="identity-item" type="button" data-user-id="${escapeHtml(m.id)}" aria-label="${escapeHtml(m.name)}">
-          <img class="${avatarClass}" loading="lazy" decoding="async" fetchpriority="low" src="${AVATAR_PLACEHOLDER_SRC}" data-src="${resolveMemberAvatarSrc(m.src)}" alt="${escapeHtml(m.name)}" />
-          <div class="identity-name">${escapeHtml(m.name)}</div>
-        </button>
-      `;
-        })
-        .join("")
-    : `<div class="identity-empty">لا توجد نتائج… جرّب اسمًا آخر أو ادخل كضيف.</div>`;
-
-  hydrateDeferredImages(grid, 6);
-
-  grid.querySelectorAll(".identity-item").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const id = btn.getAttribute("data-user-id");
-      const user = members.find((x) => x.id === id);
-      if (!user) return;
-
-      if (isPrivilegedMember(user)) {
-        wireAdminLoginModal();
-        openAdminLoginModal(user);
-        return;
-      }
-
-      try {
-        const accessRecord = await resolveMemberAccessRecord(user.id);
-        openIdentityConfirm(user, { requiresPassword: Boolean(accessRecord?.passwordHash) });
-      } catch {
-        showIdentityToast("تعذّر التحقق من إعدادات دخول هذا العضو الآن. تحقق من الاتصال ثم أعد المحاولة.");
-      }
-    });
-  });
-}
-
-function wireGuestEntry() {
-  if (wireGuestEntry._wired) return;
-  wireGuestEntry._wired = true;
-
-  const btn = qs("#enterGuestBtn");
-  const input = qs("#guestName");
-
-  const enter = () => {
-    const raw = (input?.value || "").trim();
-    const name = raw || "ضيف";
-    const id = raw ? `guest_${slugifyName(raw)}` : "guest";
-    saveCurrentUser({ id, name, kind: "guest" });
-    if (input) input.value = "";
-    startApp();
-  };
-
-  btn?.addEventListener("click", enter);
-  input?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") enter();
-  });
-}
+function wireGuestEntry() {}
 
 function userKey(suffix) {
   return `wa3i_${currentUserId()}_${suffix}`;
@@ -1010,54 +692,9 @@ const FIRESTORE_BINDINGS = "bindings";
 const FIRESTORE_STREAKS = "streaks";
 const SHARED_STREAKS = new Map();
 let SHARED_STREAKS_LISTENING = false;
-function resetLocalStreaksForAllMembersOnce() {
-  const key = "wa3i_reset_local_streaks_v1";
-  try {
-    if (localStorage.getItem(key) === "1") return;
-    localStorage.setItem(key, "1");
-  } catch {
-    return;
-  }
+function resetLocalStreaksForAllMembersOnce() {}
 
-  const n = IDENTITY_MEMBERS_CACHE.length;
-  for (let i = 0; i < n; i += 1) {
-    try {
-      localStorage.removeItem(`wa3i_member_${i}_streak`);
-      localStorage.removeItem(`wa3i_member_${i}_last_completed_date`);
-    } catch {}
-  }
-}
-
-async function resetFirestoreStreaksForAllMembersOnce() {
-  if (!FB_STATE?.isAdmin) return;
-
-  const key = "wa3i_reset_firestore_streaks_v1";
-  try {
-    if (localStorage.getItem(key) === "1") return;
-    localStorage.setItem(key, "1");
-  } catch {
-    // still attempt without guard
-  }
-
-  try {
-    const { db, doc, setDoc, serverTimestamp } = window.FB;
-    const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, "0");
-    const d = String(today.getDate()).padStart(2, "0");
-    const todayISO = `${y}-${m}-${d}`;
-
-    for (const member of IDENTITY_MEMBERS_CACHE) {
-      await setDoc(
-        doc(db, FIRESTORE_STREAKS, String(member.id)),
-        { count: 0, lastCompletedDate: todayISO, updatedAt: serverTimestamp() },
-        { merge: true }
-      );
-    }
-  } catch {
-    // ignore
-  }
-}
+async function resetFirestoreStreaksForAllMembersOnce(){}
 let IDENTITY_MEMBERS_CACHE = [];
 function refreshIdentityStreaksUI() {
   try { decorateMemberCardsWithStreaks(); } catch {}
@@ -1083,57 +720,11 @@ function startSharedStreaksListener() {
   tryInit();
 }
 
-async function ensureAnonSignedIn() {
-  if (!fbAvailable()) throw new Error("FB_NOT_READY");
-  const { auth, signInAnonymously, setPersistence, inMemoryPersistence } = window.FB;
-  if (auth.currentUser) return auth.currentUser;
-  try {
-    await setPersistence(auth, inMemoryPersistence);
-  } catch {}
-  const cred = await signInAnonymously(auth);
-  return cred.user;
-}
+async function ensureAnonSignedIn() { if (!window.WA3I_SESSION.session || !window.FB.auth.currentUser) throw new Error('AUTH_REQUIRED'); return window.FB.auth.currentUser; }
 
-async function ensureRemoteMemberBinding(memberId) {
-  const user = await ensureAnonSignedIn();
-  const { db, doc, getDoc, setDoc, serverTimestamp } = window.FB;
+async function ensureRemoteMemberBinding(id) { return window.WA3I_SESSION.verify(id); }
 
-  const ref = doc(db, FIRESTORE_BINDINGS, user.uid);
-  const snap = await getDoc(ref);
-
-  if (snap.exists()) {
-    const data = snap.data() || {};
-    const bound = String(data.memberId || "");
-    if (bound && bound !== String(memberId)) {
-      throw createBoundToOtherMemberError(bound);
-    }
-    return data;
-  }
-
-  await setDoc(ref, { memberId: String(memberId), createdAt: serverTimestamp() });
-  return { memberId: String(memberId) };
-}
-
-async function ensureMemberBinding(memberId) {
-  const target = String(memberId || "").trim();
-  assertLocalMemberBinding(target);
-
-  try {
-    const remote = await ensureRemoteMemberBinding(target);
-    writeLocalMemberBinding(target);
-    return { ...remote, localOnly: false };
-  } catch (e) {
-    if (String(e?.message || "") === "BOUND_TO_OTHER_MEMBER") {
-      if (e?.boundMemberId) writeLocalMemberBinding(e.boundMemberId);
-      throw e;
-    }
-    if (isBindingUnavailableError(e)) {
-      writeLocalMemberBinding(target);
-      return { memberId: target, localOnly: true };
-    }
-    throw e;
-  }
-}
+async function ensureMemberBinding(id) { return window.WA3I_SESSION.verify(id); }
 
 function isPermissionDeniedError(error) {
   const code = bindingErrorCode(error);
@@ -1144,12 +735,10 @@ function isPermissionDeniedError(error) {
   );
 }
 
-async function getFreshFirebaseIdToken() {
-  if (!fbAvailable()) throw new Error("FB_NOT_READY");
-  const user = window.FB.auth?.currentUser || await ensureAnonSignedIn();
-  if (!user?.getIdToken) throw new Error("AUTH_USER_MISSING");
-  return user.getIdToken(true);
-}
+async function getFreshFirebaseIdToken(){
+    if(window.WA3I_SESSION.session?.kind==='guest')throw Error('GUEST_READ_ONLY');
+    const user=window.FB?.auth?.currentUser;if(!user?.getIdToken)throw Error('AUTH_REQUIRED');return user.getIdToken(true);
+  }
 
 function firestoreRestDocUrl(collectionName, docId) {
   const projectId = String(
@@ -1201,42 +790,9 @@ async function firestoreRestRequest(url, init = {}) {
   throw err;
 }
 
-async function updateMemberStatusViaRest(memberId, status) {
-  const id = String(memberId || "").trim();
-  if (!id) return;
+async function updateMemberStatusViaRest() { throw Error('MANUAL_STATUS_DISABLED'); }
 
-  await firestoreRestRequest(
-    firestoreRestDocUrl(FIRESTORE_MEMBER_STATUS, memberStatusOverrideDocId(id)),
-    {
-      method: "PATCH",
-      body: JSON.stringify({
-        fields: {
-          type: { stringValue: "member_status" },
-          memberId: { stringValue: id },
-          tier: { stringValue: status || "none" },
-          updatedAt: { timestampValue: new Date().toISOString() },
-        },
-      }),
-    }
-  );
-}
-
-async function updateMemberStatusViaSdk(memberId, status) {
-  const id = String(memberId || "").trim();
-  if (!id) return;
-
-  const { db, doc, setDoc, serverTimestamp } = window.FB;
-  await setDoc(
-    doc(db, FIRESTORE_MEMBER_STATUS, memberStatusOverrideDocId(id)),
-    {
-      type: "member_status",
-      memberId: id,
-      tier: status || "none",
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
-}
+async function updateMemberStatusViaSdk() { throw Error('MANUAL_STATUS_DISABLED'); }
 
 
 async function syncStreakToFirestore(memberId, count, todayISO) {
@@ -1261,7 +817,7 @@ async function syncStreakToFirestore(memberId, count, todayISO) {
 function getStreakForUserId(userId) {
   const shared = SHARED_STREAKS.get(userId);
   if (Number.isFinite(shared)) return shared;
-  const raw = localStorage.getItem(`wa3i_${userId}_streak`);
+  const raw = window.WA3I_SESSION.storage.getItem(`wa3i_${userId}_streak`);
   const n = parseInt(raw || "0", 10);
   return Number.isFinite(n) ? n : 0;
 }
@@ -1314,9 +870,7 @@ function fbAvailable() {
   return typeof window.FB !== "undefined" && window.FB?.db && window.FB?.auth;
 }
 
-function hasMemberStatusAdminAccess() {
-  return Boolean(FB_STATE.isAdmin || LOCAL_ADMIN_ACCESS.memberStatus);
-}
+function hasMemberStatusAdminAccess() { return false; }
 
 function hasAhdAdminAccess() {
   return Boolean(FB_STATE.isAdmin || LOCAL_ADMIN_ACCESS.ahd);
@@ -1353,47 +907,9 @@ function canAccessAdminPanel(panelKey) {
   return false;
 }
 
-function persistLocalAdminAccess() {
-  try {
-    const hasAccess = Boolean(
-      LOCAL_ADMIN_ACCESS.owner &&
-      (LOCAL_ADMIN_ACCESS.memberStatus || LOCAL_ADMIN_ACCESS.ahd || LOCAL_ADMIN_ACCESS.memberManage || LOCAL_ADMIN_ACCESS.qa)
-    );
-    if (!hasAccess) {
-      localStorage.removeItem(LOCAL_ADMIN_ACCESS_STORAGE_KEY);
-      return;
-    }
-    localStorage.setItem(LOCAL_ADMIN_ACCESS_STORAGE_KEY, JSON.stringify(LOCAL_ADMIN_ACCESS));
-  } catch {}
-}
+function persistLocalAdminAccess() {}
 
-function restoreLocalAdminAccessForCurrentUser() {
-  try {
-    const currentUser = readCurrentUser();
-    if (!currentUser?.id) {
-      LOCAL_ADMIN_ACCESS = { owner: "", memberStatus: false, ahd: false, memberManage: false, qa: false };
-      return false;
-    }
-
-    const raw = localStorage.getItem(LOCAL_ADMIN_ACCESS_STORAGE_KEY);
-    if (!raw) return false;
-
-    const parsed = JSON.parse(raw);
-    const owner = String(parsed?.owner || "").trim();
-    if (!owner || owner !== String(currentUser.id || "").trim()) return false;
-
-    LOCAL_ADMIN_ACCESS = {
-      owner,
-      memberStatus: Boolean(parsed?.memberStatus),
-      ahd: Boolean(parsed?.ahd),
-      memberManage: Boolean(parsed?.memberManage),
-      qa: Boolean(parsed?.qa),
-    };
-    return hasAnyAdminAccess();
-  } catch {
-    return false;
-  }
-}
+function restoreLocalAdminAccessForCurrentUser() { syncStoredPermissionsForCurrentUser(); }
 
 function grantLocalAdminAccess(nextAccess = {}) {
   LOCAL_ADMIN_ACCESS = {
@@ -1413,24 +929,10 @@ function grantLocalAdminAccess(nextAccess = {}) {
 }
 
 function syncStoredPermissionsForCurrentUser() {
-  const user = WA3I_USER || readCurrentUser();
-  const memberId = String(user?.id || "").trim();
-  if (!memberId || FB_STATE.isAdmin || LOCAL_ADMIN_ACCESS.memberManage) return;
-
-  const accessRecord = getMemberAccessRecord(memberId);
-  // Keep the verified device permissions until the first remote directory snapshot arrives.
-  if (!accessRecord && !MEMBER_DIRECTORY_STATE.remoteAccessSnapshotReady) return;
-  const permissions = accessRecord?.passwordHash
-    ? getMemberPermissions(memberId)
-    : normalizeMemberPermissions();
-  grantLocalAdminAccess({
-    owner: memberId,
-    memberStatus: permissions.memberStatus,
-    ahd: permissions.ahd,
-    memberManage: false,
-    qa: permissions.qa,
-  });
-}
+    const session = window.WA3I_SESSION.session;
+    FB_STATE.isAdmin = Boolean(session?.isAdmin);
+    grantLocalAdminAccess({ owner: session?.member.id || '', memberManage: Boolean(session?.isAdmin), ...session?.permissions });
+  }
 
 function resetLocalAdminAccess() {
   grantLocalAdminAccess();
@@ -1594,13 +1096,12 @@ function mountMemberCanvasMembersSection() {
 }
 
 function getStandaloneView() {
-  try {
-    const value = new URL(window.location.href).searchParams.get("view");
-    return String(value || "").trim().toLowerCase();
-  } catch {
-    return "";
+    const url=new URL(location.href),view=(url.searchParams.get('view')||'').toLowerCase();
+    if(['feelings','rescue','forms'].includes(view)||['#feelings','#rescue','#memberCanvasForms'].includes(url.hash)){
+      url.searchParams.delete('view');url.hash='';history.replaceState(null,'',url);return '';
+    }
+    return view;
   }
-}
 
 function getStandalonePageUrl(viewKey) {
   const url = new URL(window.location.href);
@@ -1820,40 +1321,9 @@ function getEditingManagedMember() {
 }
 
 function refreshMemberManageFormState() {
-  const title = qs("#memberManageFormTitle");
-  const hint = qs("#memberManageFormHint");
-  const addBtn = qs("#memberManageAddBtn");
-  const resetBtn = qs("#memberManageResetBtn");
-  const clearPinBtn = qs("#memberManageClearPinBtn");
-  const editingMember = getEditingManagedMember();
-  const editing = Boolean(editingMember);
-  const hasPin = editingMember ? memberHasAccessPin(editingMember.id) : false;
-  const pendingPinRemoval = Boolean(MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval);
-
-  if (title) {
-    title.textContent = editing ? `تعديل العضو (${editingMember?.name || "—"})` : "إضافة عضو جديد";
+    const m = getEditingManagedMember(); qs('#memberManageFormTitle').textContent = m ? 'تعديل العضو' : 'إضافة عضو جديد';
+    qs('#memberManageAddBtn').textContent = m ? 'حفظ التعديل' : 'إضافة العضو'; qs('#memberManageFormHint').textContent = '';
   }
-  if (hint) {
-    if (editing) {
-      hint.textContent = pendingPinRemoval
-        ? "سيتم حذف كلمة السر الحالية والصلاحيات الممنوحة عند حفظ التعديل، إلا إذا كتبت كلمة مرور جديدة قبل الحفظ."
-        : "يمكنك تعديل الاسم أو الصورة، وترك كلمة المرور فارغة للإبقاء على الحالية، أو كتابة كلمة مرور جديدة من 1 إلى 5 أرقام. تُحفظ كلمة المرور بشكل آمن ولا يمكن عرضها لاحقًا.";
-    } else {
-      hint.textContent = "";
-    }
-  }
-  if (addBtn) {
-    addBtn.textContent = editing ? "حفظ التعديل" : "إضافة العضو";
-  }
-  if (resetBtn) {
-    resetBtn.textContent = editing ? "إلغاء التعديل" : "إعادة ضبط";
-  }
-  if (clearPinBtn) {
-    clearPinBtn.style.display = editing ? "" : "none";
-    clearPinBtn.disabled = !editing || (!hasPin && !pendingPinRemoval);
-    clearPinBtn.textContent = pendingPinRemoval ? "سيتم مسح كلمة السر" : "مسح كلمة السر";
-  }
-}
 
 function resetMemberManageForm() {
   MEMBER_DIRECTORY_STATE.pendingImageDataUrl = "";
@@ -1979,379 +1449,24 @@ function readImageAsOptimizedDataUrl(file) {
   });
 }
 
-async function updateManagedMemberPermission(memberId, permissionKey, enabled) {
-  if (!FB_STATE.isAdmin) return;
-
-  const id = String(memberId || "").trim();
-  const key = String(permissionKey || "").trim();
-  if (!id || !Object.prototype.hasOwnProperty.call(ASSIGNABLE_MEMBER_PERMISSIONS, key)) return;
-
-  const member = getAllMembersList({ includeHidden: true }).find((item) => String(item.id || "").trim() === id);
-  if (!member || isAmjadMember(member)) return;
-
-  const accessRecord = getMemberAccessRecord(id);
-  if (!accessRecord?.passwordHash) {
-    setMemberManageStatus("ضع كلمة مرور للعضو أولًا، ثم امنحه الصلاحية المطلوبة.", true);
-    showIdentityToast("لا يمكن منح صلاحية بدون كلمة مرور للعضو.");
-    return;
-  }
-
-  const permissions = {
-    ...getMemberPermissions(id),
-    [key]: Boolean(enabled),
-  };
-
-  try {
+async function updateManagedMemberPermission(id, key, enabled) {
+    if (!FB_STATE.isAdmin || !Object.hasOwn(ASSIGNABLE_MEMBER_PERMISSIONS, key)) return;
     const { db, doc, setDoc, serverTimestamp } = window.FB;
-    await Promise.all([
-      setDoc(
-        doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id)),
-        {
-          type: "member_access",
-          memberId: id,
-          permissions,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      ),
-      setDoc(
-        doc(db, FIRESTORE_MEMBER_PERMISSIONS, memberPermissionsDocId(id)),
-        {
-          memberId: id,
-          memberStatus: permissions.memberStatus,
-          ahd: permissions.ahd,
-          qa: permissions.qa,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      ),
-    ]);
-    setMemberManageStatus(
-      enabled
-        ? `تم منح ${member.name} صلاحية ${ASSIGNABLE_MEMBER_PERMISSIONS[key]}.`
-        : `تم سحب صلاحية ${ASSIGNABLE_MEMBER_PERMISSIONS[key]} من ${member.name}.`
-    );
-  } catch (error) {
-    console.error("Failed to update member permission", error);
-    setMemberManageStatus("تعذّر حفظ الصلاحية الآن. تحقق من الاتصال ثم أعد المحاولة.", true);
-  }
-}
-
-function renderMemberManageAdminList() {
-  const el = qs("#memberManageList");
-  if (!el) return;
-
-  const members = getAllMembersList()
-    .slice()
-    .sort(compareMembersByStatusThenName);
-
-  el.innerHTML = members.length
-    ? members.map((member) => {
-        const locked = isAmjadMember(member);
-        const isCustom = member.source === "custom" && !locked;
-        const status = getMemberStatus(member.id);
-        const accessRecord = getMemberAccessRecord(member.id);
-        const hasPin = Boolean(accessRecord?.passwordHash);
-        const permissions = getMemberPermissions(member.id);
-        const isEditing = String(MEMBER_DIRECTORY_STATE.editingMemberId || "").trim() === String(member.id || "").trim();
-        return `
-          <div class="member-manage-card${isEditing ? " is-editing" : ""}">
-            <div class="member-manage-head">
-              <img class="${status ? `member-avatar ${memberStatusClass(status)}` : "member-avatar"}" loading="lazy" decoding="async" fetchpriority="low" src="${resolveMemberAvatarSrc(member.src)}" alt="${escapeHtml(member.name)}" />
-              <div>
-                <div class="member-manage-name">${escapeHtml(member.name)}</div>
-                <div class="member-manage-meta">المعرّف: ${escapeHtml(member.id)}</div>
-              </div>
-            </div>
-            <div class="member-manage-badges">
-              <span class="member-manage-badge ${isCustom ? "custom" : "static"}">${isCustom ? "مضاف من أمجد" : "عضو أساسي"}</span>
-              <span class="member-manage-badge">${escapeHtml(memberStatusLabel(status))}</span>
-              <span class="member-manage-badge ${hasPin ? "secure" : "unsecured"}">${hasPin ? "بكلمة مرور" : "بدون كلمة مرور"}</span>
-            </div>
-            <div class="member-manage-access-line">
-              ${
-                hasPin
-                  ? `كلمة المرور محفوظة بشكل آمن. إذا نسيتها، اكتب كلمة جديدة بدل الحالية.`
-                  : `لا توجد كلمة مرور مضبوطة لهذا العضو.`
-              }
-            </div>
-            <div class="member-manage-permission-box">
-              <div class="member-manage-permission-head">
-                <span>صلاحيات الإدارة</span>
-                <span>${locked ? "كاملة" : escapeHtml(memberPermissionsSummary(permissions))}</span>
-              </div>
-              ${
-                locked
-                  ? `<div class="member-manage-permission-note">أمجد يدير الأعضاء والصلاحيات كاملة.</div>`
-                  : !hasPin
-                    ? `<div class="member-manage-permission-note">ضع كلمة مرور للعضو أولًا لحماية صلاحياته.</div>`
-                    : `<div class="member-manage-permission-actions">
-                        ${Object.entries(ASSIGNABLE_MEMBER_PERMISSIONS).map(([key, label]) => {
-                          const granted = Boolean(permissions[key]);
-                          return `<button class="member-manage-permission-btn${granted ? " is-granted" : ""}" type="button" data-member-permission="${escapeHtml(member.id)}" data-member-permission-key="${escapeHtml(key)}" data-member-permission-enabled="${granted ? "true" : "false"}" aria-pressed="${granted ? "true" : "false"}">${granted ? "مسموح" : "منح"}: ${escapeHtml(label)}</button>`;
-                        }).join("")}
-                      </div>`
-              }
-            </div>
-            <div class="member-manage-card-actions">
-              <button class="member-manage-edit" type="button" data-member-edit="${escapeHtml(member.id)}">تعديل</button>
-              <button class="member-manage-pin-toggle" type="button" disabled>
-                مخفية للأمان
-              </button>
-              <button class="member-manage-remove" type="button" data-member-remove="${escapeHtml(member.id)}" ${locked ? "disabled" : ""}>
-                ${locked ? "لا يمكن حذف أمجد" : "حذف العضو"}
-              </button>
-            </div>
-          </div>
-        `;
-      }).join("")
-    : `<div class="member-manage-empty">لا يوجد أعضاء ظاهرون الآن.</div>`;
-
-  el.querySelectorAll("[data-member-edit]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      beginEditManagedMember(btn.getAttribute("data-member-edit"));
-    });
-  });
-
-  el.querySelectorAll("[data-member-remove]").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const memberId = btn.getAttribute("data-member-remove");
-      await deleteManagedMember(memberId);
-    });
-  });
-
-  el.querySelectorAll("[data-member-permission]").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const memberId = btn.getAttribute("data-member-permission");
-      const permissionKey = btn.getAttribute("data-member-permission-key");
-      const granted = btn.getAttribute("data-member-permission-enabled") === "true";
-      await updateManagedMemberPermission(memberId, permissionKey, !granted);
-    });
-  });
-}
-
-async function addManagedMember() {
-  if (!FB_STATE.isAdmin) return;
-
-  const editingMember = getEditingManagedMember();
-  const name = String(qs("#memberManageName")?.value || "").trim();
-  const rawAccessPin = String(qs("#memberManageAccessPin")?.value || "").trim();
-  const normalizedAccessPin = normalizeMemberAccessPin(rawAccessPin);
-  const shouldClearAccessPin = Boolean(editingMember && MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval && !normalizedAccessPin);
-  const src = MEMBER_DIRECTORY_STATE.pendingImageDataUrl;
-
-  if (!name) {
-    setMemberManageStatus("اكتب اسم العضو أولًا.", true);
-    return;
-  }
-  if (!src) {
-    setMemberManageStatus("اختر صورة العضو أولًا.", true);
-    return;
-  }
-  if (rawAccessPin && !isValidMemberAccessPin(rawAccessPin)) {
-    setMemberManageStatus("كلمة المرور يجب أن تكون من 1 إلى 5 أرقام فقط.", true);
-    return;
+    await setDoc(doc(db, FIRESTORE_MEMBER_PERMISSIONS, id), { memberId: id, ...getMemberPermissions(id), [key]: Boolean(enabled), updatedAt: serverTimestamp() });
+    setMemberManageStatus('تم حفظ الصلاحية.');
   }
 
-  const exists = getAllMembersList({ includeHidden: true }).some((member) => (
-    String(member.name || "").trim() === name &&
-    String(member.id || "").trim() !== String(editingMember?.id || "").trim()
-  ));
-  if (exists) {
-    setMemberManageStatus("يوجد عضو ظاهر بهذا الاسم بالفعل. اختر اسمًا مختلفًا.", true);
-    return;
-  }
-
-  const id = editingMember?.id || createManagedMemberId(name);
-  const nextMember = { id, name, src, source: "custom" };
-  MEMBER_DIRECTORY_STATE.localCustomMembers.set(id, nextMember);
-  MEMBER_DIRECTORY_STATE.localHiddenMemberIds.delete(id);
-  persistLocalMemberDirectoryState();
-  refreshMemberDirectoryUI();
-  setMemberManageStatus(editingMember ? "جارٍ حفظ التعديل..." : "جارٍ إضافة العضو...");
-
-  const { db, doc, setDoc, deleteDoc, deleteField, serverTimestamp } = window.FB;
-  try {
-    const writes = [];
-    const payload = {
-      type: "custom_member",
-      memberId: id,
-      name,
-      src,
-      updatedAt: serverTimestamp(),
-    };
-    if (!editingMember) {
-      payload.createdAt = serverTimestamp();
-    }
-    writes.push(setDoc(
-      doc(db, FIRESTORE_CUSTOM_MEMBERS, customMemberDocId(id)),
-      payload,
-      { merge: true }
-    ));
-    writes.push(deleteDoc(doc(db, FIRESTORE_HIDDEN_MEMBERS, hiddenMemberDocId(id))));
-    if (normalizedAccessPin) {
-      const passwordHash = await sha256Hex(normalizedAccessPin);
-      writes.push(setDoc(
-        doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id)),
-        {
-          type: "member_access",
-          memberId: id,
-          passwordHash,
-          passwordPlain: deleteField(),
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      ));
-    } else if (shouldClearAccessPin) {
-      writes.push(deleteDoc(doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id))));
-      writes.push(deleteDoc(doc(db, FIRESTORE_MEMBER_PERMISSIONS, memberPermissionsDocId(id))));
-    }
-    await Promise.all(writes);
-    resetMemberManageForm();
-    renderMemberManageAdminList();
-    showIdentityToast(editingMember ? `تم تحديث العضو ${name}` : `تمت إضافة العضو ${name}`);
-  } catch (e) {
-    MEMBER_DIRECTORY_STATE.editingMemberId = editingMember?.id || "";
-    MEMBER_DIRECTORY_STATE.pendingImageDataUrl = src;
-    refreshMemberManageFormState();
-    renderMemberManageAdminList();
-    const code = String(e?.code || e?.message || "unknown-error");
-    setMemberManageStatus(
-      editingMember
-        ? `تم حفظ التعديل على هذا الجهاز، لكن المزامنة السحابية تعذّرت. (${code})`
-        : `تمت إضافة العضو على هذا الجهاز، لكن المزامنة السحابية تعذّرت. (${code})`,
-      true
-    );
-    console.error("Failed to sync managed member", e);
-  }
-}
-
-async function deleteManagedMember(memberId) {
-  if (!FB_STATE.isAdmin) return;
-
-  const id = String(memberId || "").trim();
-  const member = getAllMembersList({ includeHidden: true }).find((item) => String(item.id) === id);
-  if (!member) return;
-  if (isAmjadMember(member)) {
-    showIdentityToast("لا يمكن حذف أمجد من لوحة الإدارة.");
-    return;
-  }
-
-  const ok = confirm(`هل تريد حذف العضو “${member.name}”؟`);
-  if (!ok) return;
-
-  const mergedCustomMembers = getMergedCustomMembersMap();
-  const wasCustom = mergedCustomMembers.has(id);
-  const wasLocallyHidden = MEMBER_DIRECTORY_STATE.localHiddenMemberIds.has(id);
-
-  if (wasCustom) {
-    MEMBER_DIRECTORY_STATE.localCustomMembers.delete(id);
-    MEMBER_DIRECTORY_STATE.localHiddenMemberIds.add(id);
-    MEMBER_DIRECTORY_STATE.pendingDeletedCustomMemberIds.add(id);
-  } else {
-    MEMBER_DIRECTORY_STATE.localHiddenMemberIds.add(id);
-    MEMBER_DIRECTORY_STATE.pendingHiddenMemberIds.add(id);
-  }
-  persistLocalMemberDirectoryState();
-  refreshMemberDirectoryUI();
-
-  const { db, doc, deleteDoc, setDoc, serverTimestamp } = window.FB;
-  try {
-    const primaryOps = wasCustom
-      ? [
-          deleteDoc(doc(db, FIRESTORE_CUSTOM_MEMBERS, customMemberDocId(id))),
-          deleteDoc(doc(db, FIRESTORE_HIDDEN_MEMBERS, hiddenMemberDocId(id))),
-        ]
-      : [
-          setDoc(
-            doc(db, FIRESTORE_HIDDEN_MEMBERS, hiddenMemberDocId(id)),
-            { type: "hidden_member", memberId: id, hiddenAt: serverTimestamp(), name: member.name },
-            { merge: true }
-          ),
-        ];
-
-    await Promise.all(primaryOps);
-
-    const cleanup = [
-      deleteDoc(doc(db, "ahdMembers", id)),
-      deleteDoc(doc(db, FIRESTORE_STREAKS, id)),
-      deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, id)),
-      deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "elite"))),
-      deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "active"))),
-      deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusDocId(id, "lazy"))),
-      deleteDoc(doc(db, FIRESTORE_MEMBER_STATUS, memberStatusOverrideDocId(id))),
-      deleteDoc(doc(db, FIRESTORE_MEMBER_ACCESS, memberAccessDocId(id))),
-      deleteDoc(doc(db, FIRESTORE_MEMBER_PERMISSIONS, memberPermissionsDocId(id))),
-    ];
-
-    const cleanupResults = await Promise.allSettled(cleanup);
-    const cleanupFailed = cleanupResults.some((item) => item.status === "rejected");
-    if (cleanupFailed) {
-      console.warn("Member deleted but some related cleanup operations failed", { memberId: id, cleanupResults });
-    }
-    showIdentityToast(`تم حذف العضو ${member.name}`);
-  } catch (e) {
-    MEMBER_DIRECTORY_STATE.pendingDeletedCustomMemberIds.delete(id);
-    MEMBER_DIRECTORY_STATE.pendingHiddenMemberIds.delete(id);
-    if (!wasCustom && !wasLocallyHidden) {
-      MEMBER_DIRECTORY_STATE.localHiddenMemberIds.add(id);
-    }
-    persistLocalMemberDirectoryState();
-    refreshMemberDirectoryUI();
-    showIdentityToast("تم حذف العضو على هذا الجهاز، لكن المزامنة السحابية تعذّرت.");
-    console.error("Failed to sync deleted member", e);
-  }
-}
-
-function wireMemberManageAdminControls() {
-  if (MEMBER_DIRECTORY_STATE.controlsWired) return;
-  MEMBER_DIRECTORY_STATE.controlsWired = true;
-
-  const fileInput = qs("#memberManageImage");
-  const preview = qs("#memberManagePreview");
-  const nameInput = qs("#memberManageName");
-  const pinInput = qs("#memberManageAccessPin");
-  const addBtn = qs("#memberManageAddBtn");
-  const resetBtn = qs("#memberManageResetBtn");
-  const clearPinBtn = qs("#memberManageClearPinBtn");
-
-  fileInput?.addEventListener("change", async () => {
-    const file = fileInput.files?.[0];
-    if (!file) {
-      const editingMember = getEditingManagedMember();
-      MEMBER_DIRECTORY_STATE.pendingImageDataUrl = editingMember?.src || "";
-      if (preview) preview.src = resolveMemberAvatarSrc(editingMember?.src);
-      return;
+function renderMemberManageAdminList(){
+      const el=qs('#memberManageList');if(!el)return;el.replaceChildren();
+      const p=document.createElement('p');p.textContent='إدارة حسابات العضويات من الأداة المحلية الآمنة على جهاز أمجد.';el.append(p);
+      for(const member of getAllMembersList()){const row=document.createElement('p');row.textContent=member.name;el.append(row);}
     }
 
-    setMemberManageStatus("جارٍ تجهيز الصورة...");
-    try {
-      const dataUrl = await readImageAsOptimizedDataUrl(file);
-      MEMBER_DIRECTORY_STATE.pendingImageDataUrl = dataUrl;
-      if (preview) preview.src = dataUrl;
-      setMemberManageStatus("الصورة جاهزة للإضافة.");
-    } catch (e) {
-      MEMBER_DIRECTORY_STATE.pendingImageDataUrl = "";
-      if (preview) preview.src = DEFAULT_MEMBER_AVATAR_SRC;
-      const code = String(e?.message || "");
-      setMemberManageStatus(code === "IMAGE_TOO_LARGE" ? "الصورة ما تزال كبيرة جدًا بعد الضغط. اختر صورة أصغر." : "تعذّر قراءة الصورة المختارة.", true);
-    }
-  });
+async function addManagedMember(){setMemberManageStatus('إنشاء الحساب وتعديله وحذفه يتم من أداة إدارة العضويات المحلية الآمنة.',true);}
 
-  addBtn?.addEventListener("click", addManagedMember);
-  resetBtn?.addEventListener("click", resetMemberManageForm);
-  clearPinBtn?.addEventListener("click", markManagedMemberPinForRemoval);
-  nameInput?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") addManagedMember();
-  });
-  pinInput?.addEventListener("input", () => {
-    if (String(pinInput.value || "").trim()) {
-      MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval = false;
-      refreshMemberManageFormState();
-    }
-  });
-  refreshMemberManageFormState();
-}
+async function deleteManagedMember(){setMemberManageStatus('الحذف النهائي يتم من أداة الإدارة المحلية الآمنة فقط.',true);}
+
+function wireMemberManageAdminControls(){}
 
 function initMemberDirectorySystem(options = {}) {
   const activateRemote = Boolean(options.activateRemote);
@@ -2374,7 +1489,7 @@ function initMemberDirectorySystem(options = {}) {
 
     const { db, onSnapshot, collection } = window.FB;
 
-    onSnapshot(collection(db, FIRESTORE_CUSTOM_MEMBERS), (snap) => {
+    window.FB.publicBucketSnapshot(['custom__','hidden__'], (snap) => {
       const customMembers = new Map();
       const hiddenMemberIds = new Set();
       const accessById = new Map();
@@ -2384,6 +1499,7 @@ function initMemberDirectorySystem(options = {}) {
         const data = docSnap.data() || {};
 
         if (docId.startsWith("custom__")) {
+          if(data.memberId!=="member_9"&&(!/^custom_member_new_[a-f0-9]{32}$/.test(data.memberId||"")||data.schemaVersion!==2 || data.managementState!=="ready"))return;
           const memberId = String(data.memberId || docId.replace(/^custom__/, "")).trim();
           const name = String(data.name || "").trim();
           const src = String(data.src || "").trim();
@@ -2560,7 +1676,7 @@ function toLocalISODate(d) {
     }
 
     function getDailyState(isoDate) {
-      const raw = localStorage.getItem(storageKeyForToday(isoDate));
+      const raw = window.WA3I_SESSION.storage.getItem(storageKeyForToday(isoDate));
       if (!raw) return null;
       try {
         return normalizeDailyState(JSON.parse(raw));
@@ -2570,7 +1686,7 @@ function toLocalISODate(d) {
     }
 
     function setDailyState(isoDate, state) {
-      localStorage.setItem(storageKeyForToday(isoDate), JSON.stringify(state));
+      window.WA3I_SESSION.storage.setItem(storageKeyForToday(isoDate), JSON.stringify(state));
     }
 
     function defaultDailyState() {
@@ -2740,151 +1856,13 @@ function toLocalISODate(d) {
       return hour < 15 ? CONFIG.AZKAR.MORNING : CONFIG.AZKAR.EVENING;
     }
 
-    function renderRiskCheckUI(state) {
-      const card = qs("#riskCheckCard");
-      const pill = qs("#riskLevelPill");
-      const meta = qs("#riskAnsweredAt");
-      const resultBox = qs("#riskResultBox");
-      const title = qs("#riskResultTitle");
-      const desc = qs("#riskResultDesc");
-      const adviceList = qs("#riskAdviceList");
-      const breathBtn = qs("#riskActionBreath");
-      const rescueCard = qs("#tcard-rescue");
-      if (!card || !pill || !meta || !resultBox || !title || !desc || !adviceList) return;
+    function renderRiskCheckUI() {}
 
-      const risk = normalizeRiskCheckState(state?.riskCheck);
-      const evaluation = evaluateRiskCheck(risk);
-      WA3I_CTX.riskEvaluation = evaluation;
+    function applyRiskCheckAnswer() {}
 
-      qsa(".risk-option-btn").forEach((btn) => {
-        const group = btn.getAttribute("data-risk-group");
-        const value = btn.getAttribute("data-risk-value");
-        const selected = risk[group] === value;
-        btn.classList.toggle("is-selected", selected);
-        btn.setAttribute("aria-pressed", selected ? "true" : "false");
-      });
+    function resetRiskCheck() {}
 
-      card.classList.remove("is-low", "is-medium", "is-high");
-      resultBox.classList.remove("is-low", "is-medium", "is-high");
-      pill.className = "risk-level-pill";
-
-      if (evaluation.level === "low") {
-        card.classList.add("is-low");
-        resultBox.classList.add("is-low");
-        pill.classList.add("is-low");
-      } else if (evaluation.level === "medium") {
-        card.classList.add("is-medium");
-        resultBox.classList.add("is-medium");
-        pill.classList.add("is-medium");
-      } else if (evaluation.level === "high") {
-        card.classList.add("is-high");
-        resultBox.classList.add("is-high");
-        pill.classList.add("is-high");
-      } else {
-        pill.classList.add("is-neutral");
-      }
-
-      pill.textContent = evaluation.pill;
-      meta.textContent = formatRiskAnsweredAt(risk.answeredAt);
-      title.textContent = evaluation.title;
-      desc.textContent = evaluation.description;
-      adviceList.innerHTML = evaluation.advices.map((item) => `
-        <div class="risk-advice-item">
-          <span class="risk-advice-mark">•</span>
-          <span>${escapeHtml(item)}</span>
-        </div>
-      `).join("");
-
-      if (breathBtn) {
-        if (state?.breathRunning) breathBtn.textContent = "التنفس جارٍ الآن";
-        else if (state?.breathCompleted) breathBtn.textContent = "أعد دقيقة تنفس";
-        else breathBtn.textContent = evaluation.level === "high" ? "ابدأ النجدة الآن" : "ابدأ التنفس الآن";
-        breathBtn.classList.toggle("emergency", evaluation.level === "high");
-      }
-
-      if (rescueCard) {
-        rescueCard.classList.remove("is-watch", "is-urgent");
-        if (evaluation.level === "high") rescueCard.classList.add("is-urgent");
-        else if (evaluation.level === "medium") rescueCard.classList.add("is-watch");
-      }
-
-      if (getStandaloneView() === "rescue" && typeof renderRescueCenterModal === "function") {
-        renderRescueCenterModal();
-      }
-    }
-
-    function applyRiskCheckAnswer(group, value) {
-      const todayISO = WA3I_CTX.todayISO;
-      const state = WA3I_CTX.state;
-      if (!todayISO || !state) return;
-
-      const next = normalizeRiskCheckState(state.riskCheck);
-      next[group] = next[group] === value ? "" : value;
-
-      const evaluation = evaluateRiskCheck(next);
-      next.level = evaluation.complete ? evaluation.level : "unknown";
-      next.score = evaluation.complete ? evaluation.score : null;
-      next.answeredAt = new Date().toISOString();
-
-      state.riskCheck = next;
-      renderRiskCheckUI(state);
-      setDailyState(todayISO, state);
-    }
-
-    function resetRiskCheck() {
-      const todayISO = WA3I_CTX.todayISO;
-      const state = WA3I_CTX.state;
-      if (!todayISO || !state) return;
-      state.riskCheck = defaultRiskCheckState();
-      renderRiskCheckUI(state);
-      setDailyState(todayISO, state);
-    }
-
-    function wireRiskCheckUI() {
-      if (RISK_CHECK_WIRED) return;
-      RISK_CHECK_WIRED = true;
-
-      qsa(".risk-option-btn").forEach((btn) => {
-        btn.onclick = () => {
-          const group = btn.getAttribute("data-risk-group");
-          const value = btn.getAttribute("data-risk-value");
-          if (!group || !value) return;
-          applyRiskCheckAnswer(group, value);
-        };
-      });
-
-      const resetBtn = qs("#riskResetBtn");
-      if (resetBtn) resetBtn.onclick = () => resetRiskCheck();
-
-      const breathBtn = qs("#riskActionBreath");
-      if (breathBtn) {
-        breathBtn.onclick = () => {
-          const todayISO = WA3I_CTX.todayISO;
-          const state = WA3I_CTX.state;
-          if (!todayISO || !state) return;
-          if (state.breathRunning) {
-            showToast("مؤقت التنفس يعمل بالفعل.");
-            return;
-          }
-          startBreathTimer(todayISO, state);
-          showToast("ابدأ التنفس الآن وخفف التوتر الأول.");
-        };
-      }
-
-      const rescueBtn = qs("#riskActionRescue");
-      if (rescueBtn) {
-        rescueBtn.onclick = () => {
-          qs("#openRescueCenter")?.click();
-        };
-      }
-
-      const azkarBtn = qs("#riskActionAzkar");
-      if (azkarBtn) {
-        azkarBtn.onclick = () => {
-          openAzkarReader(chooseRiskAzkarConfig(WA3I_CTX.state));
-        };
-      }
-    }
+    function wireRiskCheckUI() {}
 
     function wireDailyVisibilityPause() {
       if (DAILY_VISIBILITY_WIRED) return;
@@ -2911,13 +1889,13 @@ function toLocalISODate(d) {
     }
 
     function getStreak() {
-      const raw = localStorage.getItem(userKey("streak"));
+      const raw = window.WA3I_SESSION.storage.getItem(userKey("streak"));
       const n = parseInt(raw || "0", 10);
       return Number.isFinite(n) ? n : 0;
     }
 
 function setStreak(n) {
-      localStorage.setItem(userKey("streak"), String(n));
+      window.WA3I_SESSION.storage.setItem(userKey("streak"), String(n));
       // Also update shared streaks map so getStreakForUserId returns correct value immediately
       const uid = currentUserId();
       if (uid) SHARED_STREAKS.set(uid, n);
@@ -2926,11 +1904,11 @@ function setStreak(n) {
     }
 
 function getLastCompletedDate() {
-      return localStorage.getItem(userKey("last_completed_date"));
+      return window.WA3I_SESSION.storage.getItem(userKey("last_completed_date"));
     }
 
 function setLastCompletedDate(isoDate) {
-      localStorage.setItem(userKey("last_completed_date"), isoDate);
+      window.WA3I_SESSION.storage.setItem(userKey("last_completed_date"), isoDate);
     }
 
 function previousISODate(isoDate) {
@@ -3126,7 +2104,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html", window.location.href);
+      const url = new URL("azkar.html?release=3751ad4ea4c98ff8", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {
@@ -3295,67 +2273,11 @@ function previousISODate(isoDate) {
       setDailyState(todayISO, previewState);
     }
 
-    document.addEventListener("DOMContentLoaded", async () => {
-// Fix: allow Amjad admin login modal to show while the identity gate is open.
-      // The gate hides #appRoot (which originally contains the modal), so we move the modal under <body>.
-      const adminModal = qs("#adminLoginModal");
-      if (adminModal && adminModal.parentElement !== document.body) {
-        document.body.appendChild(adminModal);
-      }
-
-      initMemberDirectorySystem({ activateRemote: true, renderMembers: false });
-      decorateMemberCardsWithStreaks();
-
-      // Bootstrap members cache and attempt automatic entry.
-      IDENTITY_MEMBERS_CACHE = readMembersFromDOM();
-      resetLocalStreaksForAllMembersOnce();
-
-      let shouldResumeToHome = false;
-      try {
-        const url = new URL(window.location.href);
-        shouldResumeToHome = url.searchParams.has("resume");
-        if (url.searchParams.has("resume")) {
-          url.searchParams.delete("resume");
-          history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
-        }
-      } catch {}
-
-      if (previewModeEnabled()) {
-        saveCurrentUser({ id: "preview_member", name: "معاينة", kind: "member" });
-        seedPreviewDailyState();
-        startApp();
-        return;
-      }
-
-      // Start loading interaction bands while the member picker is visible.
-      if (typeof initMemberStatusSystem === "function") {
-        initMemberStatusSystem();
-      }
-
-      if (shouldResumeToHome || getStandaloneView()) {
-        const rememberedUser = readCurrentUser();
-        if (rememberedUser) {
-          let canResumeRememberedUser = true;
-          if (rememberedUser.kind === "member" && rememberedUser.id !== "preview_member") {
-            canResumeRememberedUser = await canResumeMemberSession(rememberedUser.id);
-          }
-          if (canResumeRememberedUser) {
-            saveCurrentUser(rememberedUser);
-            startApp();
-            return;
-          }
-        }
-
-        try {
-          if (typeof tryAutoStartFromBinding === "function") {
-            const resumed = await tryAutoStartFromBinding();
-            if (resumed) {
-              startApp();
-              return;
-            }
-          }
-        } catch {}
-      }
-
-      initIdentityGate();
-    });
+document.addEventListener('DOMContentLoaded', async () => {
+    initMemberDirectorySystem({activateRemote:false,renderMembers:false});initIdentityGate();
+    document.body.classList.remove('session-pending');
+    try { await window.WA3I_SESSION.ready;
+      initMemberDirectorySystem({activateRemote:true,renderMembers:false}); initMemberStatusSystem();
+      if(window.WA3I_SESSION.session){saveCurrentUser(window.WA3I_SESSION.session.member);startApp();}else initIdentityGate();
+    } catch {document.body.classList.remove('session-pending');qs('#identityGrid').textContent='تعذر الاتصال. أعد المحاولة.';}
+  });

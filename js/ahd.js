@@ -21,7 +21,7 @@ function loadAhdMembersCache() {
   AHD_MEMBERS_CACHE_LOADED = true;
 
   try {
-    const raw = localStorage.getItem(LOCAL_AHD_MEMBERS_CACHE_KEY);
+    const raw = window.WA3I_SESSION.storage.getItem(LOCAL_AHD_MEMBERS_CACHE_KEY);
     const cached = raw ? JSON.parse(raw) : null;
     const updatedAt = Number(cached?.updatedAt || 0);
     if (!cached || !updatedAt || Date.now() - updatedAt > AHD_MEMBERS_CACHE_MAX_AGE_MS) return;
@@ -54,7 +54,7 @@ function saveAhdMembersCache() {
       })
       .filter(Boolean);
 
-    localStorage.setItem(LOCAL_AHD_MEMBERS_CACHE_KEY, JSON.stringify({
+    window.WA3I_SESSION.storage.setItem(LOCAL_AHD_MEMBERS_CACHE_KEY, JSON.stringify({
       updatedAt: Date.now(),
       memberIds: Array.from(FB_STATE.ahd),
       members,
@@ -107,27 +107,15 @@ function ahdActionErrorMessage(error) {
   return "تعذّر حفظ التغيير الآن. أعد المحاولة بعد لحظة.";
 }
 
-function getAhdResolvedState() {
-  const resolvedMembers = [];
-  const orphanIds = [];
-
-  Array.from(FB_STATE.ahd)
-    .map((id) => String(id || "").trim())
-    .filter(Boolean)
-    .forEach((id) => {
-      const member = FB_STATE.tribe.get(id) || AHD_CACHED_MEMBERS.get(id);
-      if (member && String(member.name || "").trim()) {
-        resolvedMembers.push({ id, ...member });
-      } else {
-        orphanIds.push(id);
+function getAhdResolvedState(){
+      const resolvedMembers=[],orphanIds=[];
+      for(const id of Array.from(FB_STATE.ahd).map(String).filter(Boolean)){
+        const member=FB_STATE.tribe.get(id);
+        if(member?.name)resolvedMembers.push({id,...member});
+        else{orphanIds.push(id);resolvedMembers.push({id,name:'عضو سابق',src:DEFAULT_MEMBER_AVATAR_SRC,former:true});}
       }
-    });
-
-  resolvedMembers.sort(compareMembersByStatusThenName);
-  orphanIds.sort((a, b) => a.localeCompare(b, "en"));
-
-  return { resolvedMembers, orphanIds };
-}
+      resolvedMembers.sort(compareMembersByStatusThenName);orphanIds.sort();return {resolvedMembers,orphanIds};
+    }
 
 function renderAhdPublicList() {
   const el = qs("#ahdPublicList");
@@ -167,7 +155,7 @@ function renderAhdPublicList() {
             const cardClass = status ? `slide-card ahd-slide-card ${statusClass}` : "slide-card ahd-slide-card";
             return `
         <div class="${cardClass}" data-member-id="${escapeHtml(member.id)}" style="cursor:default">
-          <img class="${avatarClass}" loading="lazy" decoding="async" src="${typeof resolveMemberAvatarSrc === "function" ? resolveMemberAvatarSrc(member.src) : (member.src || window.WA3I_DEFAULT_MEMBER_AVATAR_SRC || "")}" alt="${escapeHtml(member.name || member.id)}" />
+          <img data-bracelet-member-id="${escapeHtml(member.id)}" class="${avatarClass}" loading="lazy" decoding="async" src="${typeof resolveMemberAvatarSrc === "function" ? resolveMemberAvatarSrc(member.src) : (member.src || window.WA3I_DEFAULT_MEMBER_AVATAR_SRC || "")}" alt="${escapeHtml(member.name || member.id)}" />
           <h3>${escapeHtml(member.name || member.id)}</h3>
         </div>
       `;
@@ -188,7 +176,7 @@ function renderAhdPublicList() {
               : "member-canvas-ahd-avatar member-avatar";
             return `
         <div class="member-canvas-ahd-item" title="${escapeHtml(member.name || member.id)}" aria-label="${escapeHtml(member.name || member.id)}">
-          <img class="${avatarClass}" loading="lazy" decoding="async" src="${typeof resolveMemberAvatarSrc === "function" ? resolveMemberAvatarSrc(member.src) : (member.src || window.WA3I_DEFAULT_MEMBER_AVATAR_SRC || "")}" alt="${escapeHtml(member.name || member.id)}" />
+          <img data-bracelet-member-id="${escapeHtml(member.id)}" class="${avatarClass}" loading="lazy" decoding="async" src="${typeof resolveMemberAvatarSrc === "function" ? resolveMemberAvatarSrc(member.src) : (member.src || window.WA3I_DEFAULT_MEMBER_AVATAR_SRC || "")}" alt="${escapeHtml(member.name || member.id)}" />
         </div>
       `;
           })
@@ -229,7 +217,7 @@ function renderAhdAdminLists(filterText = "", orphanIdsArg = null) {
           const avatarClass = status ? `identity-avatar member-avatar ${memberStatusClass(status)}` : "identity-avatar member-avatar";
           return `
         <button class="identity-item" type="button" data-add-ahd="${member.id}" aria-label="إضافة ${escapeHtml(member.name)}">
-          <img class="${avatarClass}" loading="lazy" decoding="async" src="${member.src}" alt="${escapeHtml(member.name)}" />
+          <img data-bracelet-member-id="${escapeHtml(member.id)}" class="${avatarClass}" loading="lazy" decoding="async" src="${member.src}" alt="${escapeHtml(member.name)}" />
           <div class="identity-name">${escapeHtml(member.name)}</div>
         </button>
       `;
@@ -244,7 +232,7 @@ function renderAhdAdminLists(filterText = "", orphanIdsArg = null) {
           const avatarClass = status ? `identity-avatar member-avatar ${memberStatusClass(status)}` : "identity-avatar member-avatar";
           return `
         <button class="identity-item" type="button" data-remove-ahd="${member.id}" aria-label="حذف ${escapeHtml(member.name)}">
-          <img class="${avatarClass}" loading="lazy" decoding="async" src="${member.src}" alt="${escapeHtml(member.name)}" />
+          <img data-bracelet-member-id="${escapeHtml(member.id)}" class="${avatarClass}" loading="lazy" decoding="async" src="${member.src}" alt="${escapeHtml(member.name)}" />
           <div class="identity-name">${escapeHtml(member.name)}</div>
         </button>
       `;
