@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-1c76e7a947c6',base).href;
+  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-8591bff89380',base).href;
   const config=window.__WA3I_SESSION_CONFIG,projectId=window.__WA3I_FIREBASE_CONFIG?.projectId;
   if(!config||!projectId)throw Error('CONFIG_REQUIRED');
   let epoch=0,pending=Promise.resolve(),store=null,formsPromise=null,pool=null,navigating=false;

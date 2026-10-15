@@ -1,6 +1,10 @@
 import {trackingStart,trackingTimeZone,localTimeZone} from './tracking-period.mjs';
 export const weekdays = ['الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت','الأحد'];
 export const timeZone = trackingTimeZone;
+export function validTimeZone(zone) {
+  if(typeof zone!=='string'||zone.length>100)return false;
+  try{new Intl.DateTimeFormat('en',{timeZone:zone});return true;}catch{return false;}
+}
 const keyFormats = new Map();
 export function dateKey(date,zone=localTimeZone()) {
   if(!keyFormats.has(zone))keyFormats.set(zone,new Intl.DateTimeFormat('sv-SE',{timeZone:zone,calendar:'gregory',numberingSystem:'latn',year:'numeric',month:'2-digit',day:'2-digit'}));
@@ -56,7 +60,9 @@ export function applyCommand(catalog,days,cmd,today=dateKey()) {
   const effective=today<trackingStart?trackingStart:today;
   const c=structuredClone(catalog),changed={};
   const day=key=>{requireValue(validDate(key)&&key>=trackingStart,'INVALID_DATE');return changed['day:'+key]||=structuredClone(days[key]||emptyDay(key));};
-  if(cmd.type==='habit') {
+  if(cmd.type==='timeZone') {
+    requireValue(validTimeZone(cmd.zone),'INVALID_TIME_ZONE');c.timeZone=cmd.zone;
+  } else if(cmd.type==='habit') {
     requireValue(safeId(cmd.id),'INVALID_ID');
     requireValue(typeof cmd.name==='string'&&cmd.name.trim().length>0&&cmd.name.trim().length<=120,'INVALID_NAME');
     requireValue(Array.isArray(cmd.days)&&cmd.days.length>0&&cmd.days.every(d=>Number.isInteger(d)&&d>=0&&d<7),'INVALID_SCHEDULE');

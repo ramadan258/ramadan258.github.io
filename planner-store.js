@@ -3,6 +3,7 @@ import { missingRanges,rangePages } from './range-cache.mjs';
 import { openOutbox } from './outbox.js';
 import {trackingStart,inTrackingPeriod} from './tracking-period.mjs';
 import {createServerBatchReader} from './server-batch-read.js';
+import {bindPlannerClock} from './planner-clock.mjs';
 
 export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=()=>{},outbox=openOutbox(projectId+':tracking:'+trackingStart,uid),today=dateKey(),clock=()=>today,delay=240,bootstrap=null}) {
   const initialDate=today<trackingStart?trackingStart:today;
@@ -176,7 +177,11 @@ export async function planner() {
     instance=session.kind==='guest'?import('./guest-store.js').then(({createGuestPlanner})=>createGuestPlanner({namespace:window.WA3I_SESSION.guestNamespace,isCurrent,clock:dateKey})):
       createPlannerStore({fs,db:fs.db,uid,projectId:fs.projectId,isCurrent,clock:dateKey,
         bootstrap:day=>Promise.all([read(`plannerMembers/${uid}/records`,'catalog'),read(`plannerMembers/${uid}/records`,'day:'+day)])});
-    try{window.WA3I_SESSION.planner=await instance;}catch(error){instance=null;throw error;}
+    try{
+      const store=await instance;
+      if(session.kind!=='guest')bindPlannerClock(store,{isCurrent});
+      window.WA3I_SESSION.planner=store;
+    }catch(error){instance=null;throw error;}
   }
   return instance;
 }

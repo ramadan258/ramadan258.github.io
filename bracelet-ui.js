@@ -69,13 +69,13 @@ window.WA3I_BRACELET=Object.freeze({
   label(memberId){return view(memberId).text;},
 });
 async function startPublic(){
-  if(!publicEnabled||publicReader||publicStarting||!document.querySelector('[data-bracelet-member-id]:not([data-bracelet-member-id="guest"])'))return;
+  if(!publicEnabled||publicDeferred||publicReader||publicStarting||!document.querySelector('[data-bracelet-member-id]:not([data-bracelet-member-id="guest"])'))return;
   const generation=epoch;
   const pending=(async()=>{
     try{
-      await runtime.cloudReady();if(generation!==epoch)return;
-      const fs=window.FB;
-      publicReader=createPublicBraceletReader({listen:(next,error)=>fs.onSnapshot(fs.doc(fs.db,'publicBracelets','current'),{includeMetadataChanges:true},next,error),onChange:paint});
+      if(generation!==epoch)return;
+      publicReader=createPublicBraceletReader({onChange:paint});
+      void publicReader.refresh();
       publicTimer=setInterval(()=>publicReader?.refresh(),60000);
     }catch{if(generation===epoch)paint();}
   })();
@@ -98,7 +98,9 @@ async function start(){
         if(!isCurrent())return;
         todayTracker=createMainProgressTracker({store,isCurrent,launchDate:window.__WA3I_SESSION_CONFIG?.officialLaunchDate,onChange:next=>{todayState=next;paintToday();}});void todayTracker.refresh();
       }
-      tracker=createBraceletTracker({store,isCurrent,onChange:next=>{state=next;paint();}});await tracker.refresh();
+      if(session.kind==='guest'||!publicEnabled||publicDeferred){
+        tracker=createBraceletTracker({store,isCurrent,onChange:next=>{state=next;paint();}});await tracker.refresh();
+      }
       if(generation!==epoch)return;
       timer=setInterval(()=>{void tracker?.refresh(true);void todayTracker?.refresh(true);},60000);
     }catch{if(generation===epoch){state={tier:'neutral',phase:'unavailable'};todayState={tier:'neutral',phase:'unavailable'};paint();}}
