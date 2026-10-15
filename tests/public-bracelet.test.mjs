@@ -161,9 +161,9 @@ test('incomplete snapshots and over-budget membership lists fail closed without 
 test('activation stays disabled; public workflow has no PR trigger, private keys or Firebase write grants',()=>{
   const config=readFileSync(new URL('../session-config.js',import.meta.url),'utf8'),workflow=readFileSync(new URL('../.github/workflows/public-bracelets.yml',import.meta.url),'utf8');
   assert.match(config,/"publicBracelets":false/);assert.match(config,/"publicBraceletsDeferred":true/);
-  assert.match(workflow,/vars.PUBLIC_BRACELETS_ENABLED == 'true'/);assert.doesNotMatch(workflow,/pull_request|credentials_json|secrets\./);
+  assert.match(workflow,/if: \$\{\{ false \}\}/);assert.doesNotMatch(workflow,/pull_request|credentials_json|secrets\./);
   assert.match(workflow,/create_credentials_file: false/);assert.match(workflow,/access_token_lifetime: 600s/);
-  assert.match(workflow,/persist-credentials: false/);assert.match(workflow,/github.ref == 'refs\/heads\/main'/);
+  assert.match(workflow,/persist-credentials: false/);
   const env={GITHUB_ACTIONS:'true',PUBLIC_BRACELETS_ENABLED:'true',GITHUB_REPOSITORY:'ramadan258/ramadan258.github.io',GITHUB_REPOSITORY_ID:'1210383914',GITHUB_REPOSITORY_OWNER_ID:'179522853',GITHUB_REF:'refs/heads/main',GITHUB_WORKFLOW_REF:'ramadan258/ramadan258.github.io/.github/workflows/public-bracelets.yml@refs/heads/main',GITHUB_EVENT_NAME:'schedule'};
   assert.doesNotThrow(()=>assertPublisherEnvironment(env));
   for(const changes of [{GITHUB_EVENT_NAME:'pull_request'},{GITHUB_REF:'refs/heads/feature'},{PUBLIC_BRACELETS_ENABLED:'false'},{GITHUB_REPOSITORY_ID:'999'}])assert.throws(()=>assertPublisherEnvironment({...env,...changes}),/NOT_APPROVED/);

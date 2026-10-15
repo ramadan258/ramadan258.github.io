@@ -9,10 +9,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
-    if: >-
-      github.repository == 'ramadan258/ramadan258.github.io' &&
-      github.ref == 'refs/heads/main' &&
-      vars.PUBLIC_BRACELETS_ENABLED == 'true'
+    # Public publication is deferred. Enabling it requires a separate reviewed update.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
