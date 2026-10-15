@@ -59,13 +59,13 @@
     }
   </script>
 
-<script src="session-config.js?v=ef65dcb6817a"></script><script src="session-runtime.js?v=d6b557c7228b"></script><link rel="stylesheet" href="session.css?v=9ee192b5d8cc">
+<script src="performance.js?v=b40a86ef6bca"></script><script src="session-config.js?v=3ca295450b3c"></script><script src="session-runtime.js?v=13203dc02726"></script><link rel="stylesheet" href="session.css?v=e530b89aa678">
 
   <link rel="stylesheet" href="css/index-page.css?v=05a489ca8e3c" />
   <link rel="stylesheet" href="css/member-dashboard-redesign.css?v=cd1bd438cfa9" />
-<link rel="stylesheet" href="bracelet.css?v=cb4403670d6d"><script type="module" src="client/bracelet-ui-RCWKAVMR.js?v=88c43eaa09bd"></script><link rel="stylesheet" href="mobile-shell.css?v=84473fbba950"></head>
+<link rel="stylesheet" href="bracelet.css?v=cb4403670d6d"><script type="module" src="client/bracelet-ui-4HGOJZLX.js?v=b2d893a6f102"></script><link rel="stylesheet" href="mobile-shell.css?v=84473fbba950"></head>
 
-<body class="member-design-canvas-mode session-pending">
+<body class="member-design-canvas-mode" data-session-state="restoring">
 <svg width="0" height="0" style="position:absolute">
   <defs>
     <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -77,8 +77,9 @@
 
 
 <!-- بوابة اختيار المستخدم -->
-<div id="identityGate" class="identity-gate" role="dialog" aria-modal="true" aria-label="اختيار المستخدم">
+<div id="identityGate" class="identity-gate is-hidden" role="dialog" aria-modal="true" aria-label="اختيار المستخدم">
   <div class="identity-card">
+    <button id="closeIdentityGate" class="identity-btn ghost" type="button" aria-label="إغلاق اختيار المستخدم">×</button>
     <h2 class="identity-title">من أنت؟</h2>
 
 
@@ -123,15 +124,15 @@
 
 <div class="identity-toast" id="identityToast" aria-live="polite" aria-atomic="true"></div>
 
-<div id="appRoot" class="app-root member-design-canvas is-hidden" aria-hidden="true">
+<div id="appRoot" class="app-root member-design-canvas" aria-hidden="false">
   <div id="standalonePageTopbar" class="standalone-page-topbar" hidden>
-    <a id="standaloneBackHomeBtn" class="standalone-page-back" href="index.html?resume=1&release=3751ad4ea4c98ff8">← العودة للصفحة الرئيسية</a>
+    <a id="standaloneBackHomeBtn" class="standalone-page-back" href="index.html?resume=1&release=20261016-a4fe443e92a6">← العودة للصفحة الرئيسية</a>
   </div>
 
   <div class="member-design-canvas-shell">
     <div class="member-canvas-topbar">
       <button class="member-canvas-user-switch" data-switch-user-btn type="button" aria-label="تبديل المستخدم">
-        <span class="member-canvas-user-name" data-current-user-pill>—</span>
+        <span class="member-canvas-user-name" data-current-user-pill>تسجيل الدخول</span>
         <span class="member-canvas-user-arrow" aria-hidden="true"></span>
       </button>
       <div class="member-canvas-title">الموحدون</div>
@@ -140,11 +141,11 @@
     <div id="memberCanvasMembersSlot" class="member-canvas-members-slot"></div>
 
     <section id="personalProgress" class="main-progress" aria-label="تقدمك الشخصي" hidden>
-    <a class="main-progress-meter" href="khutay.html?tab=day&release=3751ad4ea4c98ff8" aria-label="فتح يومي"><span role="progressbar" aria-label="إنجاز عادات اليوم" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></span></a>
-    <a class="main-progress-chart" href="khutay.html?tab=harvest&release=3751ad4ea4c98ff8" aria-label="فتح حصادي"><span class="mini-chart" data-mini-columns aria-hidden="true"></span></a>
+    <a class="main-progress-meter" href="khutay.html?tab=day&release=20261016-a4fe443e92a6" aria-label="فتح يومي"><span role="progressbar" aria-label="إنجاز عادات اليوم" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></span></a>
+    <a class="main-progress-chart" href="khutay.html?tab=harvest&release=20261016-a4fe443e92a6" aria-label="فتح حصادي"><span class="mini-chart" data-mini-columns aria-hidden="true"></span></a>
     <span class="visually-hidden" data-progress-description></span>
   </section><div class="member-canvas-hub" aria-label="روابط الواجهة الرئيسية">
-      <a class="report-launch" href="daily_report.html?release=3751ad4ea4c98ff8">التقرير</a>
+      <a class="report-launch" href="daily_report.html?release=20261016-a4fe443e92a6">التقرير</a>
       
       
     </div>
@@ -234,7 +235,7 @@
           <button class="member-command-btn primary" id="openMorningAzkar" type="button">الأذكار</button>
           <button class="member-command-btn" id="openQaPage" type="button">سؤال وجواب</button>
           
-          <a class="member-command-btn gold" href="daily_report.html?v=20260915report2&release=3751ad4ea4c98ff8">التقرير</a>
+          <a class="member-command-btn gold" href="daily_report.html?v=20260915report2&release=20261016-a4fe443e92a6">التقرير</a>
         </div>
       </div>
     </div>
@@ -445,7 +446,7 @@
   <nav class="member-mobile-dock" aria-label="التنقل الرئيسي">
     <button class="mobile-dock-item ahd" type="button" data-main-tab="ahd" data-canvas-window="#ahd" data-window-title="عهد الثبات" data-window-style="ahd" aria-haspopup="dialog" aria-controls="memberCanvasWindow"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 3-4 4 1 3-1 3 1 5 5-2 3M3 8l-1 4 4 5 4 3 2-2m-6-1 2-2m0 4 2-2m1 0 3 3 2-2m-4-4 5 5 3-3-6-6-3 2-3-3 3-3"/></svg><span>العهد</span></button>
     <button class="mobile-dock-item" type="button" data-main-tab="qa" data-canvas-window="#memberCanvasQa" data-window-title="سؤال وجواب" data-window-style="qa" aria-haspopup="dialog" aria-controls="memberCanvasWindow"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a3 3 0 0 1-3 3H9l-6 3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z"/><path d="M8 8h8M8 12h5"/></svg><span>سؤال وجواب</span></button>
-    <a class="mobile-dock-item" data-main-tab="khutay" href="khutay.html?release=3751ad4ea4c98ff8"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H5v18h14V8l-5-5Zm0 0v5h5M8 12h8M8 16h6"/></svg><span>خُطاي</span></a>
+    <a class="mobile-dock-item" data-main-tab="khutay" href="khutay.html?release=20261016-a4fe443e92a6"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H5v18h14V8l-5-5Zm0 0v5h5M8 12h8M8 16h6"/></svg><span>خُطاي</span></a>
     <button class="mobile-dock-item" type="button" data-main-tab="azkar" data-forward-click="#openMorningAzkar" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"/></svg><span>الأذكار</span></button>
     <button class="mobile-dock-item" type="button" data-main-tab="library" data-forward-click="#openRecoveryLibrary" aria-haspopup="dialog" aria-controls="recoveryLibraryModal"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v16M3 4c4-1 7 0 9 2 2-2 5-3 9-2v15c-4-1-7 0-9 2-2-2-5-3-9-2Z"/></svg><span>المكتبة</span></button>
   </nav>
@@ -467,7 +468,7 @@
 
       <div class="qa-question-panel" id="qaQuestionPanel" hidden>
         <div class="qa-question-panel-head">
-          <a class="qa-back-btn" id="qaBackToCategories" href="index.html?view=qa&release=3751ad4ea4c98ff8">← العودة إلى القوائم</a>
+          <a class="qa-back-btn" id="qaBackToCategories" href="index.html?view=qa&release=20261016-a4fe443e92a6">← العودة إلى القوائم</a>
           <div class="qa-question-panel-copy">
             <div class="qa-question-panel-kicker">الأسئلة</div>
             <div class="qa-question-panel-title" id="qaCurrentCategoryName">—</div>
@@ -589,13 +590,13 @@
   
   </div>
 
-  <script src="js/main.js?v=3f4bcd39cfc8"></script>
-  <script src="js/auth-ui.js?v=7756897165f6"></script>
+  <script src="js/main.js?v=a9968e2632ba"></script>
+  <script src="js/auth-ui.js?v=a50438a5cbc3"></script>
   <script src="js/member-status.js?v=7137d4ffcc89"></script>
   <script src="js/ahd.js?v=604014a001d1"></script>
-  <script src="js/qa.js?v=60f47c16bf45"></script>
+  <script src="js/qa.js?v=2d75abe027c4"></script>
   <script src="js/azkar-canvas.js?v=bf93c8db7fc8"></script>
-  <script src="js/recovery-tools.js?v=cbc4b1950b98"></script>
+  <script src="js/recovery-tools.js?v=b1048e9b6bca"></script>
   <script src="js/hadith.js?v=eca0a6b2b959"></script>
 </body>
 </html>

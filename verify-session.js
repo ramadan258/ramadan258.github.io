@@ -26,7 +26,7 @@ export async function verifySession({ user, memberId, hintMemberId, read, static
   const source = profile || fixed;
   if(dynamicMembers&&!isAdmin&&(!/^custom_member_new_[a-f0-9]{32}$/.test(id)||profile?.schemaVersion!==2||profile?.managementState!=='ready'))throw Error('MEMBER_NOT_READY');
   if (!source?.name || !source?.src) throw Error('MEMBER_PROFILE_MISSING');
-  return { uid: user.uid, member: { id, name: source.name, src: source.src, kind: 'member' }, isAdmin, authTime,
+  return { uid: user.uid, kind: 'member', member: { id, name: source.name, src: source.src, kind: 'member' }, isAdmin, authTime,
     permissions: { qa: isAdmin || permission?.qa === true, memberStatus: isAdmin || permission?.memberStatus === true,
       ahd: isAdmin || permission?.ahd === true } };
 }

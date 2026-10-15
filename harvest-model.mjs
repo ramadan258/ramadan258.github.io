@@ -32,7 +32,7 @@ export function comparisonWindow(start,end,today=dateKey()) {
   return {current:{start,end:finishedEnd},previous:{start:previousStart,end:addDays(previousStart,finishedDays-1)},
     length:finishedDays,includesToday:end===today};
 }
-export function blankStats() {return {required:0,completed:0,no:0,unanswered:0,tasks:0,taskCompleted:0,taskNo:0,taskUnanswered:0,percentage:null,taskPercentage:null};}
+export function blankStats() {return {required:0,completed:0,no:0,unanswered:0,percentage:null};}
 // A display-only balance: unanswered records are never rewritten as explicit "no".
 export function columnBalance({required,completed}) {
   const done=required?completed/required*100:null;
@@ -41,15 +41,13 @@ export function columnBalance({required,completed}) {
 export const chartY=value=>200-value*2;
 function finish(stats) {
   stats.percentage=stats.required?stats.completed/stats.required*100:null;
-  stats.taskPercentage=stats.tasks?stats.taskCompleted/stats.tasks*100:null;return stats;
+  return stats;
 }
 export function sumDays(dayMap,start,end) {
   const result=blankStats();
   for(let key=start;key<=end;key=addDays(key,1)) {
     const d=dayMap.get(key);if(!d)continue;
     result.required+=d.required;result.completed+=d.completed;result.no+=d.no;result.unanswered+=d.unanswered;
-    result.tasks+=d.tasks.length;result.taskCompleted+=d.taskCompleted;
-    result.taskNo+=d.tasks.filter(t=>t.state==='no').length;result.taskUnanswered+=d.tasks.filter(t=>t.state==='unanswered').length;
   }
   return finish(result);
 }

@@ -39,10 +39,9 @@ function bootstrapPostLoginSystems() {
   if (typeof setupRecoveryLibrary === "function") setupRecoveryLibrary();
 }
 function startApp() {
-  warmFirebaseSoon();
   restoreLocalAdminAccessForCurrentUser();
   if (typeof initMemberDirectorySystem === "function") {
-    initMemberDirectorySystem({ activateRemote: true, renderMembers: true });
+    initMemberDirectorySystem({ activateRemote: Boolean(window.FB), renderMembers: true });
   }
   // The directory listener may already be running after a user switch, so apply
   // the permissions it has in memory instead of waiting for another snapshot.
@@ -69,11 +68,7 @@ function startApp() {
     initAhdPage();
     bootstrapPostLoginSystems();
 
-    const session = window.WA3I_SESSION.session;
-    try { await window.WA3I_SESSION.formsReady?.(); }
-    catch { showIdentityToast('تعذر تحميل المسودات. أعد المحاولة قبل تعديلها.'); return; }
-    if (window.WA3I_SESSION.session !== session) return;
-    initDailyFlow();
+    // The standalone report owns its store; the public home never downloads private form archives.
   }, 0);
 }
 function showIdentityToast(message) {
@@ -155,11 +150,12 @@ function wireAdminLoginModal() {
     if (e.target === modal) closeAdminLoginModal();
   });
 }
-function initIdentityGate() {
-  showGate();
+function initIdentityGate(open=true) {
+  if(open)showGate();
   IDENTITY_MEMBERS_CACHE = readMembersFromDOM();
   renderIdentityGrid(IDENTITY_MEMBERS_CACHE);
   wireSwitchUserButton(); wireIdentityConfirmModal();wireGuestEntry();
+  const close=qs('#closeIdentityGate');if(close)close.onclick=()=>hideGate();
 }
 function wireGuestEntry(){
   const button=qs('#enterGuestBtn');if(!button||button.dataset.wired)return;button.dataset.wired='true';
@@ -175,8 +171,8 @@ function memberById(id) { return IDENTITY_MEMBERS_CACHE.find((m) => m.id === id)
 function wireSwitchUserButton() {
   if (SWITCH_USER_WIRED) return; SWITCH_USER_WIRED = true;
   qsa('[data-switch-user-btn]').forEach((btn) => {
-    btn.setAttribute('aria-label', 'الخروج وتبديل المستخدم');
-    btn.addEventListener('click', () => { void window.WA3I_SESSION.logout(); });
+    btn.setAttribute('aria-label', 'تسجيل الدخول أو اختيار المستخدم');
+    btn.addEventListener('click', () => { closeAllModals();initIdentityGate();warmFirebaseSoon(); });
   });
 }
 function openIdentityConfirm(member) {
@@ -225,6 +221,13 @@ window.addEventListener('wa3i-permissions-changed', () => {
   if (window.WA3I_SESSION.session) { WA3I_USER = window.WA3I_SESSION.session.member; updateUserBar(); }
   syncStoredPermissionsForCurrentUser();
   if (FB_STATE.isAdmin) renderMemberManageAdminList();
+});
+window.addEventListener('wa3i-session-ready',()=>{
+  syncStoredPermissionsForCurrentUser();saveCurrentUser(window.WA3I_SESSION.session.member);startApp();
+});
+window.addEventListener('wa3i-session-state',()=>{
+  if(window.WA3I_SESSION.state!=='member'){FB_STATE.isAdmin=false;resetLocalAdminAccess();}
+  updateUserBar();
 });
 window.addEventListener('wa3i-session-cleared', () => {
   WA3I_USER = null; FB_STATE.isAdmin = false; LOCAL_ADMIN_ACCESS = { owner: '', qa: false, ahd: false, memberStatus: false, memberManage: false };

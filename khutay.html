@@ -9,9 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="planner.css?v=353e61758dbf"><link rel="stylesheet" href="session.css?v=9ee192b5d8cc"><link rel="stylesheet" href="extension.css?v=f3001815b949"><link rel="stylesheet" href="harvest.css?v=99b6e9b2c526"><link rel="stylesheet" href="mobile-shell.css?v=84473fbba950"><link rel="stylesheet" href="planning.css?v=638f601519cd">
-  <script src="session-config.js?v=ef65dcb6817a"></script><script src="session-runtime.js?v=d6b557c7228b"></script><script type="module" src="client/planner-ui-2IAWC4ER.js?v=4e1a42b75554"></script>
-<link rel="stylesheet" href="bracelet.css?v=cb4403670d6d"><script type="module" src="client/bracelet-ui-RCWKAVMR.js?v=88c43eaa09bd"></script></head>
+  <link rel="stylesheet" href="planner.css?v=353e61758dbf"><link rel="stylesheet" href="session.css?v=e530b89aa678"><link rel="stylesheet" href="extension.css?v=f3001815b949"><link rel="stylesheet" href="harvest.css?v=99b6e9b2c526"><link rel="stylesheet" href="mobile-shell.css?v=84473fbba950">
+  <script src="performance.js?v=b40a86ef6bca"></script><script src="session-config.js?v=3ca295450b3c"></script><script src="session-runtime.js?v=13203dc02726"></script><script type="module" src="client/planner-ui-X6CV3CDD.js?v=78856199c743"></script>
+<link rel="stylesheet" href="bracelet.css?v=cb4403670d6d"><script type="module" src="client/bracelet-ui-4HGOJZLX.js?v=b2d893a6f102"></script></head>
 <body class="session-pending" data-session-private-page>
   <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
@@ -26,7 +26,7 @@
     <symbol id="icon-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.3.9-4.5 4.4 1.1 6.2L12 17.3l-5.7 2.9 1.1-6.2L2.9 9.6l6.3-.9Z"/></symbol>
   </svg>
 
-  <main class="preview-home"><a href="./index.html?release=3751ad4ea4c98ff8">الواجهة الرئيسية</a>
+  <main class="preview-home"><a href="./index.html?release=20261016-a4fe443e92a6">الواجهة الرئيسية</a>
     <p class="site-name">الموحدون</p>
     <button type="button" class="launch-button" id="launchPreview">
       <svg class="icon" aria-hidden="true"><use href="#icon-target"/></svg>
@@ -69,11 +69,6 @@
         </div>
 
         <div class="day-layout">
-          <section class="section-block priority-section" aria-labelledby="prioritiesTitle">
-            <div class="section-heading"><h3 id="prioritiesTitle">أولوياتي</h3><span class="section-count" id="priorityCount"></span></div>
-            <div class="task-list priorities" id="priorityList"></div>
-          </section>
-
           <section class="section-block habit-section" aria-labelledby="dailyHabitsTitle">
             <div class="section-heading"><h3 id="dailyHabitsTitle">عادات اليوم</h3><button class="add-button" type="button" data-add="habit" data-form-mount="#dailyHabitForm">عادة <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg></button><span class="progress-number" id="dailyPercent" aria-live="polite"></span></div>
             <div id="dailyHabitForm" class="form-mount"></div>
@@ -82,19 +77,7 @@
             <div class="habit-list" id="dailyHabitList"></div>
           </section>
 
-          <section class="section-block remaining-tasks" aria-labelledby="tasksTitle">
-            <div class="section-heading"><h3 id="tasksTitle">مهامي</h3><span class="section-count" id="taskCount"></span><button class="add-button" type="button" data-add="task" data-form-mount="#taskForm">مهمة <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg></button></div>
-            <div id="taskForm" class="form-mount"></div>
-            <div class="task-list" id="taskList"></div>
-          </section>
         </div>
-      </section>
-
-      <section class="tab-panel" id="panel-goals" aria-label="أهدافي — متوقف مؤقتًا" hidden inert>
-        <div class="page-heading"><h2>أهدافي</h2><button class="add-button" type="button" data-add="area">مجال <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg></button></div>
-        <div class="plan-period" id="planPeriod"></div><div id="planTools"></div>
-        <div id="goalForm" class="form-mount"></div>
-        <button class="list-toggle" id="archivedGoals">المؤرشفة</button><p id="planningError" class="planning-error" role="alert"></p><div class="goal-list" id="goalList"></div>
       </section>
 
       <section class="tab-panel" id="panel-habits" role="tabpanel" aria-labelledby="tab-habits" tabindex="0" hidden>
@@ -110,7 +93,7 @@
             <div class="habit-week" id="habitWeek"></div>
             <div class="calendar-legend"><span><i class="legend-dot is-done"></i>مكتملة</span><span><i class="legend-dot"></i>مطلوبة</span><span><i class="legend-dot is-unscheduled"></i>غير مجدولة</span></div>
           </div>
-          <div id="detailHabitForm" class="form-mount"></div><div id="habitActions"></div><div class="linked-goal"><span class="eyebrow">الهدف المرتبط</span><strong id="detailGoal"></strong></div>
+          <div id="detailHabitForm" class="form-mount"></div><div id="habitActions"></div>
         </div>
       </section>
 

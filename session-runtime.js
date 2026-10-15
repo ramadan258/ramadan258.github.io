@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=3751ad4ea4c98ff8',base).href;
+  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-a4fe443e92a6',base).href;
   const config=window.__WA3I_SESSION_CONFIG,projectId=window.__WA3I_FIREBASE_CONFIG?.projectId;
   if(!config||!projectId)throw Error('CONFIG_REQUIRED');
   let epoch=0,pending=Promise.resolve(),store=null,formsPromise=null,pool=null,navigating=false;
@@ -12,9 +12,11 @@
   const cacheKey=key=>`wa3i-public-v2:${projectId}:${key}`;
   const guestNamespace=`wa3i-device-guest-v1:${encodeURIComponent(projectId)}:${encodeURIComponent(base.pathname)}`;
   const guestModeKey='wa3i-guest-session-v1:'+guestNamespace;
-  let cloudPromise,authHandle,authModule,cloudLogin,cloudFormsReady,resolveGuest,guestPrepared;
+  const perf=window.WA3I_PERFORMANCE||{start(){},end(){},mark(){},duration(){}};
+  let cloudPromise,authPromise,authHandle,authModule,cloudLogin,cloudFormsReady,resolveGuest,guestPrepared,dbHandle;
+  let switching=false,retryTimer=null,retryAttempt=0,verification=null,adminDataPromise=null;
   const guestReady=new Promise(resolve=>{resolveGuest=resolve;});
-  const SESSION=window.WA3I_SESSION={session:null,permissions:new Map(),accounts:new Map(),storage:{
+  const SESSION=window.WA3I_SESSION={session:null,state:'restoring',permissions:new Map(),accounts:new Map(),storage:{
     getItem(key){
       if(privateKey(key))return store?.storage.getItem(key)??null;
       if(publicKeys.has(key)){try{return localStorage.getItem(cacheKey(key));}catch{}}
@@ -32,6 +34,10 @@
     },
   }};
   SESSION.projectId=projectId;SESSION.guestNamespace=guestNamespace;
+  const emulators=location.hostname==='127.0.0.1'&&projectId.startsWith('demo-')?config.emulators:null;
+  if(emulators)SESSION.emulatorBatchEndpoint=`http://127.0.0.1:${emulators.firestore}/v1/projects/${projectId}/databases/(default)/documents:batchGet`;
+  SESSION.publicReady=document.readyState==='loading'?new Promise(resolve=>document.addEventListener('DOMContentLoaded',resolve,{once:true})):Promise.resolve();
+  function state(value){SESSION.state=value;document.body?.setAttribute('data-session-state',value);window.dispatchEvent(new Event('wa3i-session-state'));}
   function guestNotice(){
     if(!document.body)return;
     document.body.classList.toggle('guest-session',SESSION.session?.kind==='guest');
@@ -47,7 +53,7 @@
   }
   function activateGuest(){
     SESSION.session={uid:'local-guest',kind:'guest',isAdmin:false,permissions:{qa:false,memberStatus:false,ahd:false},member:{id:'guest',name:'ضيف',kind:'guest'}};
-    guestNotice();document.body?.classList.remove('session-pending');resolveGuest(SESSION);
+    state('guest');guestNotice();document.body?.classList.remove('session-pending');resolveGuest(SESSION);
   }
   SESSION.formsReady=async()=>{
     if(SESSION.session?.kind!=='guest'){await startCloud();return cloudFormsReady();}
@@ -69,7 +75,7 @@
     status.textContent=state.error==='CONFLICT'?'تغيّرت البيانات في جلسة أخرى. احتفظ بتعديلاتك قبل إعادة التحميل.':state.error?'لم يكتمل الحفظ. لا تغادر الصفحة.':'جارٍ حفظ التعديلات…';
   }
   function clearPrivateState(){
-    epoch++;SESSION.planner?.close();SESSION.planner=null;store?.close();store=null;formsPromise=null;guestPrepared=null;
+    epoch++;clearTimeout(retryTimer);retryTimer=null;adminDataPromise=null;SESSION.planner?.close();SESSION.planner=null;store?.close();store=null;formsPromise=null;guestPrepared=null;
     pool?.close();pool=null;SESSION.session=null;SESSION.permissions.clear();SESSION.accounts.clear();memory.clear();
     for(const stop of listeners)stop();listeners.clear();document.body?.classList.add('session-pending');
     document.querySelectorAll('input:not([type=button]),textarea').forEach(input=>{input.value='';});
@@ -84,8 +90,9 @@
   SESSION.enterGuest=()=>serialize(async()=>{
     if(!await SESSION.safeLeave())throw Error('UNSAVED_CHANGES');
     localStorage.getItem(guestNamespace+':planner:catalog');
-    clearPrivateState();sessionStorage.setItem(guestModeKey,'active');
+    switching=true;await startAuth();clearPrivateState();
     if(authHandle?.currentUser)await authModule.signOut(authHandle);
+    switching=false;
     activateGuest();return SESSION.session;
   });
   SESSION.login=async(member,password)=>{await startCloud();return cloudLogin(member,password);};
@@ -97,9 +104,10 @@
   SESSION.loginAdmin=async(email,password)=>{await startCloud();return cloudLogin({id:config.adminMemberId},password,email);};
   SESSION.logout=()=>serialize(async()=>{
     if(!await SESSION.safeLeave())return false;
-    sessionStorage.removeItem(guestModeKey);clearPrivateState();
+    switching=true;clearPrivateState();
     if(authHandle)await authModule.signOut(authHandle);location.replace(home);return true;
   });
+  SESSION.retry=async()=>{clearTimeout(retryTimer);retryTimer=null;await startCloud();if(SESSION.state==='suspended')await restoreSession();return SESSION;};
   window.ensureFirebase=async()=>{await startCloud();return window.FB;};
   window.scheduleFirebaseWarmup=()=>{void startCloud().catch(()=>{});};
   SESSION.cloudReady=()=>startCloud();
@@ -111,18 +119,71 @@
     event.preventDefault();if(navigating)return;navigating=true;
     void SESSION.safeLeave().then(ok=>{if(ok)location.href=url.href;}).finally(()=>{navigating=false;});
   },true);
-  function startCloud(){return cloudPromise||=(async()=>{
-    const [authMod,fs,{createServerReadPool},{verifySession},{guardCloudWrites}]=await Promise.all([
-      import(new URL('vendor/firebase-auth-WHD5E6JR.js',base).href),import(new URL('vendor/firebase-data-O3EMFKE2.js',base).href),
-      import(new URL('client/server-read-pool-ZXNZXRQP.js',base).href),import(new URL('client/verify-session-5NFAPO2B.js',base).href),
-      import(new URL('client/cloud-write-guard-XIFAIFIE.js',base).href),
+  function startAuth(){
+    if(authPromise)return authPromise;
+    perf.start('firebase-auth-modules');
+    authPromise=(async()=>{
+      const authMod=await import(new URL('vendor/firebase-auth-3XHWU4U7.js',base).href);
+      perf.end('firebase-auth-modules');perf.start('firebase-auth-init');
+      const app=authMod.getApps().find(app=>app.name==='wa3i-secure-v1')||authMod.initializeApp(window.__WA3I_FIREBASE_CONFIG,'wa3i-secure-v1');
+      const auth=authMod.getAuth(app);authHandle=auth;authModule=authMod;
+      if(emulators&&!auth.emulatorConfig)authMod.connectAuthEmulator(auth,`http://127.0.0.1:${emulators.auth}`,{disableWarnings:true});
+      // The SDK migrates an existing session persistence record; identity still comes from Auth.
+      await authMod.setPersistence(auth,authMod.browserLocalPersistence);
+      perf.end('firebase-auth-init');perf.start('auth-restore');
+      await auth.authStateReady();perf.end('auth-restore');
+      authMod.onAuthStateChanged(auth,user=>{
+        if(switching)return;
+        if(SESSION.session?.kind==='member'&&user?.uid!==SESSION.session.uid){warnUnsavedSessionEnd();clearPrivateState();location.replace(home);}
+        else if(SESSION.state==='guest'&&user&&!user.isAnonymous){clearPrivateState();location.replace(home);}
+      });
+      return {authMod,auth,app};
+    })().catch(error=>{authPromise=null;throw error;});
+    return authPromise;
+  }
+  async function restoreSession(){
+    if(verification)return verification;
+    verification=(async()=>{
+      if(!authHandle.currentUser||authHandle.currentUser.isAnonymous){activateGuest();return;}
+      const generation=epoch;
+      try{const session=await SESSION.verify(undefined,generation);if(generation!==epoch)return;
+        // A suspended view has already discarded its in-memory private store.
+        if(SESSION.state==='suspended'){location.reload();return;}
+        SESSION.enterVerified(session,generation);
+      }catch(error){
+        const {sessionFailure}=await import(new URL('session-errors.mjs',base).href);
+        if(generation!==epoch||sessionFailure(error)==='stale')return;
+        if(sessionFailure(error)==='invalid'){clearPrivateState();switching=true;await authModule.signOut(authHandle);switching=false;activateGuest();}
+        else {state('suspended');showRetry();}
+      }
+    })().finally(()=>{verification=null;});return verification;
+  }
+  function showRetry(){
+    void SESSION.publicReady.then(()=>{
+      let banner=document.getElementById('sessionRetry');
+      if(!banner){banner=document.createElement('div');banner.id='sessionRetry';banner.setAttribute('role','status');banner.textContent='تعذر التحقق من الاتصال مؤقتًا. ';
+        const button=document.createElement('button');button.type='button';button.textContent='إعادة المحاولة';button.onclick=()=>{void SESSION.retry().catch(showRetry);};banner.append(button);document.body.append(banner);}
+    });
+    if(!retryTimer&&navigator.onLine!==false&&retryAttempt<5){retryTimer=setTimeout(()=>{retryTimer=null;retryAttempt++;void SESSION.retry().catch(showRetry);},Math.min(30000,1000*2**retryAttempt));}
+  }
+  function startCloud(){
+    if(cloudPromise)return cloudPromise;
+    perf.start('firebase-data-modules');
+    cloudPromise=(async()=>{
+    const [authMod,fs,{createServerReadPool},{verifySession},{guardCloudWrites},{createServerBatchReader}]=await Promise.all([
+      startAuth().then(value=>value.authMod),import(new URL('vendor/firebase-data-HBHQ7IVC.js',base).href),
+      import(new URL('client/server-read-pool-6CAVQ6TS.js',base).href),import(new URL('client/verify-session-HPHQATB6.js',base).href),
+      import(new URL('client/cloud-write-guard-37TOEH5T.js',base).href),
+      import(new URL('server-batch-read.js',base).href),
     ]);
-    const app=authMod.initializeApp(window.__WA3I_FIREBASE_CONFIG,'wa3i-secure-v1');
-    const auth=authMod.getAuth(app),db=fs.initializeFirestore(app,{experimentalAutoDetectLongPolling:true});
+    perf.end('firebase-data-modules');perf.start('firestore-init');
+    const {app,auth}=await startAuth();
+    if(!dbHandle){dbHandle=fs.initializeFirestore(app,{experimentalAutoDetectLongPolling:true});if(emulators)fs.connectFirestoreEmulator(dbHandle,'127.0.0.1',emulators.firestore);}
+    const db=dbHandle;
+    perf.end('firestore-init');
     authHandle=auth;authModule=authMod;
     
-    await authMod.setPersistence(auth,authMod.browserSessionPersistence);
-    window.FB={...guardCloudWrites(fs,()=>Boolean(SESSION.session&&SESSION.session.kind!=='guest')), ...authMod,auth,db,projectId,
+    window.FB={...guardCloudWrites(fs,()=>SESSION.state==='member'), ...authMod,auth,db,projectId,
       signInAnonymously:()=>{throw Error('ANONYMOUS_DISABLED');}};
     const publicTypes={custom__:'custom_member',hidden__:'hidden_member',qa_category__:'qa_category',qa_item__:'qa_item'};
     window.FB.publicBucketSnapshot=(prefixes,next,error=()=>{})=>{
@@ -130,42 +191,51 @@
       return fs.onSnapshot(fs.query(fs.collection(db,'featuredMembers'),fs.and(fs.where('type','in',[...new Set(prefixes.map(prefix=>publicTypes[prefix]))]),
         fs.or(...prefixes.map(prefix=>fs.and(fs.where(fs.documentId(),'>=',prefix),fs.where(fs.documentId(),'<=',prefix+'\uf8ff')))))),next,error);
     };
-    window.ensureFirebase=async()=>window.FB;window.scheduleFirebaseWarmup=()=>{};
     cloudFormsReady=async()=>{
       if(store)return store;if(!SESSION.session)throw Error('AUTH_REQUIRED');
       if(formsPromise)return formsPromise;
       const generation=epoch,session=SESSION.session,current=()=>generation===epoch&&auth.currentUser?.uid===session.uid&&SESSION.session?.uid===session.uid;
       formsPromise=(async()=>{
-        const {createPrivateStore}=await import(new URL('client/private-store-YXLH2JUX.js',base).href);
+        const {createPrivateStore}=await import(new URL('client/private-store-6OES6RXD.js',base).href);
         if(!current())throw Error('STALE_SESSION');
         const value=await createPrivateStore({fs,db,uid:session.uid,memberId:session.member.id,isCurrent:current,onState:showSaveState});
         if(!current()){value.close();throw Error('STALE_SESSION');}store=value;return value;
-      })();
+      })().catch(error=>{formsPromise=null;throw error;});
       return formsPromise;
     };
     const hintKey=uid=>`wa3i-member-hint-v1:${projectId}:${uid}`;
     async function verify(memberId,generation=epoch){
       const user=auth.currentUser;if(SESSION.session?.kind==='guest'||!user||user.isAnonymous)throw Error('AUTH_REQUIRED');
       const current=()=>generation===epoch&&auth.currentUser?.uid===user.uid;
-      if(!pool)pool=createServerReadPool({fs,db,isCurrent:current});
+      if(!pool)pool=createServerReadPool({fs,db,isCurrent:current,
+        getServerSnapshot:createServerBatchReader({projectId,user,isCurrent:current,endpoint:SESSION.emulatorBatchEndpoint,onBatch:({ms})=>perf.duration('membership-batch',ms)}),
+        onRead:()=>perf.mark('membership-server-read-complete')});
       let hintMemberId;try{hintMemberId=sessionStorage.getItem(hintKey(user.uid));}catch{}
-      return verifySession({user,memberId,hintMemberId,adminUid:config.adminUid,adminMemberId:config.adminMemberId,
-        staticMembers:config.staticMembers,dynamicMembers:config.dynamicMembers,read:pool.read,isCurrent:current});
+      perf.start('membership-verify');
+      try{return await verifySession({user,memberId,hintMemberId,adminUid:config.adminUid,adminMemberId:config.adminMemberId,
+        staticMembers:config.staticMembers,dynamicMembers:config.dynamicMembers,read:pool.read,isCurrent:current});}
+      finally{perf.end('membership-verify');}
     }
     function enter(session,generation){
       if(generation!==epoch)throw Error('STALE_SESSION');SESSION.session=session;
+      state('member');retryAttempt=0;document.getElementById('sessionRetry')?.remove();
       try{sessionStorage.setItem(hintKey(session.uid),session.member.id);}catch{}
       watchSession(session);
-      guestNotice();
+      guestNotice();window.dispatchEvent(new Event('wa3i-session-ready'));
     }
     function watchSession(session){
       const generation=epoch,current=()=>generation===epoch&&SESSION.session?.uid===session.uid;
-      const invalid=()=>{if(current()){warnUnsavedSessionEnd();clearPrivateState();void serialize(async()=>{await authMod.signOut(auth);location.replace(home);});}};
+      const invalid=()=>{if(current()){warnUnsavedSessionEnd();clearPrivateState();state('invalid');void serialize(async()=>{switching=true;await authMod.signOut(auth);location.replace(home);});}};
+      const interrupted=()=>{if(!current())return;
+        // A stream/network failure is not proof of revoked identity. Lock private access, keep Auth.
+        state('suspended');pool?.close();pool=null;listeners.clear();showRetry();
+        window.dispatchEvent(new Event('wa3i-session-suspended'));
+      };
       if(!session.isAdmin)for(const [collection,id,validate] of [
         ['accountBindings',session.uid,b=>b?.active&&b.memberId===session.member.id&&b.schemaVersion===1&&session.authTime>=b.authValidAfter],
         ['memberAccounts',session.member.id,a=>a?.uid===session.uid&&a.schemaVersion===1],
         ['memberRegistry',session.member.id,r=>r?.active&&r.memberId===session.member.id&&r.schemaVersion===1],
-      ])listeners.add(pool.subscribe(collection,id,snapshot=>{if(current()&&!validate(snapshot.data()))invalid();},invalid));
+      ])listeners.add(pool.subscribe(collection,id,snapshot=>{if(current()&&!validate(snapshot.data()))invalid();},interrupted));
       listeners.add(pool.subscribe('featuredMembers','custom__'+session.member.id,snapshot=>{
         if(!current())return;const profile=snapshot.data();
         if(!profile){if(config.staticMembers.some(member=>member.id===session.member.id))return;return invalid();}
@@ -173,8 +243,8 @@
         if(config.dynamicMembers&&!session.isAdmin&&(profile.schemaVersion!==2||profile.managementState!=='ready'))return invalid();
         SESSION.session.member={id:session.member.id,name:profile.name,src:profile.src,kind:'member'};
         window.dispatchEvent(new Event('wa3i-permissions-changed'));
-      },invalid));
-      if(!session.isAdmin)listeners.add(pool.subscribe('featuredMembers','hidden__'+session.member.id,snapshot=>{if(current()&&snapshot.exists())invalid();},invalid));
+      },interrupted));
+      if(!session.isAdmin)listeners.add(pool.subscribe('featuredMembers','hidden__'+session.member.id,snapshot=>{if(current()&&snapshot.exists())invalid();},interrupted));
       function account(snapshot){
         if(!current())return;SESSION.accounts.clear();const add=doc=>{if(doc.exists())SESSION.accounts.set(doc.id,doc.data());};
         if(session.isAdmin)snapshot.forEach(add);else add(snapshot);window.dispatchEvent(new Event('wa3i-permissions-changed'));
@@ -186,44 +256,51 @@
         SESSION.session.permissions={qa:session.isAdmin||p.qa===true,memberStatus:session.isAdmin||p.memberStatus===true,ahd:session.isAdmin||p.ahd===true};
         window.dispatchEvent(new Event('wa3i-permissions-changed'));
       }
-      if(session.isAdmin){
-        listeners.add(fs.onSnapshot(fs.collection(db,'memberAccounts'),account,invalid));
-        listeners.add(fs.onSnapshot(fs.collection(db,'memberPermissions'),permission,invalid));
-      }else{
-        listeners.add(pool.subscribe('memberAccounts',session.member.id,account,invalid));
-        listeners.add(pool.subscribe('memberPermissions',session.member.id,permission,invalid));
+      if(!session.isAdmin){
+        listeners.add(pool.subscribe('memberAccounts',session.member.id,account,interrupted));
+        listeners.add(pool.subscribe('memberPermissions',session.member.id,permission,interrupted));
       }
     }
     SESSION.verify=verify;
+    SESSION.enterVerified=enter;
+    SESSION.adminDirectoryReady=()=>{
+      if(SESSION.state!=='member'||!SESSION.session?.isAdmin)return Promise.reject(Error('ADMIN_REQUIRED'));
+      const generation=epoch;
+      return adminDataPromise||=(async()=>{
+        const [accounts,permissions]=await Promise.all([fs.getDocsFromServer(fs.collection(db,'memberAccounts')),fs.getDocsFromServer(fs.collection(db,'memberPermissions'))]);
+        if(generation!==epoch||SESSION.state!=='member'||!SESSION.session?.isAdmin)throw Error('STALE_SESSION');
+        SESSION.accounts.clear();SESSION.permissions.clear();accounts.forEach(doc=>SESSION.accounts.set(doc.id,doc.data()));permissions.forEach(doc=>SESSION.permissions.set(doc.id,doc.data()));
+      })().catch(error=>{adminDataPromise=null;throw error;});
+    };
     const login=(member,password,email)=>serialize(async()=>{
       if(!await SESSION.safeLeave())throw Error('UNSAVED_CHANGES');
-      sessionStorage.removeItem(guestModeKey);clearPrivateState();const generation=epoch;await authMod.signOut(auth);
+      perf.start('password-login');
+      switching=true;clearPrivateState();state('switching');const generation=epoch;await authMod.signOut(auth);
       const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(member.id));
       const slug=Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,'0')).join('').slice(0,24);
       try{await authMod.signInWithEmailAndPassword(auth,email||`m-${slug}@members.wa3i.test`,password);
         const session=await verify(member.id,generation);enter(session,generation);return session;
-      }catch(error){clearPrivateState();await authMod.signOut(auth);
+      }catch(error){clearPrivateState();await authMod.signOut(auth);activateGuest();
         throw Error(String(error.code||(/^[A-Z_]+$/.test(error.message||'')?error.message:'LOGIN_REJECTED')));}
-      finally{password='';document.body.classList.remove('session-pending');}
+      finally{switching=false;password='';document.body.classList.remove('session-pending');perf.end('password-login');}
     });
     cloudLogin=login;
-    await new Promise(resolve=>{const stop=authMod.onAuthStateChanged(auth,()=>{stop();resolve();});});
-    if(SESSION.session?.kind==='guest'){if(auth.currentUser)await authMod.signOut(auth);}
-    else if(auth.currentUser){const generation=epoch;try{const session=await verify(undefined,generation);if(generation===epoch)enter(session,generation);}
-      catch{if(generation===epoch){clearPrivateState();await authMod.signOut(auth);}}}
-    authMod.onAuthStateChanged(auth,user=>{if(SESSION.session&&SESSION.session.kind!=='guest'&&user?.uid!==SESSION.session.uid){warnUnsavedSessionEnd();clearPrivateState();location.replace(home);}});
+    if(SESSION.state==='restoring')await restoreSession();
     return SESSION;
   })().catch(error=>{
     if(document.readyState!=='loading'){
       document.body?.classList.remove('session-pending');const grid=document.getElementById('identityGrid');if(grid&&SESSION.session?.kind!=='guest')grid.textContent='تعذر الاتصال. أعد المحاولة.';
     }
-    throw error;
-  });}
-  try{if(sessionStorage.getItem(guestModeKey)==='active')activateGuest();}catch{}
-  const startup=SESSION.session?.kind==='guest'?Promise.resolve(SESSION):Promise.race([startCloud(),guestReady]);
+    cloudPromise=null;throw error;
+  });return cloudPromise;}
+  const startup=(async()=>{
+    await startAuth();
+    if(authHandle.currentUser&&!authHandle.currentUser.isAnonymous)await startCloud();else activateGuest();
+    return SESSION;
+  })().catch(error=>{state('suspended');showRetry();throw error;});
   const finishReady=async()=>{
     if(document.readyState==='loading')await new Promise(resolve=>document.addEventListener('DOMContentLoaded',resolve,{once:true}));
-    if(document.body.hasAttribute('data-session-private-page')&&!SESSION.session){location.replace(home);throw Error('AUTH_REQUIRED');}
+    if(document.body.hasAttribute('data-session-private-page')&&!SESSION.session)throw Error('SESSION_UNVERIFIED');
     if(document.body.hasAttribute('data-session-forms-page'))await SESSION.formsReady();
     document.body.classList.remove('session-pending');guestNotice();return SESSION;
   };
@@ -231,5 +308,6 @@
   Object.defineProperty(SESSION,'ready',{get:()=>SESSION.session?.kind==='guest'?guestPrepared||=finishReady():ready});
   ready.catch(()=>{});
   document.addEventListener('DOMContentLoaded',guestNotice,{once:true});
-  window.addEventListener('pageshow',event=>{if(event.persisted){document.body.classList.add('session-pending');location.reload();}});
+  window.addEventListener('online',()=>{retryAttempt=0;if(SESSION.state==='suspended')void SESSION.retry().catch(showRetry);});
+  window.addEventListener('pageshow',event=>{if(event.persisted&&SESSION.session?.kind==='member'){document.body.classList.add('session-pending');location.reload();}});
 })();

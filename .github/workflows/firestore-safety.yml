@@ -12,3 +12,7 @@ jobs:
           node-version: '22'
       - run: node --test scripts/security/verify-rules.test.cjs
       - run: node scripts/security/verify-rules.cjs
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run build
+      - run: git diff --exit-code

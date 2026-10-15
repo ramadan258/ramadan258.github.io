@@ -22,15 +22,7 @@ function view(memberId){
   return {tier:'private',text:labels.private};
 }
 function personalAvatar(){
-  if(document.querySelector('#khutayWindow')||owner?.kind==='guest'){document.querySelector('[data-personal-bracelet]')?.remove();return;}
-  const anchor=document.querySelector('#accountLabel')||document.querySelector('[data-current-user-pill]');
-  if(!owner||!anchor)return;
-  const existing=document.querySelector('[data-personal-bracelet]');
-  if(existing){if(owner.member.src&&existing.getAttribute('src')!==owner.member.src)existing.src=owner.member.src;return;}
-  const image=document.createElement('img');image.className='personal-bracelet-avatar member-avatar habit-ring-neutral';image.dataset.personalBracelet='';
-  image.dataset.braceletMemberId=owner.member.id;
-  image.src=owner.member.src||window.WA3I_DEFAULT_MEMBER_AVATAR_SRC||'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"%3E%3Crect width="80" height="80" rx="40" fill="%23152935"/%3E%3Ccircle cx="40" cy="28" r="14" fill="%2396b1bb"/%3E%3Cpath d="M14 74c0-30 52-30 52 0" fill="%2396b1bb"/%3E%3C/svg%3E';
-  image.alt='سوارك الشخصي';anchor.before(image);
+  document.querySelector('[data-personal-bracelet]')?.remove();
 }
 function visibilityNotice(){
   if(!publicEnabled||!owner||owner.kind==='guest'||document.getElementById('braceletVisibilityNotice'))return;

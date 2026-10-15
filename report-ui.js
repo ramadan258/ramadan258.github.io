@@ -1,6 +1,7 @@
 import { planner } from './planner-store.js';
 import { dateKey,dayStats,emptyDay } from './model.mjs';
 import {reportSteps,reportStepIndex,reportProgress,habitAnswer,reportCursorKey} from './report-wizard.mjs';
+import {trackingStart} from './tracking-period.mjs';
 const $=selector=>document.querySelector(selector);
 const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const store=await planner().catch(error=>{
@@ -9,7 +10,7 @@ const store=await planner().catch(error=>{
   main.querySelector('button').onclick=()=>location.reload();document.body.append(main);throw error;
 });
 let today=dateKey();
-let selected=today,message='',cursorId='',stepIndex=0,mounted='',cached=null,renderedVersion=-1,frame=0;
+let selected=today<trackingStart?trackingStart:today,message='',cursorId='',stepIndex=0,mounted='',cached=null,renderedVersion=-1,frame=0;
 const numbers=new Intl.NumberFormat('ar-SA');
 const dates=new Intl.DateTimeFormat('ar-SA',{weekday:'long',day:'numeric',month:'long',year:'numeric',calendar:'islamic-umalqura',timeZone:'UTC'});
 const cursorKey=()=>reportCursorKey(window.WA3I_SESSION.session.kind==='guest'?window.WA3I_SESSION.guestNamespace:window.WA3I_SESSION.projectId||window.FB.projectId,window.WA3I_SESSION.session.uid,selected);
@@ -27,11 +28,12 @@ function saveStatus() {
   const state=store.status();$('#saveStatus').dataset.error=!!state.error;
   $('#saveStatus').textContent=state.error==='CONFLICT'?'تعارض مع جلسة أخرى؛ مسودتك محفوظة هنا':state.error?'لم يكتمل الحفظ؛ أعد المحاولة قبل المغادرة':state.pending?'جارٍ الحفظ…':message||(state.local?'محفوظ على هذا الجهاز فقط':'محفوظ في الحساب');
   $('#retrySave').hidden=!state.error;$('#resolveConflict').hidden=state.error!=='CONFLICT';
+  if(selected>today&&!state.error)$('#saveStatus').textContent='تبدأ المتابعة في 16 أكتوبر 2026';
 }
 function render() {
   const {record,day,steps,version}=view();
   stepIndex=reportStepIndex(steps,cursorId,stepIndex);const step=steps[stepIndex];cursorId=step.id;
-  $('#reportDay').value=selected;$('#reportDay').max=today;
+  $('#reportDay').value=selected;$('#reportDay').max=today<trackingStart?trackingStart:today;$('#reportDay').min=trackingStart;
   $('#reportDate').textContent=dates.format(new Date(selected+'T12:00:00Z'));
   $('#reportCount').textContent=`${numbers.format(day.completed)} من ${numbers.format(day.required)}`;
   $('#stepSection').textContent=step.section;$('#reportQuestion').textContent=step.title;
@@ -48,6 +50,9 @@ function render() {
   }
   if(step.kind==='habit')for(const button of $('#reportHabits').querySelectorAll('[data-answer]'))button.setAttribute('aria-pressed',String(button.dataset.answer===habitAnswer(record,step.habitId)));
   const input=$('#reportAnswer');if(input&&document.activeElement!==input)input.value=record.report[step.name]||'';
+  if(input)input.disabled=selected>today;
+  for(const button of $('#reportHabits').querySelectorAll('[data-answer]'))button.disabled=selected>today;
+  $('#saveReport').disabled=selected>today;
   $('#previousQuestion').disabled=stepIndex===0;$('#nextQuestion').hidden=step.kind==='review';
   $('#nextQuestion').textContent=steps[stepIndex+1]?.kind==='review'?'عرض التقرير':'التالي';
   $('#copyReport').hidden=step.kind!=='review';
@@ -77,7 +82,7 @@ function moveQuestion(direction){
 }
 $('#previousQuestion').onclick=()=>moveQuestion(-1);$('#nextQuestion').onclick=()=>moveQuestion(1);
 $('#reportDay').onchange=async event=>{
-  const input=event.target,date=input.value;if(!date||date>today||date===selected)return;
+  const input=event.target,date=input.value;if(!date||date<trackingStart||date>today||date===selected)return;
   input.value=selected;input.disabled=true;
   try{await store.ensureRange(date,date);selected=date;message='';restoreCursor();render();}catch{input.value=selected;alert('تعذر تحميل التقرير؛ لم نغيّر البيانات.');}
   finally{input.disabled=false;}
@@ -97,14 +102,14 @@ $('#resolveConflict').onclick=async()=>{
   link.href=url;link.download='my-report-draft.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   if(confirm('تم تجهيز نسخة مسودتك. هل تريد تحميل نسخة الخادم بدل التعديلات المتعارضة؟'))await store.reloadServer();
 };
-async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=3751ad4ea4c98ff8';}
+async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=20261016-a4fe443e92a6';}
 $('#closeReport').onclick=leave;$('#reportWindow').addEventListener('cancel',event=>{event.preventDefault();void leave();});
 window.addEventListener('wa3i-session-cleared',()=>{cancelAnimationFrame(frame);frame=0;cached=null;cursorId='';document.body.replaceChildren();});
 store.subscribe(()=>{
   saveStatus();if(store.status().dataVersion===renderedVersion||frame)return;
   frame=requestAnimationFrame(()=>{frame=0;renderedVersion=store.status().dataVersion;render();});
 });
-restoreCursor();render();$('#reportWindow').showModal();
+restoreCursor();render();$('#reportWindow').showModal();window.WA3I_PERFORMANCE?.mark('report-ui-usable');
 function updateDate(){if(!window.WA3I_SESSION.session)return;const next=dateKey();if(next===today)return;today=next;cached=null;render();}
 const clockTimer=setInterval(updateDate,60000);
 window.addEventListener('wa3i-session-cleared',()=>clearInterval(clockTimer));
