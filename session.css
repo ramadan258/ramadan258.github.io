@@ -1,4 +1,10 @@
 .session-pending { visibility: hidden; }
+body.member-design-canvas-mode { visibility: visible; }
+body[data-session-state="suspended"] #khutayWindow,
+body[data-session-state="suspended"] #reportWindow,
+body[data-session-state="suspended"] #personalProgress { visibility: hidden; pointer-events: none; }
+#sessionRetry { position:fixed;top:10px;inset-inline:12px;z-index:100002;background:#10232b;border:1px solid #4ecdc4;padding:12px;border-radius:14px;color:#fff;font:600 13px Cairo,sans-serif; }
+#closeIdentityGate { float:left;width:36px;padding:4px;margin-bottom:8px; }
 .identity-gate { align-items: center; }
 .identity-card { width: min(640px, calc(100vw - 28px)); padding: 24px; min-height: 0; max-height: calc(100dvh - 48px); height: auto; align-self: center; overflow: auto; }
 .identity-title { margin: 0 0 20px; }
@@ -10,6 +16,8 @@
 .identity-confirm-hint:empty { display: none; }
 .identity-confirm-password-wrap { margin: 16px 0; }
 .identity-confirm-password-wrap input { direction: ltr; text-align: center; }
+.session-remember { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin:10px 0; font-size:13px; }
+.session-remember input { accent-color:#4ecdc4; }
 .member-manage-card, .member-manage-list-wrap, .member-manage-list { min-width: 0; max-width: 100%; }
 .member-manage-meta { overflow-wrap: anywhere; }
 @media (max-width: 480px) {

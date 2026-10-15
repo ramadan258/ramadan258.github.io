@@ -282,7 +282,8 @@ function isBindingUnavailableError(error) {
 
 function updateUserBar() {
   qsa("[data-current-user-pill]").forEach((pill) => {
-    pill.textContent = WA3I_USER?.name || "ضيف";
+    pill.textContent = window.WA3I_SESSION.state === 'member' ? WA3I_USER?.name || '' : "تسجيل الدخول";
+    pill.closest('button')?.setAttribute('aria-label',window.WA3I_SESSION.state==='member'?'اختيار المستخدم: '+pill.textContent:'تسجيل الدخول');
   });
 }
 
@@ -707,7 +708,8 @@ function refreshIdentityStreaksUI() {
 function startSharedStreaksListener() {
   if (SHARED_STREAKS_LISTENING) return;
   const tryInit = () => {
-    if (!fbAvailable()) return setTimeout(tryInit, 80);
+    if(SHARED_STREAKS_LISTENING)return;
+    if (!fbAvailable()) {void window.ensureFirebase().then(tryInit).catch(()=>{});return;}
     SHARED_STREAKS_LISTENING = true;
 
     const { db, onSnapshot, collection } = window.FB;
@@ -1484,7 +1486,8 @@ function initMemberDirectorySystem(options = {}) {
   if (!activateRemote || MEMBER_DIRECTORY_STATE.listenersAttached) return;
 
   const tryInit = () => {
-    if (!fbAvailable()) return setTimeout(tryInit, 80);
+    if(MEMBER_DIRECTORY_STATE.listenersAttached)return;
+    if (!fbAvailable()) {void window.ensureFirebase().then(tryInit).catch(()=>{});return;}
     MEMBER_DIRECTORY_STATE.listenersAttached = true;
 
     const { db, onSnapshot, collection } = window.FB;
@@ -1543,8 +1546,14 @@ function initMemberDirectorySystem(options = {}) {
   tryInit();
 }
 
-function openAdminPanelModal(panelKey) {
+async function openAdminPanelModal(panelKey) {
   if (!canAccessAdminPanel(panelKey)) return;
+  if(panelKey==='member-manage'){
+    try{await window.WA3I_SESSION.adminDirectoryReady();}catch{showIdentityToast('تعذر تحميل الصلاحيات. أعد المحاولة.');return;}
+    if(!canAccessAdminPanel(panelKey))return;
+  }
+  if(panelKey==='qa')attachQaFirestoreListeners();
+  if(panelKey==='library')attachLibraryFirestoreListener();
 
   const cfg = getAdminPanelConfig(panelKey);
   const modal = qs("#adminPanelModal");
@@ -2104,7 +2113,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html?release=3751ad4ea4c98ff8", window.location.href);
+      const url = new URL("azkar.html?release=20261016-8591bff89380", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {
@@ -2274,10 +2283,11 @@ function previousISODate(isoDate) {
     }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    initMemberDirectorySystem({activateRemote:false,renderMembers:false});initIdentityGate();
+    initMemberDirectorySystem({activateRemote:false,renderMembers:true});initIdentityGate(false);startApp();
     document.body.classList.remove('session-pending');
+    window.WA3I_PERFORMANCE?.mark('public-ui-usable');
     try { await window.WA3I_SESSION.ready;
       initMemberDirectorySystem({activateRemote:true,renderMembers:false}); initMemberStatusSystem();
-      if(window.WA3I_SESSION.session){saveCurrentUser(window.WA3I_SESSION.session.member);startApp();}else initIdentityGate();
-    } catch {document.body.classList.remove('session-pending');qs('#identityGrid').textContent='تعذر الاتصال. أعد المحاولة.';}
+      if(window.WA3I_SESSION.session){saveCurrentUser(window.WA3I_SESSION.session.member);startApp();}
+    } catch {document.body.classList.remove('session-pending');updateUserBar();}
   });

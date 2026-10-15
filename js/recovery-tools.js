@@ -561,7 +561,7 @@ function attachLibraryFirestoreListener() {
 
   const tryInit = () => {
     if (!fbAvailable()) {
-      setTimeout(tryInit, 80);
+      void window.ensureFirebase().then(tryInit).catch(()=>{LIBRARY_STATE.listenersAttached=false;});
       return;
     }
 
@@ -605,6 +605,7 @@ function setupRecoveryLibrary() {
   const closeBtn = qs("#closeRecoveryLibraryModal");
 
   function openModal() {
+    attachLibraryFirestoreListener();
     renderRecoveryLibrary();
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
@@ -626,7 +627,6 @@ function setupRecoveryLibrary() {
     });
   }
 
-  attachLibraryFirestoreListener();
   renderRecoveryLibrary();
 }
 

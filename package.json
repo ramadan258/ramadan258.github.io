@@ -1,0 +1,20 @@
+{
+  "name": "wa3i-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-client.mjs",
+    "test": "node --test tests/*.test.mjs scripts/security/verify-rules.test.cjs",
+    "preview": "node scripts/preview.mjs",
+    "test:emulator": "node scripts/run-emulator.mjs"
+  },
+  "overrides": {
+    "undici": "6.29.0",
+    "@grpc/grpc-js": "1.14.6"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "3.0.4",
+    "esbuild": "0.25.12",
+    "firebase": "10.12.5"
+  }
+}

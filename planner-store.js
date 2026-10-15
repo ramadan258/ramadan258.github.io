@@ -1,8 +1,12 @@
 import { emptyCatalog,emptyDay,dateKey,addDays,applyCommand,validDate } from './model.mjs';
 import { missingRanges,rangePages } from './range-cache.mjs';
 import { openOutbox } from './outbox.js';
+import {trackingStart,inTrackingPeriod} from './tracking-period.mjs';
+import {createServerBatchReader} from './server-batch-read.js';
+import {bindPlannerClock} from './planner-clock.mjs';
 
-export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=()=>{},outbox=openOutbox(projectId,uid),today=dateKey(),clock=()=>today,delay=240}) {
+export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=()=>{},outbox=openOutbox(projectId+':tracking:'+trackingStart,uid),today=dateKey(),clock=()=>today,delay=240,bootstrap=null}) {
+  const initialDate=today<trackingStart?trackingStart:today;
   const records=new Map(),revisions=new Map(),pending=new Map(),listeners=new Set();
   let closed=false,error=null,operation=null,timer,sequence=0,catalogError=null,dataVersion=0;
   const intervals=[];
@@ -15,14 +19,14 @@ export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=
     if(!snap.exists())return null;const r=snap.data();
     if(r.key!==snap.id||!Number.isSafeInteger(r.revision)||r.revision<1||typeof r.value!=='string')throw Error('INVALID_RECORD');
     const value=JSON.parse(r.value);if(value.schema!==1||(r.key!=='catalog'&&value.date!==r.key.slice(4)))throw Error('INVALID_RECORD');
-    return {value,revision:r.revision};
+    return {value:inTrackingPeriod(value)?value:snap.id==='catalog'?emptyCatalog():null,revision:r.revision};
   };
   function accept(snap) {
     const record=parse(snap),revision=record?.revision||0;
     if(pending.has(snap.id)) {
       if(revision!==pending.get(snap.id).revision && !operation){error='CONFLICT';notify();}return;
     }
-    if(record){if(revisions.get(snap.id)===revision)return;records.set(snap.id,record.value);revisions.set(snap.id,revision);dataVersion++;}
+    if(record){if(revisions.get(snap.id)===revision)return;if(record.value)records.set(snap.id,record.value);else records.delete(snap.id);revisions.set(snap.id,revision);dataVersion++;}
     else {
       if(revisions.has(snap.id))dataVersion++;
       if(snap.id==='catalog')records.set('catalog',emptyCatalog(today));
@@ -32,13 +36,24 @@ export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=
   }
   records.set('catalog',emptyCatalog(today));
   const recovery=outbox.load();
+  recovery.catch(()=>{});
+  if(bootstrap){
+    try{const [catalog,day]=await bootstrap(initialDate);assertCurrent();accept(catalog);accept(day);}
+    catch(error){outbox.close();throw error;}
+    intervals.push({start:initialDate,end:initialDate,state:'ready'});
+  }
   let catalogResolve,catalogReject;
   const catalogReady=new Promise((resolve,reject)=>{catalogResolve=resolve;catalogReject=reject;});
   catalogReady.catch(()=>{});
+  if(bootstrap)catalogResolve();
   const stopCatalog=fs.onSnapshot(fs.doc(collection,'catalog'),{includeMetadataChanges:true},snap=>{
     if(!current()||snap.metadata.fromCache||snap.metadata.hasPendingWrites)return;
     try{accept(snap);catalogError=null;catalogResolve();notify();}catch(error){catalogError='INVALID_RECORD';catalogReject(error);notify();}
   },error=>{catalogError='READ_FAILED';catalogReject(error);notify();});
+  const stopToday=bootstrap?fs.onSnapshot(fs.doc(collection,'day:'+initialDate),{includeMetadataChanges:true},snap=>{
+    if(!current()||snap.metadata.fromCache||snap.metadata.hasPendingWrites)return;
+    try{accept(snap);notify();}catch{catalogError='INVALID_RECORD';notify();}
+  },()=>{catalogError='READ_FAILED';notify();}):()=>{};
   const recovered=await recovery;assertCurrent();
   // Only this project and authenticated UID's app-created journal is considered, never legacy reports.
   for(const draft of recovered||[]) {
@@ -84,8 +99,9 @@ export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=
     await Promise.all([work,...waiting]);assertCurrent();
     if(!hasRange(start,end))throw Error('READ_FAILED');
   }
-  try{await Promise.all([catalogReady,ensureRange(addDays(today,-6),today)]);}
-  catch(error){stopCatalog();intervals.forEach(i=>i.stop?.());outbox.close();throw error;}
+  // Only today's records block opening; history is loaded by the view that needs it.
+  try{await Promise.all([catalogReady,ensureRange(initialDate,initialDate)]);}
+  catch(error){stopCatalog();stopToday();intervals.forEach(i=>i.stop?.());outbox.close();throw error;}
   for(const key of pending.keys())if(key.startsWith('day:'))await ensureRange(key.slice(4),key.slice(4));
   assertCurrent();
   const journal=()=>outbox.save([...pending].map(([key,item])=>({key,...item})));
@@ -108,6 +124,7 @@ export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=
     void journal().catch(()=>{error='DRAFT_STORAGE_FAILED';notify();});notify();schedule();
   }
   async function commit() {
+    const started=performance.now();
     const batch=[...pending].map(([key,item])=>({key,...structuredClone(item)}));
     await journal();assertCurrent();
     await fs.runTransaction(db,async tx=>{
@@ -120,6 +137,7 @@ export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=
       });
     });
     assertCurrent();
+    globalThis.window?.WA3I_PERFORMANCE?.duration('planner-save-confirmed',performance.now()-started);
     for(const item of batch) {
       revisions.set(item.key,item.revision+1);
       if(pending.get(item.key)?.sequence===item.sequence)pending.delete(item.key);
@@ -144,7 +162,7 @@ export async function createPlannerStore({fs,db,uid,projectId,isCurrent,onState=
       const keys=[...pending.keys()];for(const key of keys){const snap=await fs.getDocFromServer(fs.doc(collection,key));assertCurrent();pending.delete(key);accept(snap);}
       await journal();error=null;notify();
     },
-    close:()=>{closed=true;clearTimeout(timer);intervals.forEach(i=>{i.stop?.();i.reject?.(Error('STALE_SESSION'));});stopCatalog();listeners.clear();records.clear();revisions.clear();pending.clear();outbox.close();},
+    close:()=>{closed=true;clearTimeout(timer);intervals.forEach(i=>{i.stop?.();i.reject?.(Error('STALE_SESSION'));});stopCatalog();stopToday();listeners.clear();records.clear();revisions.clear();pending.clear();outbox.close();},
   };
 }
 let instance;
@@ -153,10 +171,17 @@ export async function planner() {
   if(!window.WA3I_SESSION.session)throw Error('AUTH_REQUIRED');
   if(!instance) {
     const session=window.WA3I_SESSION.session,{uid}=session,fs=window.FB;
-    const isCurrent=()=>window.WA3I_SESSION.session===session;
+    const isCurrent=()=>window.WA3I_SESSION.session===session&&['guest','member'].includes(window.WA3I_SESSION.state);
+    const read=session.kind==='guest'?null:createServerBatchReader({projectId:fs.projectId,user:fs.auth.currentUser,privateUid:uid,isCurrent,
+      endpoint:window.WA3I_SESSION.emulatorBatchEndpoint,onBatch:()=>window.WA3I_PERFORMANCE?.mark('planner-bootstrap-complete')});
     instance=session.kind==='guest'?import('./guest-store.js').then(({createGuestPlanner})=>createGuestPlanner({namespace:window.WA3I_SESSION.guestNamespace,isCurrent,clock:dateKey})):
-      createPlannerStore({fs,db:fs.db,uid,projectId:fs.projectId,isCurrent,clock:dateKey});
-    window.WA3I_SESSION.planner=await instance;
+      createPlannerStore({fs,db:fs.db,uid,projectId:fs.projectId,isCurrent,clock:dateKey,
+        bootstrap:day=>Promise.all([read(`plannerMembers/${uid}/records`,'catalog'),read(`plannerMembers/${uid}/records`,'day:'+day)])});
+    try{
+      const store=await instance;
+      if(session.kind!=='guest')bindPlannerClock(store,{isCurrent});
+      window.WA3I_SESSION.planner=store;
+    }catch(error){instance=null;throw error;}
   }
   return instance;
 }

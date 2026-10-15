@@ -331,6 +331,7 @@ function renderQaCanvasMenu() {
 }
 
 function openQaCanvasCategories() {
+  attachQaFirestoreListeners();
   QA_CANVAS_STATE.screen = "categories";
   QA_CANVAS_STATE.categoryId = "";
   QA_CANVAS_STATE.itemId = "";
@@ -833,7 +834,7 @@ function attachQaFirestoreListeners() {
 
   const tryInit = () => {
     if (!fbAvailable()) {
-      setTimeout(tryInit, 80);
+      void window.ensureFirebase().then(tryInit).catch(()=>{QA_STATE.listenersAttached=false;});
       return;
     }
 
@@ -902,5 +903,4 @@ function initQaPage() {
   renderQaCanvasMenu();
   renderQaPage();
   renderQaAdminPanel();
-  attachQaFirestoreListeners();
 }
