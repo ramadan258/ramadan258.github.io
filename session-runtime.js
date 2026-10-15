@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-a4fe443e92a6',base).href;
+  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-1c76e7a947c6',base).href;
   const config=window.__WA3I_SESSION_CONFIG,projectId=window.__WA3I_FIREBASE_CONFIG?.projectId;
   if(!config||!projectId)throw Error('CONFIG_REQUIRED');
   let epoch=0,pending=Promise.resolve(),store=null,formsPromise=null,pool=null,navigating=false;
@@ -95,13 +95,13 @@
     switching=false;
     activateGuest();return SESSION.session;
   });
-  SESSION.login=async(member,password)=>{await startCloud();return cloudLogin(member,password);};
-  SESSION.loginByName=async(name,password)=>{
+  SESSION.login=async(member,password,options={})=>{await startCloud();return cloudLogin(member,password,undefined,options.remember!==false);};
+  SESSION.loginByName=async(name,password,options={})=>{
     await startCloud();const {findLoginMember}=await import(new URL('member-identity.mjs',base).href);
     const snap=await window.FB.getDocs(window.FB.query(window.FB.collection(window.FB.db,'featuredMembers'),window.FB.where('type','==','custom_member')));
-    const member=findLoginMember(name,snap.docs.map(d=>d.data()));return cloudLogin({id:member.memberId},password);
+    const member=findLoginMember(name,snap.docs.map(d=>d.data()));return cloudLogin({id:member.memberId},password,undefined,options.remember!==false);
   };
-  SESSION.loginAdmin=async(email,password)=>{await startCloud();return cloudLogin({id:config.adminMemberId},password,email);};
+  SESSION.loginAdmin=async(email,password,options={})=>{await startCloud();return cloudLogin({id:config.adminMemberId},password,email,options.remember!==false);};
   SESSION.logout=()=>serialize(async()=>{
     if(!await SESSION.safeLeave())return false;
     switching=true;clearPrivateState();
@@ -128,8 +128,7 @@
       const app=authMod.getApps().find(app=>app.name==='wa3i-secure-v1')||authMod.initializeApp(window.__WA3I_FIREBASE_CONFIG,'wa3i-secure-v1');
       const auth=authMod.getAuth(app);authHandle=auth;authModule=authMod;
       if(emulators&&!auth.emulatorConfig)authMod.connectAuthEmulator(auth,`http://127.0.0.1:${emulators.auth}`,{disableWarnings:true});
-      // The SDK migrates an existing session persistence record; identity still comes from Auth.
-      await authMod.setPersistence(auth,authMod.browserLocalPersistence);
+      // Let Auth restore its saved persistence type; never promote a session-only login.
       perf.end('firebase-auth-init');perf.start('auth-restore');
       await auth.authStateReady();perf.end('auth-restore');
       authMod.onAuthStateChanged(auth,user=>{
@@ -272,13 +271,14 @@
         SESSION.accounts.clear();SESSION.permissions.clear();accounts.forEach(doc=>SESSION.accounts.set(doc.id,doc.data()));permissions.forEach(doc=>SESSION.permissions.set(doc.id,doc.data()));
       })().catch(error=>{adminDataPromise=null;throw error;});
     };
-    const login=(member,password,email)=>serialize(async()=>{
+    const login=(member,password,email,remember=true)=>serialize(async()=>{
       if(!await SESSION.safeLeave())throw Error('UNSAVED_CHANGES');
       perf.start('password-login');
       switching=true;clearPrivateState();state('switching');const generation=epoch;await authMod.signOut(auth);
       const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(member.id));
       const slug=Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,'0')).join('').slice(0,24);
-      try{await authMod.signInWithEmailAndPassword(auth,email||`m-${slug}@members.wa3i.test`,password);
+      try{await authMod.setPersistence(auth,remember?authMod.browserLocalPersistence:authMod.browserSessionPersistence);
+        await authMod.signInWithEmailAndPassword(auth,email||`m-${slug}@members.wa3i.test`,password);
         const session=await verify(member.id,generation);enter(session,generation);return session;
       }catch(error){clearPrivateState();await authMod.signOut(auth);activateGuest();
         throw Error(String(error.code||(/^[A-Z_]+$/.test(error.message||'')?error.message:'LOGIN_REJECTED')));}

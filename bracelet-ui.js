@@ -1,19 +1,23 @@
 import {planner} from './planner-store.js';
 import {createBraceletTracker} from './bracelet-model.mjs';
 import {createPublicBraceletReader} from './public-bracelet.mjs';
+import {dateKey,addDays} from './model.mjs';
 const runtime=window.WA3I_SESSION;
 const publicEnabled=window.__WA3I_SESSION_CONFIG?.publicBracelets===true;
 const publicDeferred=window.__WA3I_SESSION_CONFIG?.publicBraceletsDeferred===true;
-const labels={gold:'سوار ذهبي: إنجاز أمس ٩٠٪ فأكثر',green:'سوار أخضر: إنجاز أمس من ٧٠٪ إلى أقل من ٩٠٪',blue:'سوار أزرق: إنجاز أمس من ٥٠٪ إلى أقل من ٧٠٪',red:'سوار أحمر: إنجاز أمس أقل من ٥٠٪',neutral:'لا توجد عادات مؤهلة أمس',private:'مؤشر الالتزام خاص بصاحب الحساب'};
+const labels={gold:'سوار ذهبي: إنجاز أمس أكثر من ٩٠٪',green:'سوار أخضر: إنجاز أمس أكثر من ٧٠٪ وحتى ٩٠٪',blue:'سوار أزرق: إنجاز أمس من ٥٠٪ وحتى ٧٠٪',red:'سوار أحمر: إنجاز أمس أقل من ٥٠٪',neutral:'لا توجد عادات مؤهلة أمس',private:'مؤشر الالتزام العام لم يُفعّل بعد'};
 let owner=null,tracker=null,starting=null,epoch=0,state=null,timer=null;
 let publicReader=null,publicStarting=null,publicTimer=null;
 let todayTracker=null,todayState=null;
-function label(){return state?.phase==='loading'?'جارٍ حساب سوارك':state?.phase==='unavailable'?'تعذر تحديث سوارك':labels[state?.tier||'neutral'];}
+function label(){return state?.phase==='before-start'?'يبدأ السوار في 17 أكتوبر بناءً على إنجاز اليوم السابق':state?.phase==='unconfirmed'?'ننتظر تأكيد حفظ البيانات قبل تحديث السوار':state?.phase==='loading'?'جارٍ حساب سوارك':state?.phase==='unavailable'?'تعذر تحديث سوارك':labels[state?.tier||'neutral'];}
 function clear(){epoch++;tracker?.close();tracker=null;todayTracker?.close();todayTracker=null;todayState=null;starting=null;owner=null;state=null;publicReader?.close();publicReader=null;publicStarting=null;clearInterval(publicTimer);publicTimer=null;clearInterval(timer);timer=null;document.querySelectorAll('[data-personal-bracelet],#braceletVisibilityNotice').forEach(el=>el.remove());paint();}
 function view(memberId){
-  const own=runtime.session===owner&&owner?.member.id===memberId;
-  if(publicDeferred&&!(own&&owner.kind==='guest'))return {tier:'neutral',text:'الأساور العامة غير مفعّلة بعد؛ اللون المحايد ليس تقييمًا.'};
-  if(own&&(owner.kind==='guest'||!publicEnabled))return {tier:state?.tier||'neutral',text:label()};
+  const own=runtime.session===owner&&['guest','member'].includes(runtime.state)&&owner?.member.id===memberId;
+  if(own&&(owner.kind==='guest'||!publicEnabled||publicDeferred)){
+    const stale=state?.phase==='ready'&&state.end!==addDays(dateKey(),-1);
+    return {tier:state?.phase==='ready'&&!stale?state.tier:'neutral',text:(owner.kind==='guest'?'تجريبي على هذا الجهاز: ':'')+(stale?'جارٍ إعادة حساب سوار اليوم':label())};
+  }
+  if(publicDeferred)return {tier:'neutral',text:'الأساور العامة غير مفعّلة بعد؛ اللون المحايد ليس تقييمًا.'};
   if(publicEnabled){
     const result=publicReader?.view(memberId)||{tier:'neutral',phase:'loading'};
     const text=result.phase==='ready'?labels[result.tier]:result.phase==='stale'?'مؤشر قديم؛ ننتظر إعادة الحساب':result.phase==='loading'?'جارٍ تحميل مؤشر الالتزام':'مؤشر الالتزام غير متاح';
@@ -85,19 +89,16 @@ async function start(){
   clear();owner=session;const generation=epoch;
   state={tier:'neutral',phase:'loading'};paint();
   void startPublic();
-  if(publicEnabled&&session.kind!=='guest'&&!document.getElementById('personalProgress')){
-    return;
-  }
   const pending=(async()=>{
     try{
       const store=await planner();if(generation!==epoch||runtime.session!==session)return;
-      const isCurrent=()=>generation===epoch&&runtime.session===session;
+      const isCurrent=()=>generation===epoch&&runtime.session===session&&['guest','member'].includes(runtime.state);
       if(document.getElementById('personalProgress')){
         const {createMainProgressTracker}=await import('./main-progress-model.mjs');
         if(!isCurrent())return;
         todayTracker=createMainProgressTracker({store,isCurrent,launchDate:window.__WA3I_SESSION_CONFIG?.officialLaunchDate,onChange:next=>{todayState=next;paintToday();}});void todayTracker.refresh();
       }
-      if(session.kind==='guest'||!publicEnabled&&!publicDeferred){tracker=createBraceletTracker({store,isCurrent,onChange:next=>{state=next;paint();}});await tracker.refresh();}
+      tracker=createBraceletTracker({store,isCurrent,onChange:next=>{state=next;paint();}});await tracker.refresh();
       if(generation!==epoch)return;
       timer=setInterval(()=>{void tracker?.refresh(true);void todayTracker?.refresh(true);},60000);
     }catch{if(generation===epoch){state={tier:'neutral',phase:'unavailable'};todayState={tier:'neutral',phase:'unavailable'};paint();}}

@@ -8,10 +8,17 @@ import {fixedPeriod} from '../harvest-calendar.mjs';
 import {reportSteps} from '../report-wizard.mjs';
 const today='2026-10-16',habit={type:'habit',id:'h1',name:'عادة اختبار',days:[0,1,2,3,4,5,6]};
 function storage(){const data=new Map();return{get length(){return data.size;},key:i=>[...data.keys()][i],getItem:key=>data.get(key)??null,setItem:(key,v)=>data.set(key,String(v)),removeItem:key=>data.delete(key)};}
-test('Stockholm midnight and DST dates use the same calendar day',()=>{
- assert.equal(dateKey(new Date('2026-10-15T22:01:00Z')),today);
- assert.equal(dateKey(new Date('2026-10-15T21:59:00Z')),'2026-10-15');
- assert.equal(dateKey(new Date('2026-10-25T23:01:00Z')),'2026-10-26');
+test('calendar follows each device timezone at midnight and DST, without moving existing date keys',()=>{
+ const previous=process.env.TZ;
+ try{
+   process.env.TZ='America/Los_Angeles';assert.equal(dateKey(new Date('2026-10-16T01:00:00Z')),'2026-10-15');
+   process.env.TZ='Asia/Tokyo';assert.equal(dateKey(new Date('2026-10-16T01:00:00Z')),today);
+   process.env.TZ='Europe/Stockholm';assert.equal(dateKey(new Date('2026-10-15T22:01:00Z')),today);
+   assert.equal(dateKey(new Date('2026-10-25T23:01:00Z')),'2026-10-26');
+   assert.equal(dateKey(new Date('2026-10-15T21:59:00Z')),'2026-10-15');
+ }finally{if(previous===undefined)delete process.env.TZ;else process.env.TZ=previous;}
+ const catalog=applyCommand(emptyCatalog(),{},habit,today).catalog,day=emptyDay(today);day.habitStatus.h1='done';
+ const original=JSON.stringify(day);dayStats(catalog,{[today]:day},today,'2026-10-17');assert.equal(JSON.stringify(day),original);
 });
 
 test('launch configuration agrees, and a preview clock cannot override the production calendar',()=>{

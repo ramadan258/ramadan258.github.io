@@ -45,8 +45,9 @@ function runtime({signedIn=true,importFailure=false,dataImportFailure=false,read
  class Node extends EventTarget {constructor(){super();this.classList={add(){},remove(){},toggle(){}};this.style={};}setAttribute(){}hasAttribute(){return false;}append(){}remove(){}querySelector(){return null;}querySelectorAll(){return [];} }
  const document=new Node();document.body=new Node();document.readyState='complete';document.currentScript={src:'http://127.0.0.1/session-runtime.js'};document.getElementById=()=>null;document.createElement=()=>new Node();
  const window=new EventTarget();window.__WA3I_FIREBASE_CONFIG={projectId:'demo-review'};window.__WA3I_SESSION_CONFIG={adminUid:'admin-fictional',adminMemberId:'member_9',staticMembers:[],dynamicMembers:true};
- let signouts=0,imports=0;const streams=[];const auth={currentUser:signedIn?user:null,authStateReady:async()=>{}};
- const authMod={getApps:()=>[],initializeApp:()=>({}),getAuth:()=>auth,setPersistence:async()=>{},browserLocalPersistence:'local',onAuthStateChanged:()=>()=>{},signOut:async()=>{signouts++;auth.currentUser=null;}};
+ let signouts=0,imports=0;const streams=[],persistence=[];const auth={currentUser:signedIn?user:null,authStateReady:async()=>{}};
+ const authMod={getApps:()=>[],initializeApp:()=>({}),getAuth:()=>auth,setPersistence:async(_auth,type)=>{persistence.push(type);},browserLocalPersistence:'local',browserSessionPersistence:'session',
+   signInWithEmailAndPassword:async()=>{auth.currentUser=user;return{user};},onAuthStateChanged:()=>()=>{},signOut:async()=>{signouts++;auth.currentUser=null;}};
  const storage=()=>{const data=new Map();return{getItem:key=>data.get(key)??null,setItem:(key,v)=>data.set(key,String(v)),removeItem:key=>data.delete(key)};};
  let reloads=0;const location={href:'http://127.0.0.1/index.html',reload(){reloads++;},replace(){}};
  const fakeFs={initializeFirestore:()=>({}),doc:(_db,c,id)=>c+'/'+id,onSnapshot:(path,_options,next,error)=>{streams.push({path,next,error});return()=>{};}};
@@ -62,10 +63,10 @@ function runtime({signedIn=true,importFailure=false,dataImportFailure=false,read
   if(name.includes('server-batch-read'))return {createServerBatchReader:()=>async(c,id)=>{if(readFailure)throw Object.assign(Error('offline'),{code:'unavailable'});return {data:()=>records[c+'/'+id],exists:()=>Boolean(records[c+'/'+id])};}};
   throw Error('Unexpected module');
  };
- const timers=new Set();const context={window,document,location,navigator:{onLine:false},localStorage:storage(),sessionStorage:storage(),URL,Event,crypto:webcrypto,performance,console,
+ const timers=new Set();const context={window,document,location,navigator:{onLine:false},localStorage:storage(),sessionStorage:storage(),URL,Event,TextEncoder,crypto:webcrypto,performance,console,
   alert(){},setTimeout(fn,ms){const timer=setTimeout(fn,ms);timers.add(timer);return timer;},clearTimeout,__import};
  vm.runInNewContext(readFileSync(new URL('../session-runtime.js',import.meta.url),'utf8').replaceAll('import(new URL','__import(new URL'),context);
- return {session:window.WA3I_SESSION,streams,auth,get signouts(){return signouts;},get reloads(){return reloads;},get imports(){return imports;},recover(){readFailure=false;},close(){timers.forEach(clearTimeout);}};
+ return {session:window.WA3I_SESSION,streams,auth,persistence,get signouts(){return signouts;},get reloads(){return reloads;},get imports(){return imports;},recover(){readFailure=false;},close(){timers.forEach(clearTimeout);}};
 }
 test('valid stored Auth restores without guest sign-out; streams suspend instead of destroying Auth',async()=>{
  const r=runtime();await r.session.ready;assert.equal(r.session.state,'member');assert.equal(r.signouts,0);
@@ -87,6 +88,14 @@ test('intentional guest switch signs out only after preserving pending work',asy
  const r=runtime();await r.session.ready;let flushes=0;
  r.session.planner={flush:async()=>{flushes++;},close(){},hasPending:()=>true};
  await r.session.enterGuest();assert.equal(flushes,1);assert.equal(r.signouts,1);assert.equal(r.session.session.kind,'guest');assert.equal(r.session.permissions.size,0);r.close();
+});
+
+test('remember-me selects Firebase local or session persistence, without upgrading a restored login',async()=>{
+ const r=runtime();await r.session.ready;assert.deepEqual(r.persistence,[]);
+ await r.session.login({id},'fictional-password',{remember:false});assert.deepEqual(r.persistence,['session']);assert.equal(r.session.session.uid,uid);
+ await r.session.login({id},'fictional-password',{remember:true});assert.deepEqual(r.persistence,['session','local']);assert.equal(r.session.state,'member');r.close();
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ assert.match(html,/id="identityRemember" type="checkbox" checked/);assert.match(html,/id="adminRemember" type="checkbox" checked/);
 });
 test('cloudPromise also resets after a Firestore module import failure',async()=>{
  const r=runtime({dataImportFailure:true});await assert.rejects(r.session.ready);await r.session.retry();assert.equal(r.signouts,0);assert.ok(r.session.verify);r.close();

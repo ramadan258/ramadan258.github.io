@@ -1,13 +1,16 @@
 import {periodStats,dateKey,addDays} from './model.mjs';
+import {trackingStart} from './tracking-period.mjs';
+export const braceletStart=addDays(trackingStart,1);
 const dayWindow=(today,scope='yesterday')=>{const date=scope==='today'?today:addDays(today,-1);return {start:date,end:date};};
 
 export function braceletTier(completed,required) {
   if(!required)return 'neutral';
-  if(completed*10>=required*9)return 'gold';
-  if(completed*10>=required*7)return 'green';
+  if(completed*10>required*9)return 'gold';
+  if(completed*10>required*7)return 'green';
   return completed*2>=required?'blue':'red';
 }
 export function deriveBracelet({catalog,days,today=dateKey(),scope='yesterday'}) {
+  if(scope==='yesterday'&&today<braceletStart)return {...dayWindow(today,scope),tier:'neutral',completed:0,required:0,percentage:null};
   const period=dayWindow(today,scope),stats=periodStats(catalog,days,catalog.started>period.start?catalog.started:period.start,period.end,today);
   return {...period,tier:braceletTier(stats.completed,stats.required),completed:stats.completed,required:stats.required,percentage:stats.required?stats.completed/stats.required*100:null};
 }
@@ -20,6 +23,10 @@ export function createBraceletTracker({store,isCurrent=()=>true,clock=dateKey,on
   async function refresh(force=false) {
     if(!valid())return;
     const today=clock(),period=dayWindow(today,scope);
+    if(scope==='yesterday'&&today<braceletStart){publish({tier:'neutral',phase:'before-start',...period});return value;}
+    const settled=()=>{const status=store.status();return !status.pending&&!status.saving&&!status.error&&!status.readError;};
+    // An optimistic change is not a confirmed bracelet, even if its percentage is higher.
+    if(!settled()){publish({tier:'neutral',phase:'unconfirmed',...period});return value;}
     if(!force&&failedKey===today+':'+store.status().dataVersion)return value;
     try{
       if(!store.hasRange(period.start,period.end)){
@@ -31,6 +38,7 @@ export function createBraceletTracker({store,isCurrent=()=>true,clock=dateKey,on
         if(!store.hasRange(period.start,period.end))throw Error('INCOMPLETE_DAY');
       }
       if(store.status().readError)throw Error('READ_FAILED');
+      if(!settled()){publish({tier:'neutral',phase:'unconfirmed',...period});return value;}
       const key=today+':'+store.status().dataVersion;
       if(key===lastKey&&value?.phase==='ready')return value;
       const data=store.snapshot(period),next={...deriveBracelet({...data,today,scope}),phase:'ready'};

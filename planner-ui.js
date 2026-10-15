@@ -161,7 +161,7 @@ $('.tabs').addEventListener('keydown',event=>{
   if(next!==null){event.preventDefault();selectTab(next,true);}
 });
 $('#khutayWindow').addEventListener('cancel',event=>{if(event.target!==event.currentTarget)return;event.preventDefault();if(editor)closeEditor();else void leave();});
-async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=20261016-a4fe443e92a6';}
+async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=20261016-1c76e7a947c6';}
 $('#closePreview').onclick=leave;$('#launchPreview').onclick=()=>$('#khutayWindow').showModal();
 window.addEventListener('wa3i-session-cleared',()=>{document.body.replaceChildren();});
 async function resolveConflict() {
@@ -181,7 +181,7 @@ window.visualViewport?.addEventListener('resize',fitVisibleWindow);window.visual
 const route=new URL(location.href),initialTab=route.searchParams.get('tab')||route.searchParams.get('view')||route.hash.replace(/^#(?:panel-)?/,'');
 if(initialTab){const resolved=resolvePlannerTab(initialTab);selectTab(resolved);if(initialTab==='goals'&&!plannerFeatures.goals){route.searchParams.set('tab','day');route.searchParams.delete('view');route.hash='';history.replaceState(null,'',route);}}
 window.addEventListener('wa3i-session-cleared',()=>{cancelAnimationFrame(frame);frame=0;});
-async function updateDate(){if(!window.WA3I_SESSION.session)return;const next=dateKey();if(next===today)return;const previous=today;today=next;if(selectedDate===previous)selectedDate=next;await store.ensureRange(next,next).catch(()=>{});if(!window.WA3I_SESSION.session)return;harvest?.updateToday(next);render();}
+async function updateDate(){if(!window.WA3I_SESSION.session)return;const next=dateKey();if(next===today)return;const previous=today;today=next;if(selectedDate===previous)selectedDate=next<trackingStart?trackingStart:next;await store.ensureRange(selectedDate,selectedDate).catch(()=>{});if(!window.WA3I_SESSION.session)return;harvest?.updateToday(next);render();}
 const clockTimer=setInterval(()=>{void updateDate();},60000);
 window.addEventListener('wa3i-session-cleared',()=>{clearInterval(clockTimer);harvest?.deactivate();window.visualViewport?.removeEventListener('resize',fitVisibleWindow);window.visualViewport?.removeEventListener('scroll',fitVisibleWindow);});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)void updateDate();});

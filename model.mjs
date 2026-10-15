@@ -1,13 +1,15 @@
-import {trackingStart,trackingTimeZone} from './tracking-period.mjs';
+import {trackingStart,trackingTimeZone,localTimeZone} from './tracking-period.mjs';
 export const weekdays = ['الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت','الأحد'];
 export const timeZone = trackingTimeZone;
-const keyFormat = new Intl.DateTimeFormat('sv-SE',{timeZone,year:'numeric',month:'2-digit',day:'2-digit'});
-export function dateKey(date) {
+const keyFormats = new Map();
+export function dateKey(date,zone=localTimeZone()) {
+  if(!keyFormats.has(zone))keyFormats.set(zone,new Intl.DateTimeFormat('sv-SE',{timeZone:zone,calendar:'gregory',numberingSystem:'latn',year:'numeric',month:'2-digit',day:'2-digit'}));
+  const local=keyFormats.get(zone).format(date??new Date());
   // A simulated day is allowed only on the isolated, loopback emulator preview.
   const preview=globalThis.window;
   const simulated=preview?.__WA3I_SESSION_CONFIG?.reviewToday;
-  if(date===undefined&&preview?.location.hostname==='127.0.0.1'&&preview.__WA3I_FIREBASE_CONFIG?.projectId?.startsWith('demo-')&&validDate(simulated))return simulated;
-  return keyFormat.format(date??new Date());
+  if(date===undefined&&preview?.location.hostname==='127.0.0.1'&&preview.__WA3I_FIREBASE_CONFIG?.projectId?.startsWith('demo-')&&validDate(simulated))return local>simulated?local:simulated;
+  return local;
 }
 export function validDate(key) {
   const date=new Date(key+'T12:00:00Z');

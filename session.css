@@ -16,6 +16,8 @@ body[data-session-state="suspended"] #personalProgress { visibility: hidden; poi
 .identity-confirm-hint:empty { display: none; }
 .identity-confirm-password-wrap { margin: 16px 0; }
 .identity-confirm-password-wrap input { direction: ltr; text-align: center; }
+.session-remember { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin:10px 0; font-size:13px; }
+.session-remember input { accent-color:#4ecdc4; }
 .member-manage-card, .member-manage-list-wrap, .member-manage-list { min-width: 0; max-width: 100%; }
 .member-manage-meta { overflow-wrap: anywhere; }
 @media (max-width: 480px) {

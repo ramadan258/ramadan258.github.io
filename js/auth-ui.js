@@ -208,7 +208,7 @@ function wireIdentityConfirmModal() {
     yes.disabled = true; no.disabled = true;
     try {
       await window.WA3I_SESSION.ready;
-      const session = await window.WA3I_SESSION.login(member, password);
+      const session = await window.WA3I_SESSION.login(member, password, {remember:qs('#identityRemember').checked});
       syncStoredPermissionsForCurrentUser();
       saveCurrentUser(session.member); closeIdentityConfirm(); startApp();
     } catch (failure) {
@@ -243,7 +243,7 @@ async function submitAdminLogin(){
     const button=qs('#adminLoginSubmitBtn'),status=qs('#adminLoginStatus');if(button.disabled)return;
     let email=qs('#adminLoginEmail').value.trim(),password=qs('#adminLoginPassword').value;button.disabled=true;
     qs('#adminLoginPassword').value='';
-    try{await window.WA3I_SESSION.ready;const session=await window.WA3I_SESSION.loginAdmin(email,password);syncStoredPermissionsForCurrentUser();saveCurrentUser(session.member);closeAdminLoginModal();startApp();}
+    try{await window.WA3I_SESSION.ready;const session=await window.WA3I_SESSION.loginAdmin(email,password,{remember:qs('#adminRemember').checked});syncStoredPermissionsForCurrentUser();saveCurrentUser(session.member);closeAdminLoginModal();startApp();}
     catch{status.textContent='تعذر الدخول. تحقق من بيانات حساب أمجد والاتصال.';}
     finally{email='';password='';button.disabled=false;}
   }
