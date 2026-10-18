@@ -576,7 +576,7 @@ function getAllMembersList(options = {}) {
   });
   MEMBER_DIRECTORY_STATE.directoryMembers.forEach((member,id)=>{
     merged.set(id,{id,name:member.name,src:member.src||DEFAULT_MEMBER_AVATAR_SRC,source:'directory'});
-    if(!member.active)hidden.add(id);
+    if(!member.active)hidden.add(id);else hidden.delete(id);
   });
 
   return Array.from(merged.values()).filter((member) => {
@@ -1480,11 +1480,13 @@ function renderMemberManageAdminList(){
       const enabled=window.__WA3I_SESSION_CONFIG.directoryWritesEnabled===true;
       qs('#memberManageAddBtn').disabled=!enabled||MEMBER_DIRECTORY_STATE.imagePending;
       if(!enabled)setMemberManageStatus('إدارة الدليل من الويب تحتاج موافقة نشر قواعد الدليل المحدودة. القواعد الحالية لا تتغير، وأداة الإدارة المحلية باقية.');
-      for(const member of getAllMembersList()){
+      for(const member of getAllMembersList({includeHidden:true})){
         const row=document.createElement('article');row.className='member-manage-card';
         const image=document.createElement('img');image.src=resolveMemberAvatarSrc(member.src);image.alt=member.name;
         const name=document.createElement('strong');name.textContent=member.name;row.append(image,name);
-        if(member.id!=='member_9')for(const [title,action] of [['تعديل',()=>beginEditManagedMember(member.id)],['حذف من الدليل',()=>deleteManagedMember(member.id)]]){
+        const overlay=MEMBER_DIRECTORY_STATE.directoryMembers.get(member.id),hidden=overlay?overlay.active===false:getMergedHiddenMemberIds().has(member.id);
+        if(hidden){const badge=document.createElement('span');badge.textContent='مخفي من الدليل';badge.className='member-directory-hidden';row.append(badge);}
+        if(member.id!=='member_9')for(const [title,action] of [['تعديل',()=>beginEditManagedMember(member.id)],[hidden?'إظهار في الدليل':'إخفاء من الدليل',()=>hidden?restoreManagedMember(member.id):deleteManagedMember(member.id)]]){
           const button=document.createElement('button');button.type='button';button.className='identity-btn ghost';button.textContent=title;button.disabled=!enabled;button.onclick=action;row.append(button);
         }
         el.append(row);
@@ -1492,6 +1494,8 @@ function renderMemberManageAdminList(){
     }
 
 async function persistDirectoryMember(member,expectedRevision=MEMBER_DIRECTORY_STATE.directoryMembers.get(member.memberId)?.revision||0){
+  // Preserve legacy inline avatars without allowing raw SVG in the new directory.
+  if(/^data:image\/svg\+xml(?:;|,)/.test(member.src))member={...member,src:await readImageAsOptimizedDataUrl(await(await fetch(member.src)).blob())};
   const {saveDirectoryMember}=await import('../directory-service.mjs');
   await saveDirectoryMember({fs:window.FB,session:window.WA3I_SESSION,adminUid:window.__WA3I_SESSION_CONFIG.adminUid,
     enabled:window.__WA3I_SESSION_CONFIG.directoryWritesEnabled===true,member,expectedRevision});
@@ -1502,7 +1506,8 @@ async function addManagedMember(){
   try{
     const id=MEMBER_DIRECTORY_STATE.editingMemberId||'custom_member_directory_'+crypto.randomUUID().replaceAll('-','');
     let src=MEMBER_DIRECTORY_STATE.pendingImageDataUrl||'';if(src===DEFAULT_MEMBER_AVATAR_SRC)src='';
-    await persistDirectoryMember({memberId:id,name:qs('#memberManageName').value,src,active:true},MEMBER_DIRECTORY_STATE.editingRevision);
+    const overlay=MEMBER_DIRECTORY_STATE.directoryMembers.get(id),active=overlay?overlay.active:!getMergedHiddenMemberIds().has(id);
+    await persistDirectoryMember({memberId:id,name:qs('#memberManageName').value,src,active},MEMBER_DIRECTORY_STATE.editingRevision);
     resetMemberManageForm();setMemberManageStatus('تم حفظ العضو في الدليل دون إنشاء حساب دخول.');
   }catch(error){setMemberManageStatus(error.message==='DIRECTORY_CONFLICT'?'تغيّر العضو في جلسة أخرى. أعد فتح التعديل.':'تعذر الحفظ. تحقق من الاسم والصورة والصلاحيات والاتصال.',true);}
   finally{button.disabled=window.__WA3I_SESSION_CONFIG.directoryWritesEnabled!==true;}
@@ -1511,9 +1516,18 @@ async function addManagedMember(){
 async function deleteManagedMember(id){
   if(!FB_STATE.isAdmin||id==='member_9')return;
   const member=getAllMembersList().find(m=>m.id===id);if(!member)return;
-  if(!confirm(`حذف «${member.name}» من الدليل؟ لن يُحذف حساب Firebase أو سجلات العهد أو أي تقارير. قد يظهر مشارك العهد ضمن السجلات غير المرتبطة حتى يراجعه أمجد.`))return;
-  try{let src=member.src===DEFAULT_MEMBER_AVATAR_SRC?'':member.src;await persistDirectoryMember({memberId:id,name:member.name,src,active:false});setMemberManageStatus('حُذف العضو من الدليل فقط. بقيت السجلات المرتبطة دون حذف.');}
-  catch{setMemberManageStatus('تعذر حذف العضو من الدليل. لم تُحذف سجلاته.',true);}
+  const revision=MEMBER_DIRECTORY_STATE.directoryMembers.get(id)?.revision||0;
+  const {confirmDirectoryHide}=await import('../directory-dialog.mjs');
+  if(!await confirmDirectoryHide(member.name))return;
+  try{let src=member.src===DEFAULT_MEMBER_AVATAR_SRC?'':member.src;await persistDirectoryMember({memberId:id,name:member.name,src,active:false},revision);setMemberManageStatus('أُخفي العضو من الدليل فقط. بقيت السجلات المرتبطة دون حذف.');}
+  catch{setMemberManageStatus('تعذر إخفاء العضو من الدليل. لم تُحذف سجلاته.',true);}
+}
+
+async function restoreManagedMember(id){
+  if(!FB_STATE.isAdmin||id==='member_9')return;
+  const member=getAllMembersList({includeHidden:true}).find(m=>m.id===id);if(!member)return;
+  try{const src=member.src===DEFAULT_MEMBER_AVATAR_SRC?'':member.src;await persistDirectoryMember({memberId:id,name:member.name,src,active:true});setMemberManageStatus('أُعيد إظهار العضو بالمعرّف نفسه.');}
+  catch{setMemberManageStatus('تعذر إظهار العضو. تحقق من الاتصال والصلاحيات.',true);}
 }
 
 function wireMemberManageAdminControls(){
@@ -2177,7 +2191,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html?release=20261016-87779e58c6c7", window.location.href);
+      const url = new URL("azkar.html?release=20261016-f1f55e868fa7", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {

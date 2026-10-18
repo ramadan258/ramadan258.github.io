@@ -5,6 +5,19 @@ import vm from 'node:vm';
 import {validateDirectoryMember,saveDirectoryMember} from '../directory-service.mjs';
 import {directoryCandidate} from '../scripts/security/directory-candidate.mjs';
 
+test('merged candidate adds only the reviewed directory block and leaves the deployment guard closed',()=>{
+ const read=path=>readFileSync(new URL(path,import.meta.url),'utf8').replaceAll('\r\n','\n');
+ const base=read('../firestore.rules'),fragment=read('../rules/directory-overlay.fragment.rules'),candidate=directoryCandidate();
+ assert.equal(candidate,read('../rules/firestore.directory-candidate.rules'));
+ assert.equal(candidate.replace(fragment+'\n',''),base);
+ assert.equal(JSON.parse(read('../firebase.json')).firestore.rules,'firestore.rules');
+ const config={window:{}};vm.runInNewContext(read('../session-config.js'),config);
+ assert.equal(config.window.__WA3I_SESSION_CONFIG.directoryWritesEnabled,true);
+ assert.equal(config.window.__WA3I_SESSION_CONFIG.adminUid,'OpXzKToeVbd9xp1KHuqnD95yXlm2');
+ assert.equal(config.window.__WA3I_SESSION_CONFIG.officialLaunchDate,'2026-10-16');
+ assert.equal(config.window.__WA3I_SESSION_CONFIG.publicBracelets,false);
+});
+
 test('directory is profile-only: stable IDs, no passwords or Auth calls, protected admin',async()=>{
  const member={memberId:'custom_member_directory_test',name:'عضو',src:'',active:true};
  assert.equal(validateDirectoryMember(member).memberId,member.memberId);

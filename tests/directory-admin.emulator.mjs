@@ -9,7 +9,8 @@ export async function checkDirectoryAdmin({fs,db,auth,adminUid,otherDb,guestDb,e
   await assert.rejects(saveDirectoryMember({fs:sdk,session:{state:'guest'},adminUid,enabled:true,member}),/ADMIN_REQUIRED/);
   await saveDirectoryMember({fs:sdk,session,adminUid,enabled:true,member});
   let snap=await fs.getDocFromServer(fs.doc(db,'directoryMembers',id));assert.equal(snap.data().revision,1);
-  await assertSucceeds(fs.getDocFromServer(fs.doc(guestDb,'directoryMembers',id)));
+  const publicDoc=await assertSucceeds(fs.getDocFromServer(fs.doc(guestDb,'directoryMembers',id)));
+  assert.deepEqual(Object.keys(publicDoc.data()).sort(),['active','memberId','name','revision','schemaVersion','src','updatedAt']);
   await saveDirectoryMember({fs:sdk,session,adminUid,enabled:true,member:{...member,name:'اسم معدل'},expectedRevision:1});
   assert.equal((await fs.getDocFromServer(fs.doc(db,'directoryMembers',id))).data().name,'اسم معدل');
   await assert.rejects(saveDirectoryMember({fs:sdk,session,adminUid,enabled:true,member,expectedRevision:1}),/CONFLICT/);
@@ -20,9 +21,20 @@ export async function checkDirectoryAdmin({fs,db,auth,adminUid,otherDb,guestDb,e
   const record={schemaVersion:1,...member,revision:1,updatedAt:fs.serverTimestamp()};
   await assertFails(fs.setDoc(fs.doc(otherDb,'directoryMembers',id+'x'),{...record,memberId:id+'x'}));
   await assertFails(fs.setDoc(fs.doc(guestDb,'directoryMembers',id+'x'),{...record,memberId:id+'x'}));
+  for(const deniedDb of [guestDb,otherDb]){
+    await assertFails(fs.updateDoc(fs.doc(deniedDb,'directoryMembers',id),{active:true,revision:4,updatedAt:fs.serverTimestamp()}));
+    await assertFails(fs.deleteDoc(fs.doc(deniedDb,'directoryMembers',id)));
+    await assertFails(fs.getDocFromServer(fs.doc(deniedDb,'plannerMembers',adminUid,'records','catalog')));
+    await assertFails(fs.getDocFromServer(fs.doc(deniedDb,'accountBindings',adminUid)));
+  }
   await assertFails(fs.setDoc(fs.doc(db,'directoryMembers','member_9'),{...record,memberId:'member_9'}));
   await assertFails(fs.deleteDoc(fs.doc(db,'directoryMembers',id)));
-  await assertFails(fs.setDoc(fs.doc(db,'directoryMembers',id+'x'),{...record,memberId:id+'x',email:'not-public@example.test'}));
+  for(const field of ['email','password','uid','permissions','authToken'])
+    await assertFails(fs.setDoc(fs.doc(db,'directoryMembers',id+'x'),{...record,memberId:id+'x',[field]:'forbidden'}));
+  await assertFails(fs.updateDoc(fs.doc(db,'directoryMembers',id),{revision:99,updatedAt:fs.serverTimestamp()}));
+  await saveDirectoryMember({fs:sdk,session,adminUid,enabled:true,member:{...member,src:'data:image/png;base64,dXBkYXRlZA=='},expectedRevision:3});
+  const restored=await fs.getDocFromServer(fs.doc(db,'directoryMembers',id));
+  assert.equal(restored.data().memberId,id);assert.equal(restored.data().active,true);assert.equal(restored.data().src,'data:image/png;base64,dXBkYXRlZA==');
   await assertFails(fs.setDoc(fs.doc(db,'accountBindings','forged'),{memberId:id}));
   const category={type:'qa_category',categoryId:'directory_admin_check',name:'اختبار إدارة',sortKey:1,createdAt:fs.serverTimestamp(),updatedAt:fs.serverTimestamp()};
   await assertSucceeds(fs.setDoc(fs.doc(db,'featuredMembers','qa_category__directory_admin_check'),category));
