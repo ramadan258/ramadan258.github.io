@@ -287,26 +287,14 @@ function updateUserBar() {
   });
 }
 
-const FIRESTORE_CUSTOM_MEMBERS = "featuredMembers";
-const FIRESTORE_HIDDEN_MEMBERS = "featuredMembers";
 const FIRESTORE_MEMBER_ACCESS = "featuredMembers";
 const FIRESTORE_MEMBER_PERMISSIONS = "memberPermissions";
-const LOCAL_MEMBER_DIRECTORY_CUSTOM_KEY = "wa3i_member_directory_custom_v1";
-const LOCAL_MEMBER_DIRECTORY_HIDDEN_KEY = "wa3i_member_directory_hidden_v1";
-const LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY = "wa3i_dynamic_member_directory_cache_v3";
-const REMOTE_MEMBER_DIRECTORY_CACHE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 const LOCAL_LEGACY_MEMBER_CLEANUP_KEY = "wa3i_legacy_member_cleanup_v1";
 const MEMBER_DIRECTORY_STATE = {
   baseMembers: [],
-  remoteCustomMembers: new Map(),
   directoryMembers: new Map(),
-  remoteAccessById: new Map(),
-  remoteAccessSnapshotReady: false,
-  localCustomMembers: new Map(),
-  remoteHiddenMemberIds: new Set(),
-  localHiddenMemberIds: new Set(),
-  pendingHiddenMemberIds: new Set(),
-  pendingDeletedCustomMemberIds: new Set(),
+  legacyProfiles: new Map(),
+  ready: false,
   listenersAttached: false,
   controlsWired: false,
   pendingImageDataUrl: "",
@@ -314,10 +302,6 @@ const MEMBER_DIRECTORY_STATE = {
   editingRevision: 0,
   imageRequest: 0,
   imagePending: false,
-  pendingAccessPinRemoval: false,
-  pendingLegacyAccessCleanupIds: new Set(),
-  legacyAccessCleanupTimer: null,
-  legacyRemovedMembersCleanupRunning: false,
 };
 
 const AMJAD_MEMBER_ID = "member_9";
@@ -383,14 +367,6 @@ function extractMembersFromCards(cards) {
     });
   });
   return out;
-}
-
-function customMemberDocId(memberId) {
-  return `custom__${String(memberId || "").trim()}`;
-}
-
-function hiddenMemberDocId(memberId) {
-  return `hidden__${String(memberId || "").trim()}`;
 }
 
 function memberAccessDocId(memberId) {
@@ -466,124 +442,20 @@ async function queueLegacyMemberAccessCleanup(){}
 
 async function canResumeMemberSession(id) { return window.WA3I_SESSION.session?.member.id === id; }
 
-function persistLocalMemberDirectoryState() {
-  try {
-    const custom = Array.from(MEMBER_DIRECTORY_STATE.localCustomMembers.values()).map((member) => ({
-      id: String(member.id || "").trim(),
-      name: String(member.name || "").trim(),
-      src: String(member.src || "").trim(),
-      source: "custom",
-    })).filter((member) => member.id && member.name && member.src);
-    window.WA3I_SESSION.storage.setItem(LOCAL_MEMBER_DIRECTORY_CUSTOM_KEY, JSON.stringify(custom));
-  } catch {}
-
-  try {
-    const hidden = Array.from(MEMBER_DIRECTORY_STATE.localHiddenMemberIds.values()).map((id) => String(id || "").trim()).filter(Boolean);
-    window.WA3I_SESSION.storage.setItem(LOCAL_MEMBER_DIRECTORY_HIDDEN_KEY, JSON.stringify(hidden));
-  } catch {}
-}
-
-function loadLocalMemberDirectoryState(){}
-
-function saveRemoteMemberDirectoryCache() {
-  try {
-    const custom = Array.from(MEMBER_DIRECTORY_STATE.remoteCustomMembers.values()).map((member) => ({
-      id: String(member?.id || "").trim(),
-      name: String(member?.name || "").trim(),
-      src: String(member?.src || "").trim(),
-      source: "custom",
-    })).filter((member) => member.id && member.name && member.src);
-    const hidden = Array.from(MEMBER_DIRECTORY_STATE.remoteHiddenMemberIds)
-      .map((id) => String(id || "").trim())
-      .filter(Boolean);
-
-    window.WA3I_SESSION.storage.setItem(LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY, JSON.stringify({
-      updatedAt: Date.now(),
-      custom,
-      hidden,
-    }));
-  } catch {}
-}
-
-function loadRemoteMemberDirectoryCache() {
-  try {
-    const raw = window.WA3I_SESSION.storage.getItem(LOCAL_REMOTE_MEMBER_DIRECTORY_CACHE_KEY);
-    const cached = raw ? JSON.parse(raw) : null;
-    const updatedAt = Number(cached?.updatedAt || 0);
-    if (!cached || !updatedAt || Date.now() - updatedAt > REMOTE_MEMBER_DIRECTORY_CACHE_MAX_AGE_MS) {
-      return;
-    }
-
-    const custom = new Map();
-    if (Array.isArray(cached.custom)) {
-      cached.custom.forEach((member) => {
-        const id = String(member?.id || "").trim();
-        const name = String(member?.name || "").trim();
-        const src = String(member?.src || "").trim();
-        if (!id || !name || !src || isLegacyRemovedStaticMemberId(id)) return;
-        custom.set(id, { id, name, src, source: "custom" });
-      });
-    }
-
-    const hidden = new Set();
-    if (Array.isArray(cached.hidden)) {
-      cached.hidden.forEach((id) => {
-        const value = String(id || "").trim();
-        if (value) hidden.add(value);
-      });
-    }
-
-    MEMBER_DIRECTORY_STATE.remoteCustomMembers = custom;
-    MEMBER_DIRECTORY_STATE.remoteHiddenMemberIds = hidden;
-  } catch {}
-}
-
-function getMergedCustomMembersMap() {
-  const merged = new Map(MEMBER_DIRECTORY_STATE.remoteCustomMembers);
-  MEMBER_DIRECTORY_STATE.localCustomMembers.forEach((value, key) => {
-    if (isLegacyRemovedStaticMemberId(key)) return;
-    merged.set(key, value);
-  });
-  MEMBER_DIRECTORY_STATE.pendingDeletedCustomMemberIds.forEach((id) => {
-    merged.delete(id);
-  });
-  return merged;
-}
-
-function getMergedHiddenMemberIds() {
-  const merged = new Set([
-    ...MEMBER_DIRECTORY_STATE.remoteHiddenMemberIds,
-    ...MEMBER_DIRECTORY_STATE.localHiddenMemberIds,
-    ...MEMBER_DIRECTORY_STATE.pendingHiddenMemberIds,
-  ]);
-  return merged;
-}
-
-function getAllMembersList(options = {}) {
-  const includeHidden = Boolean(options.includeHidden);
+function getAllMembersList() {
   const base = Array.isArray(MEMBER_DIRECTORY_STATE.baseMembers) ? MEMBER_DIRECTORY_STATE.baseMembers : [];
-  const hidden = getMergedHiddenMemberIds();
   const merged = new Map();
   base.forEach((member) => {
     const id = String(member?.id || "").trim();
     if (!id || isLegacyRemovedStaticMemberId(id)) return;
     merged.set(id, member);
   });
-  getMergedCustomMembersMap().forEach((member, id) => {
-    const key = String(id || member?.id || "").trim();
-    if (!key || !member?.name || !member?.src || isLegacyRemovedStaticMemberId(key)) return;
-    merged.set(key, { id: key, name: member.name, src: member.src, source: "custom" });
-  });
+  // Read existing public profiles until edited; deletion erases both copies atomically.
+  MEMBER_DIRECTORY_STATE.legacyProfiles.forEach((member,id)=>merged.set(id,member));
   MEMBER_DIRECTORY_STATE.directoryMembers.forEach((member,id)=>{
     merged.set(id,{id,name:member.name,src:member.src||DEFAULT_MEMBER_AVATAR_SRC,source:'directory'});
-    if(!member.active)hidden.add(id);else hidden.delete(id);
   });
-
-  return Array.from(merged.values()).filter((member) => {
-    if (includeHidden) return true;
-    const id = String(member.id || "").trim();
-    return !hidden.has(id);
-  });
+  return Array.from(merged.values());
 }
 
 function renderMembersSection() {
@@ -1328,7 +1200,7 @@ function setMemberManageStatus(message, isError = false) {
 function getEditingManagedMember() {
   const id = String(MEMBER_DIRECTORY_STATE.editingMemberId || "").trim();
   if (!id) return null;
-  return getAllMembersList({ includeHidden: true }).find((member) => String(member.id || "").trim() === id) || null;
+  return getAllMembersList().find((member) => String(member.id || "").trim() === id) || null;
 }
 
 function refreshMemberManageFormState() {
@@ -1343,13 +1215,10 @@ function resetMemberManageForm() {
   MEMBER_DIRECTORY_STATE.pendingImageDataUrl = "";
   MEMBER_DIRECTORY_STATE.editingMemberId = "";
   MEMBER_DIRECTORY_STATE.editingRevision = 0;
-  MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval = false;
   const name = qs("#memberManageName");
-  const pin = qs("#memberManageAccessPin");
   const image = qs("#memberManageImage");
   const preview = qs("#memberManagePreview");
   if (name) name.value = "";
-  if (pin) pin.value = "";
   if (image) image.value = "";
   if (preview) { preview.src = DEFAULT_MEMBER_AVATAR_SRC; preview.hidden = true; }
   setMemberManageStatus("");
@@ -1360,7 +1229,7 @@ function resetMemberManageForm() {
 function beginEditManagedMember(memberId) {
   const id = String(memberId || "").trim();
   if (!id) return;
-  const member = getAllMembersList({ includeHidden: true }).find((item) => String(item.id || "").trim() === id);
+  const member = getAllMembersList().find((item) => String(item.id || "").trim() === id);
   if (!member) return;
 
   MEMBER_DIRECTORY_STATE.editingMemberId = id;
@@ -1368,41 +1237,18 @@ function beginEditManagedMember(memberId) {
   MEMBER_DIRECTORY_STATE.imageRequest++;
   MEMBER_DIRECTORY_STATE.imagePending = false;
   MEMBER_DIRECTORY_STATE.pendingImageDataUrl = String(member.src || "").trim();
-  MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval = false;
 
   const name = qs("#memberManageName");
-  const pin = qs("#memberManageAccessPin");
   const image = qs("#memberManageImage");
   const preview = qs("#memberManagePreview");
   if (name) name.value = member.name || "";
-  if (pin) pin.value = "";
   if (image) image.value = "";
   if (preview) { preview.src = resolveMemberAvatarSrc(member.src); preview.hidden = false; }
 
-  setMemberManageStatus('تعديل الاسم والصورة لا يغيّر معرّف العضو أو سجلات العهد.');
+  setMemberManageStatus('');
   refreshMemberManageFormState();
   renderMemberManageAdminList();
   name?.focus?.();
-}
-
-function markManagedMemberPinForRemoval() {
-  const editingMember = getEditingManagedMember();
-  if (!editingMember) return;
-  if (!memberHasAccessPin(editingMember.id)) {
-    setMemberManageStatus("هذا العضو لا يملك كلمة سر محفوظة أصلًا.", true);
-    return;
-  }
-  const ok = confirm(`هل تريد مسح كلمة السر والصلاحيات الممنوحة عن العضو “${editingMember.name}”؟`);
-  if (!ok) return;
-  MEMBER_DIRECTORY_STATE.pendingAccessPinRemoval = true;
-  const pin = qs("#memberManageAccessPin");
-  if (pin) pin.value = "";
-  setMemberManageStatus("سيتم مسح كلمة السر والصلاحيات الممنوحة عند حفظ التعديل.");
-  refreshMemberManageFormState();
-}
-
-function createManagedMemberId(name) {
-  return `custom_member_${slugifyName(name)}_${Date.now().toString(36)}`;
 }
 
 function dataUrlSizeEstimate(dataUrl) {
@@ -1477,16 +1323,14 @@ async function updateManagedMemberPermission(id, key, enabled) {
 
 function renderMemberManageAdminList(){
       const el=qs('#memberManageList');if(!el)return;el.replaceChildren();
-      const enabled=window.__WA3I_SESSION_CONFIG.directoryWritesEnabled===true;
+      const enabled=window.__WA3I_SESSION_CONFIG.directoryWritesEnabled===true&&MEMBER_DIRECTORY_STATE.ready;
       qs('#memberManageAddBtn').disabled=!enabled||MEMBER_DIRECTORY_STATE.imagePending;
-      if(!enabled)setMemberManageStatus('إدارة الدليل من الويب تحتاج موافقة نشر قواعد الدليل المحدودة. القواعد الحالية لا تتغير، وأداة الإدارة المحلية باقية.');
-      for(const member of getAllMembersList({includeHidden:true})){
+      if(window.__WA3I_SESSION_CONFIG.directoryWritesEnabled!==true)setMemberManageStatus('الحذف النهائي ينتظر الموافقة على قواعد الدليل الجديدة؛ لم يتغير الإنتاج.');
+      for(const member of getAllMembersList()){
         const row=document.createElement('article');row.className='member-manage-card';
         const image=document.createElement('img');image.src=resolveMemberAvatarSrc(member.src);image.alt=member.name;
         const name=document.createElement('strong');name.textContent=member.name;row.append(image,name);
-        const overlay=MEMBER_DIRECTORY_STATE.directoryMembers.get(member.id),hidden=overlay?overlay.active===false:getMergedHiddenMemberIds().has(member.id);
-        if(hidden){const badge=document.createElement('span');badge.textContent='مخفي من الدليل';badge.className='member-directory-hidden';row.append(badge);}
-        if(member.id!=='member_9')for(const [title,action] of [['تعديل',()=>beginEditManagedMember(member.id)],[hidden?'إظهار في الدليل':'إخفاء من الدليل',()=>hidden?restoreManagedMember(member.id):deleteManagedMember(member.id)]]){
+        if(member.id!=='member_9')for(const [title,action] of [['تعديل',()=>beginEditManagedMember(member.id)],['حذف العضو',()=>deleteManagedMember(member.id)]]){
           const button=document.createElement('button');button.type='button';button.className='identity-btn ghost';button.textContent=title;button.disabled=!enabled;button.onclick=action;row.append(button);
         }
         el.append(row);
@@ -1506,8 +1350,7 @@ async function addManagedMember(){
   try{
     const id=MEMBER_DIRECTORY_STATE.editingMemberId||'custom_member_directory_'+crypto.randomUUID().replaceAll('-','');
     let src=MEMBER_DIRECTORY_STATE.pendingImageDataUrl||'';if(src===DEFAULT_MEMBER_AVATAR_SRC)src='';
-    const overlay=MEMBER_DIRECTORY_STATE.directoryMembers.get(id),active=overlay?overlay.active:!getMergedHiddenMemberIds().has(id);
-    await persistDirectoryMember({memberId:id,name:qs('#memberManageName').value,src,active},MEMBER_DIRECTORY_STATE.editingRevision);
+    await persistDirectoryMember({memberId:id,name:qs('#memberManageName').value,src},MEMBER_DIRECTORY_STATE.editingRevision);
     resetMemberManageForm();setMemberManageStatus('تم حفظ العضو في الدليل دون إنشاء حساب دخول.');
   }catch(error){setMemberManageStatus(error.message==='DIRECTORY_CONFLICT'?'تغيّر العضو في جلسة أخرى. أعد فتح التعديل.':'تعذر الحفظ. تحقق من الاسم والصورة والصلاحيات والاتصال.',true);}
   finally{button.disabled=window.__WA3I_SESSION_CONFIG.directoryWritesEnabled!==true;}
@@ -1517,17 +1360,16 @@ async function deleteManagedMember(id){
   if(!FB_STATE.isAdmin||id==='member_9')return;
   const member=getAllMembersList().find(m=>m.id===id);if(!member)return;
   const revision=MEMBER_DIRECTORY_STATE.directoryMembers.get(id)?.revision||0;
-  const {confirmDirectoryHide}=await import('../directory-dialog.mjs');
-  if(!await confirmDirectoryHide(member.name))return;
-  try{let src=member.src===DEFAULT_MEMBER_AVATAR_SRC?'':member.src;await persistDirectoryMember({memberId:id,name:member.name,src,active:false},revision);setMemberManageStatus('أُخفي العضو من الدليل فقط. بقيت السجلات المرتبطة دون حذف.');}
-  catch{setMemberManageStatus('تعذر إخفاء العضو من الدليل. لم تُحذف سجلاته.',true);}
-}
-
-async function restoreManagedMember(id){
-  if(!FB_STATE.isAdmin||id==='member_9')return;
-  const member=getAllMembersList({includeHidden:true}).find(m=>m.id===id);if(!member)return;
-  try{const src=member.src===DEFAULT_MEMBER_AVATAR_SRC?'':member.src;await persistDirectoryMember({memberId:id,name:member.name,src,active:true});setMemberManageStatus('أُعيد إظهار العضو بالمعرّف نفسه.');}
-  catch{setMemberManageStatus('تعذر إظهار العضو. تحقق من الاتصال والصلاحيات.',true);}
+  const {confirmDirectoryDelete}=await import('../directory-dialog.mjs');
+  if(!await confirmDirectoryDelete(member.name))return;
+  try{
+    const {deleteDirectoryMember}=await import('../directory-service.mjs');
+    await deleteDirectoryMember({fs:window.FB,session:window.WA3I_SESSION,adminUid:window.__WA3I_SESSION_CONFIG.adminUid,
+      enabled:window.__WA3I_SESSION_CONFIG.directoryWritesEnabled===true,memberId:id,expectedRevision:revision});
+    MEMBER_DIRECTORY_STATE.directoryMembers.delete(id);MEMBER_DIRECTORY_STATE.legacyProfiles.delete(id);
+    if(MEMBER_DIRECTORY_STATE.editingMemberId===id)resetMemberManageForm();
+    refreshMemberDirectoryUI();setMemberManageStatus('حُذف اسم العضو وصورته من الدليل نهائيًا.');
+  }catch(error){setMemberManageStatus(error.message==='DIRECTORY_CONFLICT'?'تغيّر العضو في جلسة أخرى. راجع القائمة وأعد المحاولة.':'تعذر الحذف. لم يتغير الدليل؛ تحقق من الاتصال والصلاحيات.',true);}
 }
 
 function wireMemberManageAdminControls(){
@@ -1552,8 +1394,6 @@ function initMemberDirectorySystem(options = {}) {
     MEMBER_DIRECTORY_STATE.baseMembers = STATIC_BASE_MEMBERS.map((member) => ({ ...member }));
   }
 
-  loadLocalMemberDirectoryState();
-  loadRemoteMemberDirectoryCache();
   wireMemberManageAdminControls();
   refreshMemberDirectoryUI({ renderMembers });
 
@@ -1566,63 +1406,28 @@ function initMemberDirectorySystem(options = {}) {
 
     const { db, onSnapshot, collection } = window.FB;
 
-    if(window.__WA3I_SESSION_CONFIG.directoryWritesEnabled===true){
-      onSnapshot(collection(db,'directoryMembers'),async snapshot=>{
-        const {validateDirectoryMember}=await import('../directory-service.mjs');const rows=new Map();
-        snapshot.forEach(doc=>{try{const data=doc.data();if(data.schemaVersion!==1||doc.id!==data.memberId)return;rows.set(doc.id,{...validateDirectoryMember(data),revision:data.revision});}catch{}});
-        MEMBER_DIRECTORY_STATE.directoryMembers=rows;refreshMemberDirectoryUI();
-      },()=>setMemberManageStatus('تعذر تحميل تحديثات الدليل. بقي الدليل السابق ظاهرًا.',true));
-    }
-
-    window.FB.publicBucketSnapshot(['custom__','hidden__'], (snap) => {
-      const customMembers = new Map();
-      const hiddenMemberIds = new Set();
-      const accessById = new Map();
-
-      snap.forEach((docSnap) => {
-        const docId = String(docSnap.id || "");
-        const data = docSnap.data() || {};
-
-        if (docId.startsWith("custom__")) {
-          if(data.memberId!=="member_9"&&(!/^custom_member_new_[a-f0-9]{32}$/.test(data.memberId||"")||data.schemaVersion!==2 || data.managementState!=="ready"))return;
-          const memberId = String(data.memberId || docId.replace(/^custom__/, "")).trim();
-          const name = String(data.name || "").trim();
-          const src = String(data.src || "").trim();
-          if (memberId && name && src && !isLegacyRemovedStaticMemberId(memberId)) {
-            customMembers.set(memberId, { id: memberId, name, src, source: "custom" });
-          }
-          return;
-        }
-
-        if (docId.startsWith("hidden__")) {
-          const memberId = String(data.memberId || docId.replace(/^hidden__/, "")).trim();
-          if (memberId) hiddenMemberIds.add(memberId);
-          return;
-        }
-
-        if (docId.startsWith("access__")) {
-          const record = memberAccessRecordFromData(docId, data);
-          if (!record) return;
-          accessById.set(record.memberId, record);
-          if (record.hasLegacyPlaintext) queueLegacyMemberAccessCleanup(record.memberId);
-        }
+    void import('../directory-service.mjs').then(({validateDirectoryMember})=>{
+      onSnapshot(collection(db,'directoryMembers'),{includeMetadataChanges:true},snapshot=>{
+        // No local directory fallback, including Firestore's stale initial cache.
+        if(snapshot.metadata.fromCache||snapshot.metadata.hasPendingWrites)return;
+        const rows=new Map();
+        snapshot.forEach(doc=>{try{const data=doc.data();if(![1,2].includes(data.schemaVersion)||doc.id!==data.memberId)return;rows.set(doc.id,{...validateDirectoryMember(data),revision:data.revision});}catch{}});
+        MEMBER_DIRECTORY_STATE.directoryMembers=rows;MEMBER_DIRECTORY_STATE.ready=true;refreshMemberDirectoryUI();
+      },()=>{MEMBER_DIRECTORY_STATE.ready=false;renderMemberManageAdminList();setMemberManageStatus('تعذر تحميل الدليل. تحقق من الاتصال؛ لن يُستخدم دليل قديم.',true);});
+    }).catch(()=>setMemberManageStatus('تعذر تحميل الدليل. أعد المحاولة.',true));
+    window.FB.publicBucketSnapshot(['custom__'],snapshot=>{
+      if(snapshot.metadata.fromCache||snapshot.metadata.hasPendingWrites)return;
+      const rows=new Map();
+      snapshot.forEach(doc=>{
+        const data=doc.data();
+        if(data.type!=='custom_member'||doc.id!=='custom__'+data.memberId)return;
+        if(data.memberId==='member_9')return;
+        if(!/^custom_member_new_[a-f0-9]{32}$/.test(data.memberId||'')||data.schemaVersion!==2||data.managementState!=='ready')return;
+        if(typeof data.name!=='string'||!data.name.trim()||typeof data.src!=='string')return;
+        rows.set(data.memberId,{id:data.memberId,name:data.name,src:resolveMemberAvatarSrc(data.src),source:'custom'});
       });
-
-      MEMBER_DIRECTORY_STATE.pendingDeletedCustomMemberIds.forEach((id) => {
-        if (!customMembers.has(id)) MEMBER_DIRECTORY_STATE.pendingDeletedCustomMemberIds.delete(id);
-      });
-      MEMBER_DIRECTORY_STATE.pendingHiddenMemberIds.forEach((id) => {
-        if (hiddenMemberIds.has(id)) MEMBER_DIRECTORY_STATE.pendingHiddenMemberIds.delete(id);
-      });
-
-      MEMBER_DIRECTORY_STATE.remoteCustomMembers = customMembers;
-      MEMBER_DIRECTORY_STATE.remoteHiddenMemberIds = hiddenMemberIds;
-      MEMBER_DIRECTORY_STATE.remoteAccessById = accessById;
-      MEMBER_DIRECTORY_STATE.remoteAccessSnapshotReady = true;
-      syncStoredPermissionsForCurrentUser();
-      saveRemoteMemberDirectoryCache();
-      refreshMemberDirectoryUI();
-    });
+      MEMBER_DIRECTORY_STATE.legacyProfiles=rows;refreshMemberDirectoryUI();
+    },()=>setMemberManageStatus('تعذر تحميل الأسماء القديمة. تحقق من الاتصال.',true),{includeMetadataChanges:true});
   };
 
   tryInit();
@@ -2191,7 +1996,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html?release=20261016-ab31dd5849da", window.location.href);
+      const url = new URL("azkar.html?release=20261016-6f845baf89a8", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {

@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-ab31dd5849da',base).href;
+  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-6f845baf89a8',base).href;
   const config=window.__WA3I_SESSION_CONFIG,projectId=window.__WA3I_FIREBASE_CONFIG?.projectId;
   const adminMode=new URL(location.href).pathname.endsWith('/index.html')&&new URL(location.href).searchParams.get('admin')==='1';
   if(adminMode)document.documentElement.dataset.adminPage='true';
@@ -184,10 +184,10 @@
     window.FB={...guardCloudWrites(fs,()=>adminMode&&SESSION.state==='member'&&SESSION.session?.isAdmin===true), ...authMod,auth,db,projectId,
       signInAnonymously:()=>{throw Error('ANONYMOUS_DISABLED');}};
     const publicTypes={custom__:'custom_member',hidden__:'hidden_member',qa_category__:'qa_category',qa_item__:'qa_item'};
-    window.FB.publicBucketSnapshot=(prefixes,next,error=()=>{})=>{
+    window.FB.publicBucketSnapshot=(prefixes,next,error=()=>{},options={})=>{
       if(!prefixes.length||prefixes.some(prefix=>!publicTypes[prefix]))throw Error('PUBLIC_QUERY_SCOPE_REQUIRED');
       return fs.onSnapshot(fs.query(fs.collection(db,'featuredMembers'),fs.and(fs.where('type','in',[...new Set(prefixes.map(prefix=>publicTypes[prefix]))]),
-        fs.or(...prefixes.map(prefix=>fs.and(fs.where(fs.documentId(),'>=',prefix),fs.where(fs.documentId(),'<=',prefix+'\uf8ff')))))),next,error);
+        fs.or(...prefixes.map(prefix=>fs.and(fs.where(fs.documentId(),'>=',prefix),fs.where(fs.documentId(),'<=',prefix+'\uf8ff')))))),options,next,error);
     };
     if(!adminMode)return SESSION;
     const [{createServerReadPool},{verifySession},{createServerBatchReader}]=await Promise.all([
