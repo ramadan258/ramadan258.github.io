@@ -1,0 +1,21 @@
+# Publish runtime files only; development and emulator files remain in Git, not Pages.
+include:
+  - vendor
+  - client
+exclude:
+  - scripts
+  - tests
+  - rules
+  - docs
+  - tools
+  - node_modules
+  - .review
+  - .github
+  - .firebaserc
+  - .gitignore
+  - firebase.emulator.json
+  - firebase.json
+  - firestore.rules
+  - package.json
+  - package-lock.json
+  - README.md

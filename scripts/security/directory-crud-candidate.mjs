@@ -5,12 +5,14 @@ import {fileURLToPath} from 'node:url';
 import {directoryCandidate} from './directory-candidate.mjs';
 
 export const directoryCrudCandidateFile=new URL('../../rules/firestore.directory-crud-candidate.rules',import.meta.url);
+export const directoryCrudRulesHash='8ab0677b3caf3019c11a3f275281a51a8a8cd4ee5ef34a5ac5709fcb8b0537f6';
 export function directoryCrudCandidate({checkFile=true}={}) {
   const read=path=>readFileSync(new URL(path,import.meta.url),'utf8').replaceAll('\r\n','\n');
   const approved=directoryCandidate(),previous=read('../../rules/directory-overlay.fragment.rules'),next=read('../../rules/directory-crud.fragment.rules'),cleanup=read('../../rules/directory-legacy-delete.fragment.rules');
   if(approved.split(previous).length!==2)throw Error('AMBIGUOUS_DIRECTORY_REPLACEMENT');
   const candidate=approved.replace(previous,()=>next).replace('    match /{document=**}',()=>cleanup+'\n    match /{document=**}');
   if(candidate.replace(cleanup+'\n','').replace(next,()=>previous)!==approved)throw Error('DIRECTORY_SCOPE_CHANGED');
+  if(createHash('sha256').update(candidate).digest('hex')!==directoryCrudRulesHash)throw Error('APPROVED_DIRECTORY_CRUD_HASH_CHANGED');
   if(checkFile&&readFileSync(directoryCrudCandidateFile,'utf8').replaceAll('\r\n','\n')!==candidate)throw Error('DIRECTORY_CRUD_CANDIDATE_OUT_OF_DATE');
   return candidate;
 }

@@ -7,15 +7,15 @@ import {validateDirectoryMember,saveDirectoryMember,deleteDirectoryMember} from 
 import {directoryCandidate} from '../scripts/security/directory-candidate.mjs';
 import {directoryCrudCandidate} from '../scripts/security/directory-crud-candidate.mjs';
 
-test('approved release adds only the directory block and pins the deployment guard to its approved hash',()=>{
+test('approved permanent-delete release preserves the prior rules outside the directory scope',()=>{
  const read=path=>readFileSync(new URL(path,import.meta.url),'utf8').replaceAll('\r\n','\n');
  const base=read('../firestore.rules'),fragment=read('../rules/directory-overlay.fragment.rules'),candidate=directoryCandidate();
  assert.equal(candidate,read('../rules/firestore.directory-candidate.rules'));
- assert.equal(candidate,base);
+ assert.equal(directoryCrudCandidate(),base);
  assert.equal(createHash('sha256').update(candidate.replace(fragment+'\n','')).digest('hex'),'f41fd8338988c42fdfdba341da6b26ee487d710776a68ab136e233f403ab6a5c');
  assert.equal(JSON.parse(read('../firebase.json')).firestore.rules,'firestore.rules');
  const config={window:{}};vm.runInNewContext(read('../session-config.js'),config);
- assert.equal(config.window.__WA3I_SESSION_CONFIG.directoryWritesEnabled,false);
+ assert.equal(config.window.__WA3I_SESSION_CONFIG.directoryWritesEnabled,true);
  assert.equal(config.window.__WA3I_SESSION_CONFIG.adminUid,'OpXzKToeVbd9xp1KHuqnD95yXlm2');
  assert.equal(config.window.__WA3I_SESSION_CONFIG.officialLaunchDate,'2026-10-16');
  assert.equal(config.window.__WA3I_SESSION_CONFIG.publicBracelets,false);
@@ -31,7 +31,7 @@ test('directory is profile-only: stable IDs, no passwords or Auth calls, protect
  const candidate=directoryCandidate();assert.match(candidate,/match \/directoryMembers/);assert.equal((candidate.match(/match \/\{document=\*\*\}/g)||[]).length,1);
  assert.match(candidate,/allow delete: if false/);assert.match(candidate,/request\.resource\.data\.revision == resource\.data\.revision \+ 1/);
 });
-test('delete candidate changes only directory CRUD/old public copy deletion, with deployment locked',()=>{
+test('approved delete release changes only directory CRUD/old public copy deletion',()=>{
  const read=path=>readFileSync(new URL(path,import.meta.url),'utf8').replaceAll('\r\n','\n');
  const candidate=directoryCrudCandidate(),fragment=read('../rules/directory-crud.fragment.rules');
  assert.equal(candidate.replace(read('../rules/directory-legacy-delete.fragment.rules')+'\n','').replace(fragment,()=>read('../rules/directory-overlay.fragment.rules')),directoryCandidate());
@@ -42,7 +42,7 @@ test('delete candidate changes only directory CRUD/old public copy deletion, wit
  assert.match(cleanup,/resource.data.memberId != 'member_9'/);
  assert.doesNotMatch(cleanup,/allow (?:create|update|write|read)|access__|status__|accountBindings/);
  assert.equal(JSON.parse(read('../firebase.json')).firestore.rules,'firestore.rules');
- assert.notEqual(candidate,read('../firestore.rules'));
+ assert.equal(candidate,read('../firestore.rules'));
 });
 test('directory source ignores legacy lists and caches, and a removed record cannot fall back',()=>{
  const source=readFileSync(new URL('../js/main.js',import.meta.url),'utf8');

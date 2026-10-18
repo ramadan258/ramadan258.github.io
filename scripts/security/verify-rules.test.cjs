@@ -14,9 +14,10 @@ test('protected admin UID cannot change silently', () => assert.throws(() => ver
 
 test('directory write authority cannot be widened', () => assert.throws(() => verify(source.replace('allow create: if isAmjad() && validDirectoryMember()', 'allow create: if signedIn() && validDirectoryMember()'), config)));
 
-test('pre-directory rules cannot accidentally replace the approved release', () => {
-  const fragment = readFileSync(resolve(__dirname, '../../rules/directory-overlay.fragment.rules'), 'utf8').replace(/\r\n/g, '\n');
-  assert.throws(() => verify(source.replace(/\r\n/g, '\n').replace(fragment + '\n', ''), config));
+test('the previously approved hide-only rules cannot replace the permanent-delete release', () => {
+  const previous = readFileSync(resolve(__dirname, '../../rules/firestore.directory-candidate.rules'), 'utf8');
+  assert.throws(() => verify(previous, config));
 });
+test('directory deletion cannot be granted to ordinary users', () => assert.throws(() => verify(source.replace('allow delete: if isAmjad() && directoryId()', 'allow delete: if signedIn() && directoryId()'), config)));
 test('alternate rules file rejected', () => assert.throws(() => verify(source, { firestore: { rules: 'old.rules', predeploy: [hook] } })));
 test('removed predeploy guard rejected', () => assert.throws(() => verify(source, { firestore: { rules: 'firestore.rules' } })));

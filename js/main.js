@@ -1996,7 +1996,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html?release=20261016-6f845baf89a8", window.location.href);
+      const url = new URL("azkar.html?release=20261016-627cf2efd8fc", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {

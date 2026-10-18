@@ -8,10 +8,13 @@ export const directoryRulesHash='e7c9be6da4c031d42d34b4de005b9935d52850e2cf30b09
 export function directoryCandidate({checkFile=true}={}) {
   const base=readFileSync(new URL('../../firestore.rules',import.meta.url),'utf8').replaceAll('\r\n','\n');
   const hash=value=>createHash('sha256').update(value).digest('hex'),baseHash=hash(base);
-  if(![originalRulesHash,directoryRulesHash].includes(baseHash))throw Error('APPROVED_RULES_CHANGED');
+  const crudHash='8ab0677b3caf3019c11a3f275281a51a8a8cd4ee5ef34a5ac5709fcb8b0537f6';
+  if(![originalRulesHash,directoryRulesHash,crudHash].includes(baseHash))throw Error('APPROVED_RULES_CHANGED');
   const fragment=readFileSync(new URL('../../rules/directory-overlay.fragment.rules',import.meta.url),'utf8').replaceAll('\r\n','\n');
   if(base.split('    match /{document=**}').length!==2)throw Error('AMBIGUOUS_RULES_MERGE');
-  const candidate=baseHash===directoryRulesHash?base:base.replace('    match /{document=**}',()=>fragment+'\n    match /{document=**}');
+  // Keep the previously approved snapshot for an exact, reversible comparison after promotion.
+  const candidate=baseHash===crudHash?readFileSync(directoryCandidateFile,'utf8').replaceAll('\r\n','\n'):
+    baseHash===directoryRulesHash?base:base.replace('    match /{document=**}',()=>fragment+'\n    match /{document=**}');
   if(hash(candidate)!==directoryRulesHash||hash(candidate.replace(fragment+'\n',''))!==originalRulesHash)throw Error('DIRECTORY_SCOPE_CHANGED');
   if(checkFile&&readFileSync(directoryCandidateFile,'utf8').replaceAll('\r\n','\n')!==candidate)throw Error('DIRECTORY_CANDIDATE_OUT_OF_DATE');
   return candidate;
