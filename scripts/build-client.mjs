@@ -27,7 +27,7 @@ for(const name of readdirSync('.').filter(name=>name.endsWith('.html'))){
   for(const name of sources)html=html.replace(new RegExp('client/'+name+'-[A-Z0-9]+\\.js(?:\\?v=[a-z0-9]+)?','g'),client[name]);
   if(html.includes('session-runtime.js')&&!html.includes('src="performance.js'))html=html.replace(/<script src="session-config/, '<script src="performance.js"></script><script src="session-config');
   html=html.replace(/((?:src|href)=")(?!https?:|data:)([^"?#]+)(?:\?v=[a-z0-9]+)?"/g,(all,start,path)=>{
-    if(!/\.(js|css)$/.test(path))return all;
+    if(!/\.(js|mjs|css)$/.test(path))return all;
     try{return start+path+'?v='+sha(readFileSync(path,'utf8').replaceAll('\r\n','\n'))+'"';}catch{return all;}
   });
   writeFileSync(name,html);
