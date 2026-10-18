@@ -3,12 +3,16 @@ import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
 export const directoryCandidateFile=new URL('../../rules/firestore.directory-candidate.rules',import.meta.url);
+export const originalRulesHash='f41fd8338988c42fdfdba341da6b26ee487d710776a68ab136e233f403ab6a5c';
+export const directoryRulesHash='e7c9be6da4c031d42d34b4de005b9935d52850e2cf30b098c480f10b386968a8';
 export function directoryCandidate({checkFile=true}={}) {
   const base=readFileSync(new URL('../../firestore.rules',import.meta.url),'utf8').replaceAll('\r\n','\n');
-  if(createHash('sha256').update(base).digest('hex')!=='f41fd8338988c42fdfdba341da6b26ee487d710776a68ab136e233f403ab6a5c')throw Error('APPROVED_RULES_CHANGED');
+  const hash=value=>createHash('sha256').update(value).digest('hex'),baseHash=hash(base);
+  if(![originalRulesHash,directoryRulesHash].includes(baseHash))throw Error('APPROVED_RULES_CHANGED');
   const fragment=readFileSync(new URL('../../rules/directory-overlay.fragment.rules',import.meta.url),'utf8').replaceAll('\r\n','\n');
-  if(base.includes('match /directoryMembers/')||base.split('    match /{document=**}').length!==2)throw Error('AMBIGUOUS_RULES_MERGE');
-  const candidate=base.replace('    match /{document=**}',()=>fragment+'\n    match /{document=**}');
+  if(base.split('    match /{document=**}').length!==2)throw Error('AMBIGUOUS_RULES_MERGE');
+  const candidate=baseHash===directoryRulesHash?base:base.replace('    match /{document=**}',()=>fragment+'\n    match /{document=**}');
+  if(hash(candidate)!==directoryRulesHash||hash(candidate.replace(fragment+'\n',''))!==originalRulesHash)throw Error('DIRECTORY_SCOPE_CHANGED');
   if(checkFile&&readFileSync(directoryCandidateFile,'utf8').replaceAll('\r\n','\n')!==candidate)throw Error('DIRECTORY_CANDIDATE_OUT_OF_DATE');
   return candidate;
 }

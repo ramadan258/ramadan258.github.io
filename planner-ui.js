@@ -161,7 +161,7 @@ $('.tabs').addEventListener('keydown',event=>{
   if(next!==null){event.preventDefault();selectTab(next,true);}
 });
 $('#khutayWindow').addEventListener('cancel',event=>{if(event.target!==event.currentTarget)return;event.preventDefault();if(editor)closeEditor();else void leave();});
-async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=20261016-f1f55e868fa7';}
+async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=20261016-ab31dd5849da';}
 $('#closePreview').onclick=leave;$('#launchPreview').onclick=()=>$('#khutayWindow').showModal();
 window.addEventListener('wa3i-session-cleared',()=>{document.body.replaceChildren();});
 async function resolveConflict() {

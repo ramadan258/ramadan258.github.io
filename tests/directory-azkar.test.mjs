@@ -2,14 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {createHash} from 'node:crypto';
 import {validateDirectoryMember,saveDirectoryMember} from '../directory-service.mjs';
 import {directoryCandidate} from '../scripts/security/directory-candidate.mjs';
 
-test('merged candidate adds only the reviewed directory block and leaves the deployment guard closed',()=>{
+test('approved release adds only the directory block and pins the deployment guard to its approved hash',()=>{
  const read=path=>readFileSync(new URL(path,import.meta.url),'utf8').replaceAll('\r\n','\n');
  const base=read('../firestore.rules'),fragment=read('../rules/directory-overlay.fragment.rules'),candidate=directoryCandidate();
  assert.equal(candidate,read('../rules/firestore.directory-candidate.rules'));
- assert.equal(candidate.replace(fragment+'\n',''),base);
+ assert.equal(candidate,base);
+ assert.equal(createHash('sha256').update(candidate.replace(fragment+'\n','')).digest('hex'),'f41fd8338988c42fdfdba341da6b26ee487d710776a68ab136e233f403ab6a5c');
  assert.equal(JSON.parse(read('../firebase.json')).firestore.rules,'firestore.rules');
  const config={window:{}};vm.runInNewContext(read('../session-config.js'),config);
  assert.equal(config.window.__WA3I_SESSION_CONFIG.directoryWritesEnabled,true);

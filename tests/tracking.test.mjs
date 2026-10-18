@@ -79,7 +79,8 @@ test('requested controls are absent and the public shell is not gated',()=>{
  const html=readFileSync(new URL('../khutay.html',import.meta.url),'utf8');
  for(const text of ['أولوياتي','مهامي','الهدف المرتبط','data-add="task"'])assert.ok(!html.includes(text));
  const home=readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.match(home,/id="openLocalSettings"/);
- assert.doesNotMatch(home,/id="identityGate"|id="identityConfirmPassword"/);
+ assert.doesNotMatch(home,/id="identityGate"|id="identityConfirmPassword"|data-switch-user-btn|href="admin\.html"|class="site-admin-link"/);
+ const admin=readFileSync(new URL('../admin.html',import.meta.url),'utf8');assert.match(admin,/src="index\.html\?admin=1"/);
 });
 test('two guest editors serialize record updates instead of losing another tab\'s habit',async()=>{
  const local=storage(),events=new EventTarget(),a=createGuestPlanner({storage:local,namespace:'concurrent',events,today}),b=createGuestPlanner({storage:local,namespace:'concurrent',events,today});
