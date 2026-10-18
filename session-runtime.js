@@ -1,7 +1,9 @@
 (() => {
   'use strict';
-  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-8591bff89380',base).href;
+  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-627cf2efd8fc',base).href;
   const config=window.__WA3I_SESSION_CONFIG,projectId=window.__WA3I_FIREBASE_CONFIG?.projectId;
+  const adminMode=new URL(location.href).pathname.endsWith('/index.html')&&new URL(location.href).searchParams.get('admin')==='1';
+  if(adminMode)document.documentElement.dataset.adminPage='true';
   if(!config||!projectId)throw Error('CONFIG_REQUIRED');
   let epoch=0,pending=Promise.resolve(),store=null,formsPromise=null,pool=null,navigating=false;
   const listeners=new Set(),memory=new Map();
@@ -34,6 +36,7 @@
     },
   }};
   SESSION.projectId=projectId;SESSION.guestNamespace=guestNamespace;
+  SESSION.adminMode=adminMode;
   const emulators=location.hostname==='127.0.0.1'&&projectId.startsWith('demo-')?config.emulators:null;
   if(emulators)SESSION.emulatorBatchEndpoint=`http://127.0.0.1:${emulators.firestore}/v1/projects/${projectId}/databases/(default)/documents:batchGet`;
   SESSION.publicReady=document.readyState==='loading'?new Promise(resolve=>document.addEventListener('DOMContentLoaded',resolve,{once:true})):Promise.resolve();
@@ -58,11 +61,13 @@
   SESSION.formsReady=async()=>{
     if(SESSION.session?.kind!=='guest'){await startCloud();return cloudFormsReady();}
     if(!store){
+      const {activeNamespace}=await import(new URL('device-data.mjs',base).href);
+      const active=activeNamespace(localStorage,guestNamespace);
       const generation=epoch,assert=()=>{if(generation!==epoch||SESSION.session?.kind!=='guest')throw Error('STALE_SESSION');};
       store={storage:{
-        getItem(key){assert();return localStorage.getItem(guestNamespace+':forms:'+encodeURIComponent(key));},
-        setItem(key,value){assert();localStorage.setItem(guestNamespace+':forms:'+encodeURIComponent(key),String(value));},
-        removeItem(key){assert();localStorage.removeItem(guestNamespace+':forms:'+encodeURIComponent(key));},
+        getItem(key){assert();return localStorage.getItem(active+':forms:'+encodeURIComponent(key));},
+        setItem(key,value){assert();if(activeNamespace(localStorage,guestNamespace)!==active)throw Error('LOCAL_DATA_RESTORED_RELOAD_REQUIRED');localStorage.setItem(active+':forms:'+encodeURIComponent(key),String(value));},
+        removeItem(key){assert();if(activeNamespace(localStorage,guestNamespace)!==active)throw Error('LOCAL_DATA_RESTORED_RELOAD_REQUIRED');localStorage.removeItem(active+':forms:'+encodeURIComponent(key));},
       },flush:async()=>assert(),hasPending:()=>false,close:()=>{}};
     }
     return store;
@@ -89,19 +94,14 @@
   SESSION.safeLeave=async()=>{try{await SESSION.flush();return true;}catch{alert('هناك تعديلات لم تُحفظ. لن نغادر الصفحة حتى يكتمل الحفظ.');return false;}};
   SESSION.enterGuest=()=>serialize(async()=>{
     if(!await SESSION.safeLeave())throw Error('UNSAVED_CHANGES');
+    if(!adminMode){if(SESSION.session?.kind!=='guest')activateGuest();return SESSION.session;}
     localStorage.getItem(guestNamespace+':planner:catalog');
     switching=true;await startAuth();clearPrivateState();
     if(authHandle?.currentUser)await authModule.signOut(authHandle);
     switching=false;
     activateGuest();return SESSION.session;
   });
-  SESSION.login=async(member,password,options={})=>{await startCloud();return cloudLogin(member,password,undefined,options.remember!==false);};
-  SESSION.loginByName=async(name,password,options={})=>{
-    await startCloud();const {findLoginMember}=await import(new URL('member-identity.mjs',base).href);
-    const snap=await window.FB.getDocs(window.FB.query(window.FB.collection(window.FB.db,'featuredMembers'),window.FB.where('type','==','custom_member')));
-    const member=findLoginMember(name,snap.docs.map(d=>d.data()));return cloudLogin({id:member.memberId},password,undefined,options.remember!==false);
-  };
-  SESSION.loginAdmin=async(email,password,options={})=>{await startCloud();return cloudLogin({id:config.adminMemberId},password,email,options.remember!==false);};
+  SESSION.loginAdmin=async(email,password,options={})=>{if(!adminMode)throw Error('ADMIN_PAGE_REQUIRED');await startCloud();return cloudLogin({id:config.adminMemberId},password,email,options.remember!==false);};
   SESSION.logout=()=>serialize(async()=>{
     if(!await SESSION.safeLeave())return false;
     switching=true;clearPrivateState();
@@ -120,10 +120,11 @@
     void SESSION.safeLeave().then(ok=>{if(ok)location.href=url.href;}).finally(()=>{navigating=false;});
   },true);
   function startAuth(){
+    if(!adminMode)return Promise.reject(Error('ADMIN_PAGE_REQUIRED'));
     if(authPromise)return authPromise;
     perf.start('firebase-auth-modules');
     authPromise=(async()=>{
-      const authMod=await import(new URL('vendor/firebase-auth-3XHWU4U7.js',base).href);
+      const authMod=await import(new URL('vendor/firebase-auth-3MM5NKLE.js',base).href);
       perf.end('firebase-auth-modules');perf.start('firebase-auth-init');
       const app=authMod.getApps().find(app=>app.name==='wa3i-secure-v1')||authMod.initializeApp(window.__WA3I_FIREBASE_CONFIG,'wa3i-secure-v1');
       const auth=authMod.getAuth(app);authHandle=auth;authModule=authMod;
@@ -134,7 +135,7 @@
       authMod.onAuthStateChanged(auth,user=>{
         if(switching)return;
         if(SESSION.session?.kind==='member'&&user?.uid!==SESSION.session.uid){warnUnsavedSessionEnd();clearPrivateState();location.replace(home);}
-        else if(SESSION.state==='guest'&&user&&!user.isAnonymous){clearPrivateState();location.replace(home);}
+        else if(adminMode&&SESSION.state==='guest'&&user&&!user.isAnonymous){clearPrivateState();location.reload();}
       });
       return {authMod,auth,app};
     })().catch(error=>{authPromise=null;throw error;});
@@ -169,27 +170,28 @@
     if(cloudPromise)return cloudPromise;
     perf.start('firebase-data-modules');
     cloudPromise=(async()=>{
-    const [authMod,fs,{createServerReadPool},{verifySession},{guardCloudWrites},{createServerBatchReader}]=await Promise.all([
-      startAuth().then(value=>value.authMod),import(new URL('vendor/firebase-data-HBHQ7IVC.js',base).href),
-      import(new URL('client/server-read-pool-6CAVQ6TS.js',base).href),import(new URL('client/verify-session-HPHQATB6.js',base).href),
+    const [authMod,fs,{guardCloudWrites}]=await Promise.all([
+      adminMode?startAuth().then(value=>value.authMod):null,import(new URL('vendor/firebase-data-DJK7N6GY.js',base).href),
       import(new URL('client/cloud-write-guard-37TOEH5T.js',base).href),
-      import(new URL('server-batch-read.js',base).href),
     ]);
     perf.end('firebase-data-modules');perf.start('firestore-init');
-    const {app,auth}=await startAuth();
+    const {app,auth}=adminMode?await startAuth():{app:fs.getApps().find(app=>app.name==='wa3i-public-v1')||fs.initializeApp(window.__WA3I_FIREBASE_CONFIG,'wa3i-public-v1'),auth:{currentUser:null}};
     if(!dbHandle){dbHandle=fs.initializeFirestore(app,{experimentalAutoDetectLongPolling:true});if(emulators)fs.connectFirestoreEmulator(dbHandle,'127.0.0.1',emulators.firestore);}
     const db=dbHandle;
     perf.end('firestore-init');
-    authHandle=auth;authModule=authMod;
+    if(adminMode){authHandle=auth;authModule=authMod;}
     
-    window.FB={...guardCloudWrites(fs,()=>SESSION.state==='member'), ...authMod,auth,db,projectId,
+    window.FB={...guardCloudWrites(fs,()=>adminMode&&SESSION.state==='member'&&SESSION.session?.isAdmin===true), ...authMod,auth,db,projectId,
       signInAnonymously:()=>{throw Error('ANONYMOUS_DISABLED');}};
     const publicTypes={custom__:'custom_member',hidden__:'hidden_member',qa_category__:'qa_category',qa_item__:'qa_item'};
-    window.FB.publicBucketSnapshot=(prefixes,next,error=()=>{})=>{
+    window.FB.publicBucketSnapshot=(prefixes,next,error=()=>{},options={})=>{
       if(!prefixes.length||prefixes.some(prefix=>!publicTypes[prefix]))throw Error('PUBLIC_QUERY_SCOPE_REQUIRED');
       return fs.onSnapshot(fs.query(fs.collection(db,'featuredMembers'),fs.and(fs.where('type','in',[...new Set(prefixes.map(prefix=>publicTypes[prefix]))]),
-        fs.or(...prefixes.map(prefix=>fs.and(fs.where(fs.documentId(),'>=',prefix),fs.where(fs.documentId(),'<=',prefix+'\uf8ff')))))),next,error);
+        fs.or(...prefixes.map(prefix=>fs.and(fs.where(fs.documentId(),'>=',prefix),fs.where(fs.documentId(),'<=',prefix+'\uf8ff')))))),options,next,error);
     };
+    if(!adminMode)return SESSION;
+    const [{createServerReadPool},{verifySession},{createServerBatchReader}]=await Promise.all([
+      import(new URL('client/server-read-pool-6CAVQ6TS.js',base).href),import(new URL('client/verify-session-HPHQATB6.js',base).href),import(new URL('server-batch-read.js',base).href)]);
     cloudFormsReady=async()=>{
       if(store)return store;if(!SESSION.session)throw Error('AUTH_REQUIRED');
       if(formsPromise)return formsPromise;
@@ -205,6 +207,7 @@
     const hintKey=uid=>`wa3i-member-hint-v1:${projectId}:${uid}`;
     async function verify(memberId,generation=epoch){
       const user=auth.currentUser;if(SESSION.session?.kind==='guest'||!user||user.isAnonymous)throw Error('AUTH_REQUIRED');
+      if(user.uid!==config.adminUid)throw Error('UNTRUSTED_ACCOUNT');
       const current=()=>generation===epoch&&auth.currentUser?.uid===user.uid;
       if(!pool)pool=createServerReadPool({fs,db,isCurrent:current,
         getServerSnapshot:createServerBatchReader({projectId,user,isCurrent:current,endpoint:SESSION.emulatorBatchEndpoint,onBatch:({ms})=>perf.duration('membership-batch',ms)}),
@@ -293,11 +296,11 @@
     }
     cloudPromise=null;throw error;
   });return cloudPromise;}
-  const startup=(async()=>{
+  const startup=adminMode?(async()=>{
     await startAuth();
     if(authHandle.currentUser&&!authHandle.currentUser.isAnonymous)await startCloud();else activateGuest();
     return SESSION;
-  })().catch(error=>{state('suspended');showRetry();throw error;});
+  })().catch(error=>{state('suspended');showRetry();throw error;}):(activateGuest(),Promise.resolve(SESSION));
   const finishReady=async()=>{
     if(document.readyState==='loading')await new Promise(resolve=>document.addEventListener('DOMContentLoaded',resolve,{once:true}));
     if(document.body.hasAttribute('data-session-private-page')&&!SESSION.session)throw Error('SESSION_UNVERIFIED');

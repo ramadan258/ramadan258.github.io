@@ -16,3 +16,8 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: git diff --exit-code
+      - uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697
+        with:
+          source: ./
+          destination: ./_site
+      - run: node scripts/security/verify-pages.mjs _site

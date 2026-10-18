@@ -1,6 +1,7 @@
 const queues=new Map();
 export async function withGuestLock(name,task) {
-  if(globalThis.navigator?.locks)return navigator.locks.request(name,task);
+  // Always return a promise so a synchronous storage error also releases the lock.
+  if(globalThis.navigator?.locks)return navigator.locks.request(name,async()=>task());
   if(globalThis.indexedDB){
     const db=await new Promise((resolve,reject)=>{
       const request=indexedDB.open('wa3i-guest-locks-v1',1);

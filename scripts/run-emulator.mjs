@@ -13,6 +13,7 @@ if(env.JAVA_HOME){const pathKey=Object.keys(env).find(key=>key.toLowerCase()==='
 if(!existsSync(cli))throw Error('Install Firebase CLI before running emulator tests.');
 const preview=process.argv.includes('--preview');
 const child=spawn(process.execPath,[cli,'emulators:exec','--project','demo-wa3i-performance','--config','firebase.emulator.json','--only','auth,firestore','--non-interactive',
-  preview?'node scripts/preview.mjs --emulator --compare'+(process.argv.includes('--slow')?' --slow':''):'node --test tests/emulator.integration.mjs'],{env,cwd:process.cwd(),stdio:'inherit',windowsHide:true});
+  preview?'node scripts/preview.mjs --emulator --compare'+(process.argv.includes('--slow')?' --slow':''):
+    process.argv.includes('--directory')?'node --test tests/directory.emulator.mjs':'node --test tests/emulator.integration.mjs'],{env,cwd:process.cwd(),stdio:'inherit',windowsHide:true});
 child.once('exit',code=>{process.exitCode=code||0;});
 process.once('SIGINT',()=>child.kill());process.once('SIGTERM',()=>child.kill());

@@ -41,16 +41,16 @@ test('REST bootstrap batches concurrent paths and uses Firebase token, not IAM',
  const result=await Promise.all([reader('accountBindings',uid),reader('memberAccounts',id)]);
  assert.equal(calls,1);assert.equal(result[1].data().active,true);await assert.rejects(reader('privateMembers','someone'),/INVALID_SERVER_PATH/);
 });
-function runtime({signedIn=true,importFailure=false,dataImportFailure=false,readFailure=false}={}) {
+function runtime({signedIn=true,importFailure=false,dataImportFailure=false,readFailure=false,adminMode=true,adminUid=uid}={}) {
  class Node extends EventTarget {constructor(){super();this.classList={add(){},remove(){},toggle(){}};this.style={};}setAttribute(){}hasAttribute(){return false;}append(){}remove(){}querySelector(){return null;}querySelectorAll(){return [];} }
- const document=new Node();document.body=new Node();document.readyState='complete';document.currentScript={src:'http://127.0.0.1/session-runtime.js'};document.getElementById=()=>null;document.createElement=()=>new Node();
- const window=new EventTarget();window.__WA3I_FIREBASE_CONFIG={projectId:'demo-review'};window.__WA3I_SESSION_CONFIG={adminUid:'admin-fictional',adminMemberId:'member_9',staticMembers:[],dynamicMembers:true};
+ const document=new Node();document.body=new Node();document.documentElement={dataset:{}};document.readyState='complete';document.currentScript={src:'http://127.0.0.1/session-runtime.js'};document.getElementById=()=>null;document.createElement=()=>new Node();
+ const window=new EventTarget();window.__WA3I_FIREBASE_CONFIG={projectId:'demo-review'};window.__WA3I_SESSION_CONFIG={adminUid,adminMemberId:id,staticMembers:[],dynamicMembers:true};
  let signouts=0,imports=0;const streams=[],persistence=[];const auth={currentUser:signedIn?user:null,authStateReady:async()=>{}};
  const authMod={getApps:()=>[],initializeApp:()=>({}),getAuth:()=>auth,setPersistence:async(_auth,type)=>{persistence.push(type);},browserLocalPersistence:'local',browserSessionPersistence:'session',
    signInWithEmailAndPassword:async()=>{auth.currentUser=user;return{user};},onAuthStateChanged:()=>()=>{},signOut:async()=>{signouts++;auth.currentUser=null;}};
  const storage=()=>{const data=new Map();return{getItem:key=>data.get(key)??null,setItem:(key,v)=>data.set(key,String(v)),removeItem:key=>data.delete(key)};};
- let reloads=0;const location={href:'http://127.0.0.1/index.html',reload(){reloads++;},replace(){}};
- const fakeFs={initializeFirestore:()=>({}),doc:(_db,c,id)=>c+'/'+id,onSnapshot:(path,_options,next,error)=>{streams.push({path,next,error});return()=>{};}};
+ let reloads=0;const location={href:'http://127.0.0.1/index.html'+(adminMode?'?admin=1':''),reload(){reloads++;},replace(){}};
+ const fakeFs={getApps:()=>[],initializeApp:()=>({}),initializeFirestore:()=>({}),doc:(_db,c,id)=>c+'/'+id,onSnapshot:(path,_options,next,error)=>{streams.push({path,next,error});return()=>{};}};
  const __import=async url=>{
   const name=String(url);imports++;
   if(importFailure&&name.includes('firebase-auth')){importFailure=false;throw Error('NETWORK_IMPORT_FAILED');}
@@ -70,11 +70,11 @@ function runtime({signedIn=true,importFailure=false,dataImportFailure=false,read
 }
 test('valid stored Auth restores without guest sign-out; streams suspend instead of destroying Auth',async()=>{
  const r=runtime();await r.session.ready;assert.equal(r.session.state,'member');assert.equal(r.signouts,0);
- const stream=r.streams.find(s=>s.path.startsWith('accountBindings/'));
+ const stream=r.streams.find(s=>s.path.startsWith('featuredMembers/'));
  stream.error({code:'unavailable'});assert.equal(r.session.state,'suspended');assert.equal(r.signouts,0);assert.equal(r.auth.currentUser.uid,uid);r.close();
 });
-test('authoritative membership deactivation ends access',async()=>{
- const r=runtime();await r.session.ready;r.streams.find(s=>s.path.startsWith('accountBindings/')).next({metadata:{fromCache:false,hasPendingWrites:false},data:()=>({active:false})});
+test('an authoritative admin profile mismatch ends access',async()=>{
+ const r=runtime();await r.session.ready;r.streams.find(s=>s.path.startsWith('featuredMembers/')).next({metadata:{fromCache:false,hasPendingWrites:false},data:()=>({memberId:'someone-else'})});
  await new Promise(resolve=>setTimeout(resolve,0));assert.equal(r.session.session,null);assert.equal(r.signouts,1);r.close();
 });
 test('rejected initialization promise can be retried, without duplicate Auth initialization',async()=>{
@@ -92,10 +92,24 @@ test('intentional guest switch signs out only after preserving pending work',asy
 
 test('remember-me selects Firebase local or session persistence, without upgrading a restored login',async()=>{
  const r=runtime();await r.session.ready;assert.deepEqual(r.persistence,[]);
- await r.session.login({id},'fictional-password',{remember:false});assert.deepEqual(r.persistence,['session']);assert.equal(r.session.session.uid,uid);
- await r.session.login({id},'fictional-password',{remember:true});assert.deepEqual(r.persistence,['session','local']);assert.equal(r.session.state,'member');r.close();
+ await r.session.loginAdmin('fictional@example.test','fictional-password',{remember:false});assert.deepEqual(r.persistence,['session']);assert.equal(r.session.session.uid,uid);
+ await r.session.loginAdmin('fictional@example.test','fictional-password',{remember:true});assert.deepEqual(r.persistence,['session','local']);assert.equal(r.session.state,'member');r.close();
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
- assert.match(html,/id="identityRemember" type="checkbox" checked/);assert.match(html,/id="adminRemember" type="checkbox" checked/);
+ assert.doesNotMatch(html,/id="identityRemember"/);assert.match(html,/id="adminRemember" type="checkbox" checked/);
+});
+
+test('public startup ignores a saved member Auth session, loads no Auth SDK and cannot log in',async()=>{
+ const r=runtime({adminMode:false,signedIn:true});await r.session.ready;
+ assert.equal(r.session.state,'guest');assert.equal(r.imports,0);assert.equal(r.signouts,0);assert.equal(r.session.login,undefined);assert.equal(r.session.loginByName,undefined);
+ await assert.rejects(r.session.loginAdmin('fictional@example.test','not-used'),/ADMIN_PAGE_REQUIRED/);
+ await r.session.cloudReady();assert.equal(r.session.state,'guest');assert.equal(r.signouts,0);assert.equal(r.session.session.uid,'local-guest');r.close();
+});
+
+test('a saved ordinary account cannot enter the admin page or start private listeners',async()=>{
+ const r=runtime({adminUid:'protected-admin-only'});await r.session.ready;
+ assert.equal(r.session.state,'guest');assert.equal(r.signouts,1);assert.equal(r.streams.length,0);
+ await assert.rejects(r.session.loginAdmin('fictional@example.test','not-admin'),/UNTRUSTED_ACCOUNT/);
+ assert.equal(r.session.state,'guest');assert.equal(r.streams.length,0);r.close();
 });
 test('cloudPromise also resets after a Firestore module import failure',async()=>{
  const r=runtime({dataImportFailure:true});await assert.rejects(r.session.ready);await r.session.retry();assert.equal(r.signouts,0);assert.ok(r.session.verify);r.close();

@@ -369,11 +369,11 @@
       }
     }
   </style>
-<script src="performance.js?v=b40a86ef6bca"></script><script src="session-config.js?v=3ca295450b3c"></script><script src="session-runtime.js?v=b4a9bcd4225e"></script><link rel="stylesheet" href="session.css?v=d1ddf958c999"></head>
+<script src="performance.js?v=b40a86ef6bca"></script><script src="session-config.js?v=51f1382206e2"></script><script src="session-runtime.js?v=faf06273e34d"></script><link rel="stylesheet" href="session.css?v=d1ddf958c999"></head>
 <body data-session-private-page class="session-pending">
   <div class="azkar-page">
     <div class="azkar-topbar">
-      <a class="azkar-back" id="azkarBackHome" href="index.html?resume=1&v=20260914qawhite1&release=20261016-8591bff89380">← العودة للصفحة الرئيسية</a>
+      <a class="azkar-back" id="azkarBackHome" href="index.html?resume=1&v=20260914qawhite1&release=20261016-627cf2efd8fc">← العودة للصفحة الرئيسية</a>
     </div>
 
     <section class="azkar-shell">
@@ -415,11 +415,12 @@
     (function () {
       const qs = (sel) => document.querySelector(sel);
       const params = new URLSearchParams(window.location.search);
-      const type = String(params.get("type") || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
+      const requested=String(params.get('type')||'morning');
       const titleMap = {
         morning: "أذكار الصباح",
-        evening: "أذكار المساء"
+        evening: "أذكار المساء",waking:'أذكار الاستيقاظ من النوم',sleep:'أذكار النوم','after-prayer':'أذكار بعد الصلاة المفروضة',tasbeeh:'التسابيح'
       };
+      const type=Object.hasOwn(titleMap,requested)?requested:'morning';
 
       const root = document.documentElement;
       const backHome = qs("#azkarBackHome");
@@ -444,7 +445,7 @@
       }
 
       function buildHomeUrl() {
-        const homeUrl = new URL("index.html?release=20261016-8591bff89380", window.location.href);
+        const homeUrl = new URL("index.html?release=20261016-627cf2efd8fc", window.location.href);
         homeUrl.search = "";
         homeUrl.hash = "";
         homeUrl.searchParams.set("resume", "1");
@@ -456,10 +457,10 @@
       }
 
       function buildAzkarTypeUrl(nextType) {
-        const pageUrl = new URL("azkar.html?release=20261016-8591bff89380", window.location.href);
+        const pageUrl = new URL("azkar.html?release=20261016-627cf2efd8fc", window.location.href);
         pageUrl.search = "";
         pageUrl.hash = "";
-        pageUrl.searchParams.set("type", nextType === "evening" ? "evening" : "morning");
+        pageUrl.searchParams.set("type", Object.hasOwn(titleMap,nextType)?nextType:'morning');
         pageUrl.searchParams.set("v", "20260914qawhite1");
         pageUrl.searchParams.set("fresh", "20260914qawhite1");
         if (previewFlagEnabled()) {
@@ -517,7 +518,7 @@
 
         emptyEl.hidden = true;
         listEl.innerHTML = items.map((item, index) => {
-          const countText = item.count_description || (item.count ? `${item.count} مرات` : "مرة واحدة");
+          const countText = item.count_description ?? (item.count ? `${item.count} مرات` : '');
           const fadl = String(item.fadl || "").trim();
           const source = String(item.source || "").trim();
           const hasDetails = Boolean(fadl || source);
@@ -525,7 +526,7 @@
             <article class="zikr-card">
               <div class="zikr-head">
                 <span class="zikr-order">${index + 1}</span>
-                <span class="zikr-count">${escapeHtml(countText)}</span>
+                ${countText?`<span class="zikr-count">${escapeHtml(countText)}</span>`:''}
               </div>
               <div class="zikr-content">${escapeHtml(item.content || "")}</div>
               ${hasDetails ? `
@@ -542,9 +543,9 @@
         }).join("");
       }
 
-      function loadAzkar() {
+      async function loadAzkar() {
         try {
-          const data = window.AZKAR_DATA || {};
+          const data = ['morning','evening'].includes(type)?window.AZKAR_DATA||{}:await fetch('azkar-extra.json?v=20261018').then(r=>{if(!r.ok)throw Error('AZKAR_EXTRA_FAILED');return r.json();}).then(data=>Object.fromEntries(data.categories.map(category=>[category.key,category.items])));
           const items = Array.isArray(data[type]) ? data[type] : [];
           renderHeader(items.length);
           renderAzkar(items);

@@ -1,14 +1,15 @@
 import {applyCommand,emptyCatalog,dateKey,validDate} from './model.mjs';
 import {trackingStart} from './tracking-period.mjs';
 import {withGuestLock} from './guest-lock.js';
+import {activeNamespace,plannerPrefix,restorePointer} from './device-data.mjs';
 
 // Guest records never share keys, journals, or owners with cloud/member records.
 export function createGuestPlanner({storage=localStorage,namespace,isCurrent=()=>true,events=window,today=dateKey(),clock=()=>today}) {
-  const prefix=namespace+':tracking-'+trackingStart+':planner:',listeners=new Set();
+  const generation=activeNamespace(storage,namespace),prefix=plannerPrefix(generation),lock=plannerPrefix(namespace),listeners=new Set();
   let closed=false,dataVersion=0,error=null,catalog,days,working=null;
   const pending=[];
   const current=()=>!closed&&isCurrent();
-  const assertCurrent=()=>{if(!current())throw Error('STALE_SESSION');};
+  const assertCurrent=()=>{if(!current())throw Error('STALE_SESSION');if(activeNamespace(storage,namespace)!==generation)throw Error('LOCAL_DATA_RESTORED_RELOAD_REQUIRED');};
   function read(key) {
     const raw=storage.getItem(prefix+key);if(raw===null)return null;
     const value=JSON.parse(raw);
@@ -37,7 +38,7 @@ export function createGuestPlanner({storage=localStorage,namespace,isCurrent=()=
     working=(async()=>{
       try{while(pending.length){
         const command=pending[0];
-        await withGuestLock(prefix,()=>{
+        await withGuestLock(lock,()=>{
           assertCurrent();const latest=read('catalog')||emptyCatalog(),record=command.date?read('day:'+command.date):null;
           const entries=Object.entries(applyCommand(latest,command.date?{[command.date]:record}:{},command,clock()));
           if(entries.length!==1)throw Error('LOCAL_ATOMIC_RECORD_REQUIRED');
@@ -53,7 +54,8 @@ export function createGuestPlanner({storage=localStorage,namespace,isCurrent=()=
   }
   const validRange=(start,end)=>{assertCurrent();if(!validDate(start)||!validDate(end))throw Error('INVALID_DATE');};
   const onStorage=event=>{
-    if(!current()||event.storageArea&&event.storageArea!==storage||event.key!==null&&!event.key?.startsWith(prefix))return;
+    if(!current()||event.storageArea&&event.storageArea!==storage||event.key!==null&&event.key!==restorePointer(namespace)&&!event.key?.startsWith(prefix))return;
+    if(activeNamespace(storage,namespace)!==generation){error='LOCAL_DATA_RESTORED_RELOAD_REQUIRED';notify();return;}
     try{load();for(const command of pending)applyLocal(command);if(!pending.length)error=null;dataVersion++;}catch{error='LOCAL_DATA_INVALID';}notify();
   };
   events?.addEventListener('storage',onStorage);

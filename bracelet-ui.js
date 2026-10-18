@@ -111,4 +111,4 @@ window.addEventListener('wa3i-session-cleared',clear);
 window.addEventListener('wa3i-bracelet-start',()=>{void start();});
 window.addEventListener('wa3i-permissions-changed',()=>{void start();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){void tracker?.refresh(true);void todayTracker?.refresh(true);publicReader?.refresh();}});
-await runtime.ready;void start();
+if(!runtime.adminMode){await runtime.ready;void start();}

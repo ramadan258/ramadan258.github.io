@@ -1,0 +1,465 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAmjad() {
+      return signedIn() && request.auth.uid == 'OpXzKToeVbd9xp1KHuqnD95yXlm2';
+    }
+
+    function isValidMemberId(memberId) {
+      return memberId is string
+        && memberId.matches('^(member_[0-9]+|custom_member_[^/]+)$');
+    }
+
+    function trustedProfile(memberId) {
+      let registry = get(/databases/$(database)/documents/memberRegistry/$(memberId)).data;
+      let profile = /databases/$(database)/documents/featuredMembers/$('custom__' + memberId);
+      return registry.schemaVersion == 1 && registry.memberId == memberId && registry.active == true
+        && !exists(/databases/$(database)/documents/featuredMembers/$('hidden__' + memberId))
+        && registry.source == 'cloud' && memberId.matches('^custom_member_new_[a-f0-9]{32}$') && exists(profile)
+        && get(profile).data.schemaVersion == 2 && get(profile).data.managementState == 'ready'
+        && (!exists(profile) || get(profile).data.memberId == memberId);
+    }
+    function hasBinding() {
+      return signedIn() && request.auth.token.firebase.sign_in_provider == 'password'
+        && get(/databases/$(database)/documents/accountBindings/$(request.auth.uid)).data.schemaVersion == 1
+        && get(/databases/$(database)/documents/accountBindings/$(request.auth.uid)).data.active == true
+        && request.auth.token.auth_time >= get(/databases/$(database)/documents/accountBindings/$(request.auth.uid)).data.authValidAfter
+        && get(/databases/$(database)/documents/memberAccounts/$(boundMemberId())).data.schemaVersion == 1
+        && get(/databases/$(database)/documents/memberAccounts/$(boundMemberId())).data.uid == request.auth.uid
+        && trustedProfile(boundMemberId());
+    }
+
+    function boundMemberId() {
+      return get(/databases/$(database)/documents/accountBindings/$(request.auth.uid)).data.memberId;
+    }
+
+    function isBoundTo(memberId) {
+      return hasBinding()
+        && boundMemberId() == memberId;
+    }
+
+    function canManageMemberStatuses() { return false; }
+
+    function canManageQa() {
+      return hasBinding()
+        && exists(/databases/$(database)/documents/memberPermissions/$(boundMemberId()))
+        && get(/databases/$(database)/documents/memberPermissions/$(boundMemberId())).data.qa == true;
+    }
+
+    function canManageAhd() {
+      return hasBinding()
+        && exists(/databases/$(database)/documents/memberPermissions/$(boundMemberId()))
+        && get(/databases/$(database)/documents/memberPermissions/$(boundMemberId())).data.ahd == true;
+    }
+
+    function isValidAhdMembership(memberId) {
+      return isValidMemberId(memberId)
+        && request.resource.data.keys().hasOnly(['joinedAt'])
+        && request.resource.data.joinedAt is timestamp;
+    }
+
+    function isMemberStatusOverrideDocId(docId) {
+      return docId is string
+        && docId.matches('^status__(member_[0-9]+|custom_member_[^/]+)$');
+    }
+
+    function isValidMemberStatusOverride() {
+      return request.resource.data.keys().hasOnly([
+          'type',
+          'memberId',
+          'tier',
+          'updatedAt'
+        ])
+        && request.resource.data.type == "member_status"
+        && request.resource.data.memberId is string
+        && request.resource.data.memberId.matches('^(member_[0-9]+|custom_member_[^/]+)$')
+        && ['elite', 'active', 'lazy', 'none'].hasAny([request.resource.data.tier])
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    function isQaCategoryDocId(docId) {
+      return docId is string
+        && docId.matches('^qa_category__[^/]+$');
+    }
+
+    function isQaItemDocId(docId) {
+      return docId is string
+        && docId.matches('^qa_item__[^/]+$');
+    }
+
+    function isValidQaCategory() {
+      return request.resource.data.keys().hasOnly([
+          'type',
+          'categoryId',
+          'name',
+          'sortKey',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.type == "qa_category"
+        && request.resource.data.categoryId is string
+        && request.resource.data.categoryId.size() > 0
+        && request.resource.data.categoryId.size() <= 180
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 180
+        && request.resource.data.sortKey is int
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    function isValidQaItem() {
+      return request.resource.data.keys().hasOnly([
+          'type',
+          'itemId',
+          'categoryId',
+          'question',
+          'answer',
+          'sortKey',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.type == "qa_item"
+        && request.resource.data.itemId is string
+        && request.resource.data.itemId.size() > 0
+        && request.resource.data.itemId.size() <= 220
+        && request.resource.data.categoryId is string
+        && request.resource.data.categoryId.size() > 0
+        && request.resource.data.categoryId.size() <= 180
+        && request.resource.data.question is string
+        && request.resource.data.question.size() > 0
+        && request.resource.data.question.size() <= 2000
+        && request.resource.data.answer is string
+        && request.resource.data.answer.size() > 0
+        && request.resource.data.answer.size() <= 30000
+        && request.resource.data.sortKey is int
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    function isLibraryBookDocId(docId) {
+      return docId is string
+        && docId.matches('^book__[A-Za-z0-9_-]+$');
+    }
+
+    function isLibraryDefaultHiddenDocId(docId) {
+      return docId is string
+        && docId.matches('^hidden__[A-Za-z0-9_-]+$');
+    }
+
+    function isValidLibraryBook() {
+      return request.resource.data.keys().hasOnly([
+          'type',
+          'bookId',
+          'title',
+          'href',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.type == "library_book"
+        && request.resource.data.bookId is string
+        && request.resource.data.bookId.matches('^[A-Za-z0-9_-]{1,120}$')
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 240
+        && request.resource.data.href is string
+        && request.resource.data.href.matches('^https?://.+')
+        && request.resource.data.href.size() <= 2000
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    function isValidLibraryDefaultHidden() {
+      return request.resource.data.keys().hasOnly([
+          'type',
+          'bookId',
+          'hiddenAt'
+        ])
+        && request.resource.data.type == "library_default_hidden"
+        && request.resource.data.bookId is string
+        && request.resource.data.bookId.matches('^[A-Za-z0-9_-]{1,120}$')
+        && request.resource.data.hiddenAt is timestamp;
+    }
+
+    function hasOwnChatAccess() { return false;
+    }
+
+    function isChatRoomOpen() {
+      return !exists(/databases/$(database)/documents/chatRooms/main)
+        || get(/databases/$(database)/documents/chatRooms/main).data.closed != true;
+    }
+
+    function isValidChatAccessDoc(memberId) {
+      return request.resource.data.keys().hasOnly([
+          'memberId',
+          'memberName',
+          'enabled',
+          'passwordHash',
+          'passwordSalt',
+          'passwordIterations',
+          'passwordUpdatedAtMs',
+          'updatedAt',
+          'updatedAtMs'
+        ])
+        && request.resource.data.memberId == memberId
+        && request.resource.data.memberName is string
+        && request.resource.data.memberName.size() > 0
+        && request.resource.data.memberName.size() <= 80
+        && request.resource.data.enabled is bool
+        && request.resource.data.passwordHash is string
+        && request.resource.data.passwordHash.size() > 0
+        && request.resource.data.passwordSalt is string
+        && request.resource.data.passwordSalt.size() > 0
+        && request.resource.data.passwordIterations is int
+        && request.resource.data.passwordIterations >= 100000
+        && request.resource.data.passwordUpdatedAtMs is int
+        && request.resource.data.updatedAtMs is int;
+    }
+
+    function isValidChatRoomDoc() {
+      return request.resource.data.keys().hasOnly([
+          'closed',
+          'pinnedMessage',
+          'updatedAt',
+          'updatedAtMs'
+        ])
+        && request.resource.data.closed is bool
+        && request.resource.data.pinnedMessage is string
+        && request.resource.data.pinnedMessage.size() <= 500
+        && request.resource.data.updatedAtMs is int;
+    }
+
+    function isValidChatMessage(messageId) {
+      return request.resource.data.keys().hasOnly([
+          'id',
+          'roomId',
+          'memberId',
+          'memberName',
+          'text',
+          'createdAt',
+          'createdAtMs'
+        ])
+        && request.resource.data.id == messageId
+        && request.resource.data.roomId == "main"
+        && request.resource.data.memberId is string
+        && request.resource.data.memberName is string
+        && request.resource.data.memberName.size() > 0
+        && request.resource.data.memberName.size() <= 80
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 1200
+        && request.resource.data.createdAtMs is int;
+    }
+
+    function canCreateOwnChatMessage() {
+      return hasOwnChatAccess()
+        && isChatRoomOpen()
+        && request.resource.data.memberId == boundMemberId();
+    }
+
+    match /tribeMembers/{id} {
+      allow read: if true;
+      allow write: if isAmjad();
+    }
+
+    match /ahdMembers/{id} {
+      allow read: if true;
+      allow create, update: if isAmjad()
+        || (canManageAhd() && isValidAhdMembership(id));
+      allow delete: if isAmjad()
+        || (canManageAhd() && isValidMemberId(id));
+    }
+
+    match /featuredMembers/{id} {
+      // Legacy access hashes and manual ratings are not public content.
+      allow get: if resource == null && id.matches('^(custom__|hidden__).+')
+        || resource.data.type in ['custom_member','hidden_member','qa_category','qa_item'];
+      allow list: if resource.data.type in ['custom_member','hidden_member','qa_category','qa_item'];
+
+      allow create, update: if (isAmjad() && !id.matches('^(custom__|hidden__|access__|status__).+'))
+        || (
+          canManageMemberStatuses()
+          && isMemberStatusOverrideDocId(id)
+          && isValidMemberStatusOverride() && id == 'status__' + request.resource.data.memberId
+        )
+        || (
+          canManageQa()
+          && isQaCategoryDocId(id)
+          && isValidQaCategory() && id == 'qa_category__' + request.resource.data.categoryId
+        )
+        || (
+          canManageQa()
+          && isQaItemDocId(id)
+          && isValidQaItem() && id == 'qa_item__' + request.resource.data.itemId
+        );
+
+      allow delete: if (isAmjad() && !id.matches('^(custom__|hidden__|access__|status__).+'))
+        || (
+          canManageMemberStatuses()
+          && isMemberStatusOverrideDocId(id)
+        )
+        || (
+          canManageQa()
+          && (isQaCategoryDocId(id) || isQaItemDocId(id))
+        );
+    }
+
+    // Legacy claims are never used, regardless of their contents or provider.
+    match /bindings/{uid} { allow read, write: if false; }
+
+    // Provisioning is local Admin SDK only. The browser cannot claim an identity.
+    match /accountBindings/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+    match /memberAccounts/{memberId} {
+      allow read: if isAmjad() || isBoundTo(memberId);
+      allow write: if false;
+    }
+    match /memberRegistry/{memberId} {
+      allow read: if isAmjad() || isBoundTo(memberId);
+      allow write: if false;
+    }
+    function validPrivateRecord() {
+      return request.resource.data.keys().hasOnly(['key','value','revision','updatedAt'])
+        && request.resource.data.keys().hasAll(['key','value','revision','updatedAt'])
+        && request.resource.data.key is string && request.resource.data.key.size() <= 240
+        && request.resource.data.value is string && request.resource.data.value.size() <= 400000
+        && request.resource.data.revision is int && request.resource.data.updatedAt == request.time;
+    }
+    match /privateMembers/{uid}/records/{recordId} {
+      allow read: if signedIn() && request.auth.uid == uid && (isAmjad() || hasBinding());
+      allow create: if signedIn() && request.auth.uid == uid && (isAmjad() || hasBinding()) && validPrivateRecord()
+        && request.resource.data.revision == 1;
+      allow update: if signedIn() && request.auth.uid == uid && (isAmjad() || hasBinding()) && validPrivateRecord()
+        && request.resource.data.key == resource.data.key
+        && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if false;
+    }
+
+    match /memberPermissions/{memberId} {
+      allow read: if isAmjad() || isBoundTo(memberId);
+      allow create, update: if isAmjad()
+        && request.resource.data.keys().hasOnly(['memberId', 'memberStatus', 'ahd', 'qa', 'updatedAt'])
+        && request.resource.data.memberId == memberId
+        && isValidMemberId(memberId)
+        && request.resource.data.memberStatus is bool
+        && request.resource.data.ahd is bool
+        && request.resource.data.qa is bool
+        && request.resource.data.updatedAt is timestamp;
+      allow delete: if isAmjad();
+    }
+
+    match /libraryBooks/{docId} {
+      allow read: if true;
+      allow create, update: if isAmjad()
+        && (
+          (isLibraryBookDocId(docId) && isValidLibraryBook())
+          || (isLibraryDefaultHiddenDocId(docId) && isValidLibraryDefaultHidden())
+        );
+      allow delete: if isAmjad()
+        && (isLibraryBookDocId(docId) || isLibraryDefaultHiddenDocId(docId));
+    }
+
+    match /streaks/{memberId} {
+      allow read: if true;
+
+      allow create, update: if isAmjad()
+        || (
+          isBoundTo(memberId)
+          && isValidMemberId(memberId)
+          && request.resource.data.keys().hasOnly(['count', 'lastCompletedDate', 'updatedAt'])
+          && request.resource.data.count is int
+          && request.resource.data.lastCompletedDate is string
+        );
+
+      allow delete: if isAmjad();
+    }
+
+    match /chatAccess/{memberId} {
+      allow read: if isAmjad() || isBoundTo(memberId);
+      allow create, update: if isAmjad()
+        && isValidMemberId(memberId)
+        && isValidChatAccessDoc(memberId);
+      allow delete: if isAmjad();
+    }
+
+    match /chatRooms/{roomId} {
+      allow read: if isAmjad() || hasOwnChatAccess();
+      allow create, update: if isAmjad()
+        && roomId == "main"
+        && isValidChatRoomDoc();
+      allow delete: if isAmjad();
+    }
+
+    match /chatMessages/{messageId} {
+      allow read: if isAmjad() || hasOwnChatAccess();
+
+      allow create: if isValidChatMessage(messageId)
+        && (
+          isAmjad()
+          || canCreateOwnChatMessage()
+        );
+
+      allow update: if false;
+      allow delete: if isAmjad();
+    }
+
+
+    match /plannerMembers/{uid}/records/{recordId} {
+      function owner() { return signedIn() && request.auth.uid == uid && (isAmjad() || hasBinding()); }
+      function valid() {
+        return request.resource.data.keys().hasOnly(['key','value','revision','updatedAt'])
+          && request.resource.data.keys().hasAll(['key','value','revision','updatedAt'])
+          && request.resource.data.key == recordId
+          && (recordId == 'catalog' || recordId.matches('^day:[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+          && request.resource.data.value is string && request.resource.data.value.size() <= 300000
+          && request.resource.data.revision is int && request.resource.data.updatedAt == request.time;
+      }
+      allow read: if owner();
+      allow create: if owner() && valid() && request.resource.data.revision == 1;
+      allow update: if owner() && valid() && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if false;
+    }
+
+    // Independent public name/photo directory. No accounts, permissions or related records.
+    match /directoryMembers/{memberId} {
+      function directoryId() {
+        return memberId.matches('^(member_[0-9]+|custom_member_[A-Za-z0-9_-]{1,100})$') && memberId != 'member_9';
+      }
+      function validDirectoryMember() {
+        return request.resource.data.keys().hasOnly(['schemaVersion','memberId','name','src','revision','updatedAt'])
+          && request.resource.data.keys().hasAll(['schemaVersion','memberId','name','src','revision','updatedAt'])
+          && request.resource.data.schemaVersion == 2 && request.resource.data.memberId == memberId && directoryId()
+          && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 80
+          && request.resource.data.src is string && request.resource.data.src.size() <= 210000
+          && (request.resource.data.src == '' || request.resource.data.src.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$')
+            || request.resource.data.src.matches('^https://[^"<> ]+$') || request.resource.data.src.matches('^images/[A-Za-z0-9_./%-]+$'))
+          && request.resource.data.revision is int && request.resource.data.updatedAt == request.time;
+      }
+      allow read: if true;
+      allow create: if isAmjad() && validDirectoryMember() && request.resource.data.revision == 1;
+      allow update: if isAmjad() && validDirectoryMember() && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if isAmjad() && directoryId();
+    }
+
+    // Remove obsolete public directory copies atomically with a permanent directory deletion.
+    match /featuredMembers/{id} {
+      allow delete: if isAmjad()
+        && resource.data.memberId is string
+        && resource.data.memberId.matches('^(member_[0-9]+|custom_member_[A-Za-z0-9_-]{1,100})$')
+        && resource.data.memberId != 'member_9'
+        && ((id == 'custom__' + resource.data.memberId && resource.data.type == 'custom_member')
+          || (id == 'hidden__' + resource.data.memberId && resource.data.type == 'hidden_member'));
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

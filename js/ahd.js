@@ -371,7 +371,7 @@ function initAhdPage() {
 
     FB_STATE.ready = true;
 
-    window.FB.onAuthStateChanged(window.FB.auth, (user) => {
+    const authChanged = (user) => {
       FB_STATE.user = user || null;
       FB_STATE.isAdmin = Boolean(user && user.uid === AMJAD_ADMIN_UID);
 
@@ -399,7 +399,9 @@ function initAhdPage() {
       }
 
       resetFirestoreStreaksForAllMembersOnce();
-    });
+    };
+    if(window.WA3I_SESSION.adminMode)window.FB.onAuthStateChanged(window.FB.auth,authChanged);
+    else authChanged(null);
 
     qs("#ahdAdminSearch")?.addEventListener("input", (e) => {
       if (!hasAhdAdminAccess()) return;

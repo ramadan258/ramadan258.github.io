@@ -427,6 +427,37 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Independent public name/photo directory. No accounts, permissions or related records.
+    match /directoryMembers/{memberId} {
+      function directoryId() {
+        return memberId.matches('^(member_[0-9]+|custom_member_[A-Za-z0-9_-]{1,100})$') && memberId != 'member_9';
+      }
+      function validDirectoryMember() {
+        return request.resource.data.keys().hasOnly(['schemaVersion','memberId','name','src','revision','updatedAt'])
+          && request.resource.data.keys().hasAll(['schemaVersion','memberId','name','src','revision','updatedAt'])
+          && request.resource.data.schemaVersion == 2 && request.resource.data.memberId == memberId && directoryId()
+          && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 80
+          && request.resource.data.src is string && request.resource.data.src.size() <= 210000
+          && (request.resource.data.src == '' || request.resource.data.src.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$')
+            || request.resource.data.src.matches('^https://[^"<> ]+$') || request.resource.data.src.matches('^images/[A-Za-z0-9_./%-]+$'))
+          && request.resource.data.revision is int && request.resource.data.updatedAt == request.time;
+      }
+      allow read: if true;
+      allow create: if isAmjad() && validDirectoryMember() && request.resource.data.revision == 1;
+      allow update: if isAmjad() && validDirectoryMember() && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if isAmjad() && directoryId();
+    }
+
+    // Remove obsolete public directory copies atomically with a permanent directory deletion.
+    match /featuredMembers/{id} {
+      allow delete: if isAmjad()
+        && resource.data.memberId is string
+        && resource.data.memberId.matches('^(member_[0-9]+|custom_member_[A-Za-z0-9_-]{1,100})$')
+        && resource.data.memberId != 'member_9'
+        && ((id == 'custom__' + resource.data.memberId && resource.data.type == 'custom_member')
+          || (id == 'hidden__' + resource.data.memberId && resource.data.type == 'hidden_member'));
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

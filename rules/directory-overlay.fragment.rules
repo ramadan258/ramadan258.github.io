@@ -1,0 +1,19 @@
+    // Optional directory-only overlay. Does not create accounts, bindings or permissions.
+    match /directoryMembers/{memberId} {
+      function validDirectoryMember() {
+        return request.resource.data.keys().hasOnly(['schemaVersion','memberId','name','src','active','revision','updatedAt'])
+          && request.resource.data.keys().hasAll(['schemaVersion','memberId','name','src','active','revision','updatedAt'])
+          && request.resource.data.schemaVersion == 1 && request.resource.data.memberId == memberId
+          && memberId.matches('^(member_[0-9]+|custom_member_[A-Za-z0-9_-]{1,100})$') && memberId != 'member_9'
+          && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 80
+          && request.resource.data.src is string && request.resource.data.src.size() <= 210000
+          && (request.resource.data.src == '' || request.resource.data.src.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$')
+            || request.resource.data.src.matches('^https://[^"<> ]+$') || request.resource.data.src.matches('^images/[A-Za-z0-9_./%-]+$'))
+          && request.resource.data.active is bool && request.resource.data.revision is int && request.resource.data.updatedAt == request.time;
+      }
+      allow read: if true;
+      allow create: if isAmjad() && validDirectoryMember() && request.resource.data.revision == 1;
+      allow update: if isAmjad() && validDirectoryMember() && request.resource.data.revision == resource.data.revision + 1;
+      // Directory removal is an inactive overlay, leaving Ahd, Auth and history intact.
+      allow delete: if false;
+    }

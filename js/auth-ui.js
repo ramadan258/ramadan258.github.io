@@ -151,71 +151,20 @@ function wireAdminLoginModal() {
   });
 }
 function initIdentityGate(open=true) {
-  if(open)showGate();
-  IDENTITY_MEMBERS_CACHE = readMembersFromDOM();
-  renderIdentityGrid(IDENTITY_MEMBERS_CACHE);
-  wireSwitchUserButton(); wireIdentityConfirmModal();wireGuestEntry();
-  const close=qs('#closeIdentityGate');if(close)close.onclick=()=>hideGate();
+  // Public tracking has no identity chooser. Admin sign-in lives on admin.html.
 }
 function wireGuestEntry(){
-  const button=qs('#enterGuestBtn');if(!button||button.dataset.wired)return;button.dataset.wired='true';
-  button.onclick=async()=>{
-    if(button.disabled)return;button.disabled=true;
-    try{const session=await window.WA3I_SESSION.enterGuest();syncStoredPermissionsForCurrentUser();saveCurrentUser(session.member);startApp();}
-    catch{showIdentityToast('تعذر فتح التخزين المحلي. تحقق من إعدادات المتصفح.');}
-    finally{button.disabled=false;}
-  };
 }
 function memberNameById(id) { return memberById(id)?.name || ''; }
 function memberById(id) { return IDENTITY_MEMBERS_CACHE.find((m) => m.id === id) || null; }
 function wireSwitchUserButton() {
-  if (SWITCH_USER_WIRED) return; SWITCH_USER_WIRED = true;
-  qsa('[data-switch-user-btn]').forEach((btn) => {
-    btn.setAttribute('aria-label', 'تسجيل الدخول أو اختيار المستخدم');
-    btn.addEventListener('click', () => { closeAllModals();initIdentityGate();warmFirebaseSoon(); });
-  });
 }
 function openIdentityConfirm(member) {
-  if (!member) return;
-  if(isAmjadMember(member)){wireAdminLoginModal();openAdminLoginModal(member);return;}
-  PENDING_IDENTITY = member;
-  qs('#identityConfirmAvatar').src = member.src;
-  qs('#identityConfirmName').textContent = member.name;
-  qs('#identityConfirmTitle').textContent = 'تسجيل الدخول';
-  qs('#identityConfirmHint').textContent = '';
-  qs('#identityConfirmPassword').value = '';
-  qs('#identityConfirmError').textContent = '';
-  qs('#identityConfirmError').classList.add('is-hidden');
-  qs('#identityConfirmOverlay').classList.add('open');
-  qs('#identityConfirmPassword').focus();
+  if(window.WA3I_SESSION.adminMode&&isAmjadMember(member)){wireAdminLoginModal();openAdminLoginModal(member);}
 }
 function closeIdentityConfirm() {
-  qs('#identityConfirmOverlay').classList.remove('open');
-  qs('#identityConfirmPassword').value = '';
-  PENDING_IDENTITY = null;
 }
 function wireIdentityConfirmModal() {
-  if (IDENTITY_CONFIRM_WIRED) return; IDENTITY_CONFIRM_WIRED = true;
-  const yes = qs('#identityConfirmYes');
-  const no = qs('#identityConfirmNo');
-  no.addEventListener('click', closeIdentityConfirm);
-  qs('#identityConfirmPassword').addEventListener('keydown', (event) => { if (event.key === 'Enter') yes.click(); });
-  yes.addEventListener('click', async () => {
-    const member = PENDING_IDENTITY;
-    if (!member || yes.disabled) return;
-    let password = qs('#identityConfirmPassword').value;
-    qs('#identityConfirmPassword').value = '';
-    yes.disabled = true; no.disabled = true;
-    try {
-      await window.WA3I_SESSION.ready;
-      const session = await window.WA3I_SESSION.login(member, password, {remember:qs('#identityRemember').checked});
-      syncStoredPermissionsForCurrentUser();
-      saveCurrentUser(session.member); closeIdentityConfirm(); startApp();
-    } catch (failure) {
-      const error = qs('#identityConfirmError'); error.textContent = 'تعذر الدخول. تحقق من كلمة المرور والاتصال.'; error.classList.remove('is-hidden');
-      error.dataset.reason = failure.message;
-    } finally { password = ''; yes.disabled = false; no.disabled = false; }
-  });
 }
 window.addEventListener('wa3i-permissions-changed', () => {
   if (window.WA3I_SESSION.session) { WA3I_USER = window.WA3I_SESSION.session.member; updateUserBar(); }

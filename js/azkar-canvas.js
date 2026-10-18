@@ -3,6 +3,8 @@ const AZKAR_CANVAS_STATE = {
   type: "",
   dataPromise: null,
 };
+const AZKAR_TITLES={morning:'أذكار الصباح',evening:'أذكار المساء',waking:'أذكار الاستيقاظ من النوم',sleep:'أذكار النوم','after-prayer':'أذكار بعد الصلاة المفروضة',tasbeeh:'التسابيح'};
+let AZKAR_EXTRA_PROMISE;
 
 function azkarCanvasIsOpen() {
   return document.querySelector("#memberCanvasAzkar")?.classList.contains("member-canvas-window-mounted") || false;
@@ -22,7 +24,7 @@ function formatAzkarCanvasNumber(value) {
 }
 
 function normalizeAzkarCanvasType(value) {
-  return String(value || "").trim().toLowerCase() === "evening" ? "evening" : "morning";
+  const key=String(value||'').trim().toLowerCase();return Object.hasOwn(AZKAR_TITLES,key)?key:'morning';
 }
 
 function setAzkarCanvasHeader(titleText, backLabel = "") {
@@ -41,7 +43,9 @@ function setAzkarCanvasHeader(titleText, backLabel = "") {
   else back.removeAttribute("title");
 }
 
-function loadAzkarCanvasData() {
+function loadAzkarCanvasData(type='morning') {
+  if(!['morning','evening'].includes(type))return AZKAR_EXTRA_PROMISE||=(fetch('azkar-extra.json?v=20261018').then(response=>{if(!response.ok)throw Error('AZKAR_EXTRA_FAILED');return response.json();})
+    .then(data=>Object.fromEntries(data.categories.map(category=>[category.key,category.items]))).catch(error=>{AZKAR_EXTRA_PROMISE=null;throw error;}));
   if (window.AZKAR_DATA) return Promise.resolve(window.AZKAR_DATA);
   if (AZKAR_CANVAS_STATE.dataPromise) return AZKAR_CANVAS_STATE.dataPromise;
 
@@ -73,6 +77,7 @@ function renderAzkarCanvasChoices() {
       <span class="member-canvas-azkar-choice__title">أذكار المساء</span>
       <span class="member-canvas-azkar-choice__copy">اختم يومك بذكر الله</span>
     </button>
+    ${Object.entries(AZKAR_TITLES).filter(([key])=>!['morning','evening'].includes(key)).map(([key,title])=>`<button type="button" class="member-canvas-azkar-choice" data-azkar-canvas-choice="${key}"><span class="member-canvas-azkar-choice__title">${title}</span></button>`).join('')}
   `;
 
   list.querySelectorAll("[data-azkar-canvas-choice]").forEach((button) => {
@@ -85,7 +90,7 @@ function renderAzkarCanvasReader(items) {
   if (!list) return;
 
   const type = normalizeAzkarCanvasType(AZKAR_CANVAS_STATE.type);
-  const title = type === "evening" ? "أذكار المساء" : "أذكار الصباح";
+  const title = AZKAR_TITLES[type];
   setAzkarCanvasHeader(title, "الأذكار");
 
   if (!Array.isArray(items) || !items.length) {
@@ -96,7 +101,7 @@ function renderAzkarCanvasReader(items) {
   list.innerHTML = `
     <div class="member-canvas-azkar-reader-note">اقرأ بهدوء، وستجد العدد المطلوب بجانب كل ذكر.</div>
     ${items.map((item, index) => {
-      const count = String(item?.count_description || (item?.count ? `${item.count} مرات` : "مرة واحدة")).trim();
+      const count = String(item?.count_description ?? (item?.count ? `${item.count} مرات` : '')).trim();
       const content = escapeAzkarCanvasHtml(item?.content || "");
       const fadl = String(item?.fadl || "").trim();
       const source = String(item?.source || "").trim();
@@ -106,7 +111,7 @@ function renderAzkarCanvasReader(items) {
         <article class="member-canvas-zikr-card">
           <div class="member-canvas-zikr-card__head">
             <span class="member-canvas-zikr-card__order">${formatAzkarCanvasNumber(index + 1)}</span>
-            <span class="member-canvas-zikr-card__count">${escapeAzkarCanvasHtml(count)}</span>
+            ${count?`<span class="member-canvas-zikr-card__count">${escapeAzkarCanvasHtml(count)}</span>`:''}
           </div>
           <div class="member-canvas-zikr-card__content">${content}</div>
           ${details ? `
@@ -131,18 +136,19 @@ function openAzkarCanvasChoices() {
 async function openAzkarCanvasReader(type) {
   AZKAR_CANVAS_STATE.screen = "reader";
   AZKAR_CANVAS_STATE.type = normalizeAzkarCanvasType(type);
+  const requestedType=AZKAR_CANVAS_STATE.type;
 
   const list = document.querySelector("#memberCanvasAzkarList");
-  const title = AZKAR_CANVAS_STATE.type === "evening" ? "أذكار المساء" : "أذكار الصباح";
+  const title = AZKAR_TITLES[AZKAR_CANVAS_STATE.type];
   setAzkarCanvasHeader(title, "الأذكار");
   if (list) list.innerHTML = '<div class="member-canvas-azkar-loading">جاري تجهيز الأذكار...</div>';
 
   try {
-    const data = await loadAzkarCanvasData();
-    if (!azkarCanvasIsOpen() || AZKAR_CANVAS_STATE.screen !== "reader") return;
+    const data = await loadAzkarCanvasData(AZKAR_CANVAS_STATE.type);
+    if (!azkarCanvasIsOpen() || AZKAR_CANVAS_STATE.screen !== "reader"||AZKAR_CANVAS_STATE.type!==requestedType) return;
     renderAzkarCanvasReader(Array.isArray(data?.[AZKAR_CANVAS_STATE.type]) ? data[AZKAR_CANVAS_STATE.type] : []);
   } catch {
-    if (list && azkarCanvasIsOpen()) {
+    if (list && azkarCanvasIsOpen() && AZKAR_CANVAS_STATE.screen==='reader' && AZKAR_CANVAS_STATE.type===requestedType) {
       list.innerHTML = '<div class="member-canvas-choice-empty">تعذر تحميل الأذكار الآن. أعد المحاولة بعد قليل.</div>';
     }
   }

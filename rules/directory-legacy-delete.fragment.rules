@@ -1,0 +1,9 @@
+    // Remove obsolete public directory copies atomically with a permanent directory deletion.
+    match /featuredMembers/{id} {
+      allow delete: if isAmjad()
+        && resource.data.memberId is string
+        && resource.data.memberId.matches('^(member_[0-9]+|custom_member_[A-Za-z0-9_-]{1,100})$')
+        && resource.data.memberId != 'member_9'
+        && ((id == 'custom__' + resource.data.memberId && resource.data.type == 'custom_member')
+          || (id == 'hidden__' + resource.data.memberId && resource.data.type == 'hidden_member'));
+    }

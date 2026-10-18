@@ -11,5 +11,13 @@ test('safe CRLF checkout accepted', () => verify(source.replace(/\r?\n/g, '\r\n'
 test('old binding privileges cannot be restored', () => assert.throws(() => verify(source.replace('return false;', 'return true;'), config)));
 test('browser ownership claim cannot be restored', () => assert.throws(() => verify(source.replace('match /bindings/{uid} { allow read, write: if false; }', 'match /bindings/{uid} { allow read, write: if signedIn(); }'), config)));
 test('protected admin UID cannot change silently', () => assert.throws(() => verify(source.replace('OpXzKToeVbd9xp1KHuqnD95yXlm2', 'unreviewed-admin'), config)));
+
+test('directory write authority cannot be widened', () => assert.throws(() => verify(source.replace('allow create: if isAmjad() && validDirectoryMember()', 'allow create: if signedIn() && validDirectoryMember()'), config)));
+
+test('the previously approved hide-only rules cannot replace the permanent-delete release', () => {
+  const previous = readFileSync(resolve(__dirname, '../../rules/firestore.directory-candidate.rules'), 'utf8');
+  assert.throws(() => verify(previous, config));
+});
+test('directory deletion cannot be granted to ordinary users', () => assert.throws(() => verify(source.replace('allow delete: if isAmjad() && directoryId()', 'allow delete: if signedIn() && directoryId()'), config)));
 test('alternate rules file rejected', () => assert.throws(() => verify(source, { firestore: { rules: 'old.rules', predeploy: [hook] } })));
 test('removed predeploy guard rejected', () => assert.throws(() => verify(source, { firestore: { rules: 'firestore.rules' } })));
