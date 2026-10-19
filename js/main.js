@@ -302,6 +302,10 @@ const MEMBER_DIRECTORY_STATE = {
   editingRevision: 0,
   imageRequest: 0,
   imagePending: false,
+  firstReadAttached: false,
+  firstReadApplied: false,
+  directoryServerSnapshotSeen: false,
+  legacyServerSnapshotSeen: false,
 };
 
 const AMJAD_MEMBER_ID = "member_9";
@@ -1420,6 +1424,13 @@ function initMemberDirectorySystem(options = {}) {
   wireMemberManageAdminControls();
   refreshMemberDirectoryUI({ renderMembers });
 
+  if(!MEMBER_DIRECTORY_STATE.firstReadAttached&&window.WA3I_PUBLIC_DIRECTORY_FIRST_READ){
+    MEMBER_DIRECTORY_STATE.firstReadAttached=true;
+    void window.WA3I_PUBLIC_DIRECTORY_FIRST_READ.then(value=>{
+      if(value?.apply(MEMBER_DIRECTORY_STATE,value.result))refreshMemberDirectoryUI();
+    }).catch(()=>{});
+  }
+
   if (!activateRemote || MEMBER_DIRECTORY_STATE.listenersAttached) return;
 
   const tryInit = () => {
@@ -1433,6 +1444,7 @@ function initMemberDirectorySystem(options = {}) {
       onSnapshot(collection(db,'directoryMembers'),{includeMetadataChanges:true},snapshot=>{
         // No local directory fallback, including Firestore's stale initial cache.
         if(snapshot.metadata.fromCache||snapshot.metadata.hasPendingWrites)return;
+        MEMBER_DIRECTORY_STATE.directoryServerSnapshotSeen=true;
         const rows=new Map();
         snapshot.forEach(doc=>{try{const data=doc.data();if(![1,2].includes(data.schemaVersion)||doc.id!==data.memberId)return;rows.set(doc.id,{...validateDirectoryMember(data),revision:data.revision});}catch{}});
         MEMBER_DIRECTORY_STATE.directoryMembers=rows;MEMBER_DIRECTORY_STATE.ready=true;refreshMemberDirectoryUI();
@@ -1440,6 +1452,7 @@ function initMemberDirectorySystem(options = {}) {
     }).catch(()=>setMemberManageStatus('تعذر تحميل الدليل. أعد المحاولة.',true));
     window.FB.publicBucketSnapshot(['custom__'],snapshot=>{
       if(snapshot.metadata.fromCache||snapshot.metadata.hasPendingWrites)return;
+      MEMBER_DIRECTORY_STATE.legacyServerSnapshotSeen=true;
       const rows=new Map();
       snapshot.forEach(doc=>{
         const data=doc.data();
@@ -2019,7 +2032,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html?release=20261016-224350b96599", window.location.href);
+      const url = new URL("azkar.html?release=20261016-df531fb2ddd0", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {
