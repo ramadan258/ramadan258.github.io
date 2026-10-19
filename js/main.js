@@ -1330,13 +1330,17 @@ function renderMemberManageAdminList(){
       if(window.__WA3I_SESSION_CONFIG.directoryWritesEnabled!==true)setMemberManageStatus('الحذف النهائي ينتظر الموافقة على قواعد الدليل الجديدة؛ لم يتغير الإنتاج.');
       for(const member of getAllMembersList()){
         const row=document.createElement('article');row.className='member-manage-card';
+        const head=document.createElement('div');head.className='member-manage-head';
         const image=document.createElement('img');image.src=resolveMemberAvatarSrc(member.src);image.alt=member.name;
-        const name=document.createElement('strong');name.textContent=member.name;row.append(image,name);
+        image.width=48;image.height=48;
+        const name=document.createElement('strong');name.className='member-manage-name';name.textContent=member.name;head.append(image,name);
         const actions=[[member.id==='member_9'?'تغيير الصورة':'تعديل',()=>beginEditManagedMember(member.id)]];
         if(member.id!=='member_9')actions.push(['حذف العضو',()=>deleteManagedMember(member.id)]);
+        const controls=document.createElement('div');controls.className='member-manage-card-actions'+(actions.length===1?' is-single':'');
         for(const [title,action] of actions){
-          const button=document.createElement('button');button.type='button';button.className='identity-btn ghost';button.textContent=title;button.disabled=!enabled;button.onclick=action;row.append(button);
+          const button=document.createElement('button');button.type='button';button.className=title==='حذف العضو'?'member-manage-remove':'member-manage-edit';button.textContent=title;button.disabled=!enabled;button.onclick=action;controls.append(button);
         }
+        row.append(head,controls);
         el.append(row);
       }
     }
@@ -2000,7 +2004,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html?release=20261016-397d0e6533ac", window.location.href);
+      const url = new URL("azkar.html?release=20261016-56826d6222cf", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {
