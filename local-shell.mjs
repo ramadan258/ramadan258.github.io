@@ -1,7 +1,7 @@
 const runtime=window.WA3I_SESSION;
 if(!runtime.adminMode){
   document.getElementById('openLocalSettings')?.addEventListener('click',async()=>{
-    try{const {openDeviceSettings}=await import('./device-settings.mjs');await openDeviceSettings();}
+    try{const {openDeviceSettings}=await import('./device-settings.mjs?v=restore2');await openDeviceSettings();}
     catch{alert('تعذر فتح الإعدادات. أعد المحاولة.');}
   });
 }else{

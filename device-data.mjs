@@ -66,25 +66,46 @@ export function parseBackup(text) {
   assert(exact(value,['format','version','createdAt','trackingPeriod','data'])&&value.format==='wa3i-device-backup'&&value.version===1&&value.trackingPeriod===trackingStart&&Number.isFinite(Date.parse(value.createdAt)));
   return createBackup(value.data,new Date(value.createdAt));
 }
+function sameData(left,right) {
+  if(left===right)return true;
+  if(!left||!right||typeof left!=='object'||typeof right!=='object')return false;
+  if(Array.isArray(left)||Array.isArray(right))return Array.isArray(left)&&Array.isArray(right)
+    &&left.length===right.length&&left.every((value,index)=>sameData(value,right[index]));
+  const keys=Object.keys(left);
+  // Storage enumeration may reorder object keys; array order and all values must still match.
+  return keys.length===Object.keys(right).length&&keys.every(key=>Object.hasOwn(right,key)&&sameData(left[key],right[key]));
+}
 export async function restoreBackup({storage,namespace,backup,confirmed=false,expectedCurrent,uuid=()=>crypto.randomUUID()}) {
   if(!confirmed)throw Error('RESTORE_CONFIRMATION_REQUIRED');
   const data=parseBackup(JSON.stringify(backup)).data;
+  let reviewed;try{reviewed=JSON.parse(expectedCurrent);}catch{throw Error('LOCAL_DATA_CHANGED_REVIEW_AGAIN');}
   return withGuestLock(plannerPrefix(namespace),()=>{
-    const before=JSON.stringify(readDeviceData(storage,namespace));
-    if(before!==expectedCurrent)throw Error('LOCAL_DATA_CHANGED_REVIEW_AGAIN');
+    if(!sameData(readDeviceData(storage,namespace),reviewed))throw Error('LOCAL_DATA_CHANGED_REVIEW_AGAIN');
     const next=namespace+':restore:'+uuid();
     if(!/^[a-f0-9-]{36}$/.test(next.slice((namespace+':restore:').length)))throw Error('INVALID_RESTORE_ID');
     for(let index=0;index<storage.length;index++)if(storage.key(index)?.startsWith(next+':'))throw Error('RESTORE_ID_ALREADY_USED');
-    const prefix=plannerPrefix(next);
-    storage.setItem(prefix+'catalog',JSON.stringify(data.catalog));
-    for(const [date,day] of Object.entries(data.days))storage.setItem(prefix+'day:'+date,JSON.stringify(day));
-    for(const [key,value] of Object.entries(data.forms))storage.setItem(next+':forms:'+encodeURIComponent(key),value);
-    // Staging is invisible. A single pointer commit switches the complete dataset.
-    if(JSON.stringify(readDeviceData(storage,next))!==JSON.stringify(data))throw Error('RESTORE_VERIFY_FAILED');
-    const previous=storage.getItem(restorePointer(namespace));
-    storage.setItem(restorePointer(namespace),next);
-    try{if(JSON.stringify(readDeviceData(storage,namespace))!==JSON.stringify(data))throw Error('RESTORE_VERIFY_FAILED');}
-    catch(error){if(previous===null)storage.removeItem(restorePointer(namespace));else storage.setItem(restorePointer(namespace),previous);throw error;}
-    return data;
+    const prefix=plannerPrefix(next),pointer=restorePointer(namespace),previous=storage.getItem(pointer),staged=[];
+    let switched=false;
+    const write=(key,value)=>{staged.push(key);storage.setItem(key,value);};
+    try{
+      write(prefix+'catalog',JSON.stringify(data.catalog));
+      for(const [date,day] of Object.entries(data.days))write(prefix+'day:'+date,JSON.stringify(day));
+      for(const [key,value] of Object.entries(data.forms))write(next+':forms:'+encodeURIComponent(key),value);
+      // Staging is invisible. A single pointer commit switches the complete dataset.
+      if(!sameData(readDeviceData(storage,next),data))throw Error('RESTORE_VERIFY_FAILED');
+      storage.setItem(pointer,next);switched=true;
+      if(!sameData(readDeviceData(storage,namespace),data))throw Error('RESTORE_VERIFY_FAILED');
+      return data;
+    }catch(error){
+      if(switched){
+        try{
+          if(previous===null)storage.removeItem(pointer);else storage.setItem(pointer,previous);
+          if(storage.getItem(pointer)!==previous)throw Error('RESTORE_ROLLBACK_UNCONFIRMED');
+        }catch{throw Error('RESTORE_ROLLBACK_UNCONFIRMED');}
+      }
+      // Remove only this failed attempt's unused staging, never older datasets or an active copy.
+      try{if(storage.getItem(pointer)!==next)for(const key of staged)storage.removeItem(key);}catch{}
+      throw error;
+    }
   });
 }
