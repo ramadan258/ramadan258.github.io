@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-397d0e6533ac',base).href;
+  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-56826d6222cf',base).href;
   const config=window.__WA3I_SESSION_CONFIG,projectId=window.__WA3I_FIREBASE_CONFIG?.projectId;
   const adminMode=new URL(location.href).pathname.endsWith('/index.html')&&new URL(location.href).searchParams.get('admin')==='1';
   if(adminMode)document.documentElement.dataset.adminPage='true';

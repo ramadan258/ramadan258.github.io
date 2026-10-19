@@ -40,12 +40,24 @@ test('admin card offers photo editing, never deletion, without changing other me
   const list=element('section'),submit=element('button');
   const scope={document:{createElement:element},window:{__WA3I_SESSION_CONFIG:{directoryWritesEnabled:true}},
     MEMBER_DIRECTORY_STATE:{ready:true,imagePending:false},qs:selector=>selector==='#memberManageList'?list:submit,
-    getAllMembersList:()=>[{id:'member_9',name:'أمجد',src:''},{id:'custom_member_test',name:'عضو',src:''}],
+    getAllMembersList:()=>[{id:'member_9',name:'أمجد',src:''},{id:'custom_member_test',name:'اسم عضو تجريبي طويل للتحقق من ترتيب البطاقة',src:''}],
     resolveMemberAvatarSrc:value=>value,beginEditManagedMember:id=>edits.push(id),deleteManagedMember:id=>removed.push(id)};
   vm.createContext(scope);
   vm.runInContext(source.slice(source.indexOf('function renderMemberManageAdminList()'),source.indexOf('async function persistDirectoryMember('))+';this.render=renderMemberManageAdminList;',scope);
-  scope.render();const actions=index=>list.children[index].children.filter(child=>child.tag==='button');
+  scope.render();const actions=index=>list.children[index].children[1].children;
+  for(const card of list.children){
+    const [head,controls]=card.children;
+    assert.equal(card.children.length,2);
+    assert.equal(head.className,'member-manage-head');
+    assert.equal(head.children[0].width,48);assert.equal(head.children[0].height,48);
+    assert.equal(head.children[1].className,'member-manage-name');
+    assert.ok(controls.className.startsWith('member-manage-card-actions'));
+  }
+  assert.equal(list.children[0].children[1].className,'member-manage-card-actions is-single');
   assert.deepEqual(actions(0).map(button=>button.textContent),['تغيير الصورة']);
   assert.deepEqual(actions(1).map(button=>button.textContent),['تعديل','حذف العضو']);
+  assert.deepEqual(actions(1).map(button=>button.className),['member-manage-edit','member-manage-remove']);
   actions(0)[0].onclick();assert.deepEqual(edits,['member_9']);assert.deepEqual(removed,[]);
+  actions(1)[0].onclick();actions(1)[1].onclick();
+  assert.deepEqual(edits,['member_9','custom_member_test']);assert.deepEqual(removed,['custom_member_test']);
 });
