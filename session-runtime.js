@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-6c3e43d4cbbc',base).href;
+  const base=new URL('./',document.currentScript.src),home=new URL('index.html?release=20261016-6516f37221d7',base).href;
   const config=window.__WA3I_SESSION_CONFIG,projectId=window.__WA3I_FIREBASE_CONFIG?.projectId;
   const adminMode=new URL(location.href).pathname.endsWith('/index.html')&&new URL(location.href).searchParams.get('admin')==='1';
   if(adminMode)document.documentElement.dataset.adminPage='true';
@@ -183,7 +183,7 @@
     
     window.FB={...guardCloudWrites(fs,()=>adminMode&&SESSION.state==='member'&&SESSION.session?.isAdmin===true), ...authMod,auth,db,projectId,
       signInAnonymously:()=>{throw Error('ANONYMOUS_DISABLED');}};
-    const publicTypes={custom__:'custom_member',hidden__:'hidden_member',qa_category__:'qa_category',qa_item__:'qa_item'};
+    const publicTypes={custom__:'custom_member',custom__custom_member_new_:'custom_member',hidden__:'hidden_member',qa_category__:'qa_category',qa_item__:'qa_item'};
     window.FB.publicBucketSnapshot=(prefixes,next,error=()=>{},options={})=>{
       if(!prefixes.length||prefixes.some(prefix=>!publicTypes[prefix]))throw Error('PUBLIC_QUERY_SCOPE_REQUIRED');
       return fs.onSnapshot(fs.query(fs.collection(db,'featuredMembers'),fs.and(fs.where('type','in',[...new Set(prefixes.map(prefix=>publicTypes[prefix]))]),

@@ -303,6 +303,7 @@ const MEMBER_DIRECTORY_STATE = {
   imageRequest: 0,
   imagePending: false,
   firstReadAttached: false,
+  firstReadWatchAttached: false,
   firstReadApplied: false,
   directoryServerSnapshotSeen: false,
   legacyServerSnapshotSeen: false,
@@ -1424,12 +1425,25 @@ function initMemberDirectorySystem(options = {}) {
   wireMemberManageAdminControls();
   refreshMemberDirectoryUI({ renderMembers });
 
-  if(!MEMBER_DIRECTORY_STATE.firstReadAttached&&window.WA3I_PUBLIC_DIRECTORY_FIRST_READ){
+  const attachFirstRead=()=>{
+    if(MEMBER_DIRECTORY_STATE.firstReadAttached||!window.WA3I_PUBLIC_DIRECTORY_FIRST_READ)return;
     MEMBER_DIRECTORY_STATE.firstReadAttached=true;
     void window.WA3I_PUBLIC_DIRECTORY_FIRST_READ.then(value=>{
-      if(value?.apply(MEMBER_DIRECTORY_STATE,value.result))refreshMemberDirectoryUI();
+      if(value?.apply(MEMBER_DIRECTORY_STATE,value.result)){
+        refreshMemberDirectoryUI();window.WA3I_PERFORMANCE?.mark('public-directory-first-render');
+      }
+      if(value?.photos)void value.photos.then(patches=>{
+        if(value.applyPhotos(MEMBER_DIRECTORY_STATE,value.result,patches)){
+          refreshMemberDirectoryUI();window.WA3I_PERFORMANCE?.mark('public-directory-photos-render');
+        }
+      }).catch(()=>{});
     }).catch(()=>{});
+  };
+  if(!MEMBER_DIRECTORY_STATE.firstReadWatchAttached){
+    MEMBER_DIRECTORY_STATE.firstReadWatchAttached=true;
+    window.addEventListener('wa3i-public-directory-start',attachFirstRead,{once:true});
   }
+  attachFirstRead();
 
   if (!activateRemote || MEMBER_DIRECTORY_STATE.listenersAttached) return;
 
@@ -1450,7 +1464,7 @@ function initMemberDirectorySystem(options = {}) {
         MEMBER_DIRECTORY_STATE.directoryMembers=rows;MEMBER_DIRECTORY_STATE.ready=true;refreshMemberDirectoryUI();
       },()=>{MEMBER_DIRECTORY_STATE.ready=false;renderMemberManageAdminList();setMemberManageStatus('تعذر تحميل الدليل. تحقق من الاتصال؛ لن يُستخدم دليل قديم.',true);});
     }).catch(()=>setMemberManageStatus('تعذر تحميل الدليل. أعد المحاولة.',true));
-    window.FB.publicBucketSnapshot(['custom__'],snapshot=>{
+    window.FB.publicBucketSnapshot(['custom__custom_member_new_'],snapshot=>{
       if(snapshot.metadata.fromCache||snapshot.metadata.hasPendingWrites)return;
       MEMBER_DIRECTORY_STATE.legacyServerSnapshotSeen=true;
       const rows=new Map();
@@ -2032,7 +2046,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html?release=20261016-6c3e43d4cbbc", window.location.href);
+      const url = new URL("azkar.html?release=20261016-6516f37221d7", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {
