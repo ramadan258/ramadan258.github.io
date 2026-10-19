@@ -1,4 +1,13 @@
-import {readDeviceData,createBackup,parseBackup,restoreBackup} from './device-data.mjs';
+import {readDeviceData,createBackup,parseBackup,restoreBackup} from './device-data.mjs?v=restore2';
+
+export function restoreFailureMessage(error) {
+  if(error?.message==='LOCAL_DATA_CHANGED_REVIEW_AGAIN')return 'تغيّرت بيانات الجهاز أثناء المراجعة. اختر الملف مجددًا؛ لم تُستبدل البيانات.';
+  if(error?.message==='RESTORE_ROLLBACK_UNCONFIRMED')return 'تعذر التأكد من حالة الاستعادة. احتفظ بالنسخة الاحتياطية ولا تمسح بيانات المتصفح أو تكرر المحاولة الآن.';
+  if(['QuotaExceededError','NS_ERROR_DOM_QUOTA_REACHED'].includes(error?.name))return 'مساحة التخزين المخصصة للموقع في المتصفح غير كافية للاستعادة مع الاحتفاظ بالبيانات الحالية. احتفظ بالنسخة الاحتياطية ولا تمسح بيانات الموقع.';
+  if(error?.message==='RESTORE_VERIFY_FAILED')return 'لم تتطابق البيانات المحفوظة مع النسخة الاحتياطية، لذلك أُلغيت الاستعادة. احتفظ بالملف؛ لم تُستبدل بياناتك السابقة.';
+  if(error?.name==='SecurityError')return 'منع المتصفح الوصول إلى التخزين المحلي. احتفظ بالنسخة الاحتياطية ولا تمسح بيانات الموقع.';
+  return 'تعذرت الاستعادة لسبب غير متوقع. احتفظ بالنسخة الاحتياطية ولا تمسح بيانات المتصفح.';
+}
 
 function download(backup,prefix='wa3i-backup') {
   const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');
@@ -54,7 +63,7 @@ export async function openDeviceSettings() {
       const button=document.createElement('button');button.type='button';button.textContent='فتح البيانات المستعادة';button.onclick=()=>location.reload();status.after(button);
       find('[data-review]').hidden=true;find('[data-export]').disabled=true;find('[data-import]').disabled=true;
       session.planner?.close();
-    }catch(error){message(error.message==='LOCAL_DATA_CHANGED_REVIEW_AGAIN'?'تغيّرت بيانات الجهاز أثناء المراجعة. اختر الملف مجددًا؛ لم تُستبدل البيانات.':'تعذرت الاستعادة. لم تُستبدل بياناتك السابقة؛ تحقق من المساحة المتاحة.');}
+    }catch(error){message(restoreFailureMessage(error));}
     finally{busy=false;find('[data-import]').disabled=restored;canRestore();}
   };
   dialog.showModal();
