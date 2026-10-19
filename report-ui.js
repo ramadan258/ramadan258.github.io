@@ -102,7 +102,7 @@ $('#resolveConflict').onclick=async()=>{
   link.href=url;link.download='my-report-draft.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   if(confirm('تم تجهيز نسخة مسودتك. هل تريد تحميل نسخة الخادم بدل التعديلات المتعارضة؟'))await store.reloadServer();
 };
-async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=20261016-627cf2efd8fc';}
+async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=20261016-397d0e6533ac';}
 $('#closeReport').onclick=leave;$('#reportWindow').addEventListener('cancel',event=>{event.preventDefault();void leave();});
 window.addEventListener('wa3i-session-cleared',()=>{cancelAnimationFrame(frame);frame=0;cached=null;cursorId='';document.body.replaceChildren();});
 store.subscribe(()=>{

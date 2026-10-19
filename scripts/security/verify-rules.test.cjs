@@ -19,5 +19,17 @@ test('the previously approved hide-only rules cannot replace the permanent-delet
   assert.throws(() => verify(previous, config));
 });
 test('directory deletion cannot be granted to ordinary users', () => assert.throws(() => verify(source.replace('allow delete: if isAmjad() && directoryId()', 'allow delete: if signedIn() && directoryId()'), config)));
+
+test('the previous directory release cannot replace the approved avatar rules', () => {
+  const previous = readFileSync(resolve(__dirname, '../../rules/firestore.directory-crud-candidate.rules'), 'utf8');
+  assert.throws(() => verify(previous, config));
+});
+
+test('avatar write authority cannot be widened', () => assert.throws(() => verify(source.replace('allow create: if isAmjad() && validAmjadAvatar()', 'allow create: if signedIn() && validAmjadAvatar()'), config)));
+
+test('admin avatar cannot silently become a rename or deletion grant', () => {
+  assert.throws(() => verify(source.replace("hasOnly(['src','revision','updatedAt'])", "hasOnly(['name','src','revision','updatedAt'])"), config));
+  assert.throws(() => verify(source.replace('match /directoryMembers/member_9 {', 'match /directoryMembers/member_9 { allow delete: if isAmjad();'), config));
+});
 test('alternate rules file rejected', () => assert.throws(() => verify(source, { firestore: { rules: 'old.rules', predeploy: [hook] } })));
 test('removed predeploy guard rejected', () => assert.throws(() => verify(source, { firestore: { rules: 'firestore.rules' } })));
