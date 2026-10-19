@@ -105,7 +105,7 @@ test('empty authoritative results clear older view data and cannot grant adminis
 
 test('bootstrap is early, public-only and single-run; administrative live guards remain authoritative',()=>{
   const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),source=readFileSync(new URL('../public-directory-first-read.mjs',import.meta.url),'utf8');
-  assert.equal((html.match(/<script type="module" src="public-directory-first-read.mjs(?:\?v=[a-z0-9]+)?"><\/script>/g)||[]).length,1);
+  assert.equal((html.match(/<script type="module" async src="public-directory-first-read.mjs(?:\?v=[a-z0-9]+)?"><\/script>/g)||[]).length,1);
   assert.ok(html.indexOf('src="public-directory-first-read.mjs')<html.indexOf('</head>'));
   assert.ok(!/<link rel="modulepreload" href="public-directory-first-read.mjs/.test(html));
   assert.match(source,/!window.WA3I_SESSION.adminMode&&!window.WA3I_PUBLIC_DIRECTORY_FIRST_READ/);
