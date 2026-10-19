@@ -462,13 +462,28 @@ function renderMembersSection() {
   const slider = qs("#members .slider");
   if (!slider) return;
 
-  const members = getAllMembersList();
-  slider.innerHTML = members.map((member) => `
-        <div class="slide-card" data-member-id="${escapeHtml(member.id)}" data-member-source="${member.source === "custom" ? "custom" : "static"}">
-          <img loading="lazy" decoding="async" fetchpriority="low" src="${resolveMemberAvatarSrc(member.src)}" alt="${escapeHtml(member.name)}" />
-          <h3>${escapeHtml(member.name)}</h3>
-        </div>
-      `).join("");
+  const existing=new Map(Array.from(slider.children,card=>[card.dataset.memberId,card]));
+  let cursor=slider.firstElementChild;
+  getAllMembersList().forEach((member,index)=>{
+    let card=existing.get(member.id);
+    if(!card){
+      card=document.createElement('div');card.className='slide-card';card.dataset.memberId=member.id;
+      const image=document.createElement('img');image.decoding='async';
+      card.append(image,document.createElement('h3'));
+    }
+    existing.delete(member.id);
+    card.dataset.origIndex=String(index);
+    card.dataset.memberSource=member.source==='custom'?'custom':'static';
+    const image=card.querySelector('img'),name=card.querySelector('h3'),src=resolveMemberAvatarSrc(member.src);
+    image.loading=index<3?'eager':'lazy';image.fetchPriority=index===0?'high':'auto';
+    if(image.getAttribute('src')!==src)image.src=src;
+    if(image.getAttribute('alt')!==member.name)image.alt=member.name;
+    if(name.textContent!==member.name)name.textContent=member.name;
+    // Keep unchanged cards/images mounted, including the user's carousel position.
+    if(card!==cursor)slider.insertBefore(card,cursor);
+    cursor=card.nextElementSibling;
+  });
+  for(const card of existing.values())card.remove();
 }
 
 function shouldRenderMembersSectionUI() {
@@ -2004,7 +2019,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html?release=20261016-56826d6222cf", window.location.href);
+      const url = new URL("azkar.html?release=20261016-224350b96599", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {
