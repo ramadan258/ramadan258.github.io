@@ -6,12 +6,13 @@ import {createHash} from 'node:crypto';
 import {validateDirectoryMember,saveDirectoryMember,deleteDirectoryMember} from '../directory-service.mjs';
 import {directoryCandidate} from '../scripts/security/directory-candidate.mjs';
 import {directoryCrudCandidate} from '../scripts/security/directory-crud-candidate.mjs';
+import {amjadAvatarCandidate} from '../scripts/security/directory-amjad-avatar-candidate.mjs';
 
 test('approved permanent-delete release preserves the prior rules outside the directory scope',()=>{
  const read=path=>readFileSync(new URL(path,import.meta.url),'utf8').replaceAll('\r\n','\n');
  const base=read('../firestore.rules'),fragment=read('../rules/directory-overlay.fragment.rules'),candidate=directoryCandidate();
  assert.equal(candidate,read('../rules/firestore.directory-candidate.rules'));
- assert.equal(directoryCrudCandidate(),base);
+ assert.equal(amjadAvatarCandidate(),base);
  assert.equal(createHash('sha256').update(candidate.replace(fragment+'\n','')).digest('hex'),'f41fd8338988c42fdfdba341da6b26ee487d710776a68ab136e233f403ab6a5c');
  assert.equal(JSON.parse(read('../firebase.json')).firestore.rules,'firestore.rules');
  const config={window:{}};vm.runInNewContext(read('../session-config.js'),config);
@@ -42,7 +43,7 @@ test('approved delete release changes only directory CRUD/old public copy deleti
  assert.match(cleanup,/resource.data.memberId != 'member_9'/);
  assert.doesNotMatch(cleanup,/allow (?:create|update|write|read)|access__|status__|accountBindings/);
  assert.equal(JSON.parse(read('../firebase.json')).firestore.rules,'firestore.rules');
- assert.equal(candidate,read('../firestore.rules'));
+ assert.equal(candidate,amjadAvatarCandidate().replace(read('../rules/directory-amjad-avatar.fragment.rules')+'\n',''));
 });
 test('directory source ignores legacy lists and caches, and a removed record cannot fall back',()=>{
  const source=readFileSync(new URL('../js/main.js',import.meta.url),'utf8');

@@ -1,7 +1,8 @@
 const idOk=id=>typeof id==='string'&&/^(member_[0-9]+|custom_member_[A-Za-z0-9_-]{1,100})$/.test(id);
 export function validateDirectoryMember(value) {
-  if(!value||!idOk(value.memberId)||value.memberId==='member_9'||typeof value.name!=='string'||!value.name.trim()||value.name.length>80
+  if(!value||!idOk(value.memberId)||typeof value.name!=='string'||!value.name.trim()||value.name.length>80
     ||typeof value.src!=='string'||value.src.length>210000)throw Error('INVALID_DIRECTORY_MEMBER');
+  if(value.memberId==='member_9'&&value.name!=='أمجد')throw Error('ADMIN_NAME_PROTECTED');
   if(value.src&&!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value.src)&&!/^https:\/\/[^\s"<>]+$/.test(value.src)&&!/^images\/[A-Za-z0-9_./%-]+$/.test(value.src))throw Error('INVALID_DIRECTORY_IMAGE');
   return {memberId:value.memberId,name:value.name.trim(),src:value.src};
 }

@@ -6,7 +6,7 @@ const { createHash } = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 
 const root = resolve(__dirname, '../..');
-const approvedHash = '8ab0677b3caf3019c11a3f275281a51a8a8cd4ee5ef34a5ac5709fcb8b0537f6';
+const approvedHash = '29b3668983f3da41f992e62e414ba5a6b1064289862a163785a2ce073b481ff9';
 const hook = 'node scripts/security/verify-rules.cjs';
 function verify(source, config) {
   const hash = createHash('sha256').update(source.replace(/\r\n/g, '\n')).digest('hex');

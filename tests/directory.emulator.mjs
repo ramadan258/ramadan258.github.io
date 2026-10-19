@@ -3,6 +3,8 @@ import {initializeTestEnvironment} from '@firebase/rules-unit-testing';
 import {fixtures,projectId} from './emulator-fixtures.mjs';
 import {directoryCrudCandidate} from '../scripts/security/directory-crud-candidate.mjs';
 import {checkDirectoryAdmin} from './directory-admin.emulator.mjs';
+import {amjadAvatarCandidate} from '../scripts/security/directory-amjad-avatar-candidate.mjs';
+import {checkAmjadAvatar} from './amjad-avatar.emulator.mjs';
 
 test('directory candidate preserves existing permissions and limits public records to profiles',async()=>{
   const fixture=await fixtures(),{members,fs}=fixture,admin=members[2];let candidate;
@@ -10,6 +12,11 @@ test('directory candidate preserves existing permissions and limits public recor
     candidate=await initializeTestEnvironment({projectId,firestore:{host:'127.0.0.1',port:5377,
       rules:directoryCrudCandidate().replaceAll('OpXzKToeVbd9xp1KHuqnD95yXlm2',admin.uid)}});
     await checkDirectoryAdmin({fs,db:admin.db,auth:admin.auth,adminUid:admin.uid,otherDb:members[0].db,
+      guestDb:candidate.unauthenticatedContext().firestore(),environment:candidate});
+    await candidate.cleanup();
+    candidate=await initializeTestEnvironment({projectId,firestore:{host:'127.0.0.1',port:5377,
+      rules:amjadAvatarCandidate().replaceAll('OpXzKToeVbd9xp1KHuqnD95yXlm2',admin.uid)}});
+    await checkAmjadAvatar({fs,db:admin.db,auth:admin.auth,adminUid:admin.uid,otherDb:members[0].db,
       guestDb:candidate.unauthenticatedContext().firestore(),environment:candidate});
   }finally{await candidate?.cleanup();await fixture.close();}
 });

@@ -1204,9 +1204,11 @@ function getEditingManagedMember() {
 }
 
 function refreshMemberManageFormState() {
-    const m = getEditingManagedMember(); qs('#memberManageFormTitle').textContent = m ? 'تعديل العضو' : 'إضافة عضو إلى الدليل';
-    qs('#memberManageAddBtn').textContent = m ? 'حفظ التعديل' : 'إضافة العضو';
-    qs('#memberManageFormHint').textContent = 'اسم وصورة فقط، دون حساب أو كلمة مرور.';
+    const m = getEditingManagedMember(), avatarOnly=m?.id==='member_9';
+    qs('#memberManageName').disabled=avatarOnly;
+    qs('#memberManageFormTitle').textContent = avatarOnly ? 'تغيير صورة أمجد' : m ? 'تعديل العضو' : 'إضافة عضو إلى الدليل';
+    qs('#memberManageAddBtn').textContent = avatarOnly ? 'حفظ الصورة' : m ? 'حفظ التعديل' : 'إضافة العضو';
+    qs('#memberManageFormHint').textContent = avatarOnly ? 'تغيير صورة العرض فقط.' : 'اسم وصورة فقط، دون حساب أو كلمة مرور.';
   }
 
 function resetMemberManageForm() {
@@ -1248,7 +1250,7 @@ function beginEditManagedMember(memberId) {
   setMemberManageStatus('');
   refreshMemberManageFormState();
   renderMemberManageAdminList();
-  name?.focus?.();
+  if(id==='member_9')image?.focus?.();else name?.focus?.();
 }
 
 function dataUrlSizeEstimate(dataUrl) {
@@ -1330,7 +1332,9 @@ function renderMemberManageAdminList(){
         const row=document.createElement('article');row.className='member-manage-card';
         const image=document.createElement('img');image.src=resolveMemberAvatarSrc(member.src);image.alt=member.name;
         const name=document.createElement('strong');name.textContent=member.name;row.append(image,name);
-        if(member.id!=='member_9')for(const [title,action] of [['تعديل',()=>beginEditManagedMember(member.id)],['حذف العضو',()=>deleteManagedMember(member.id)]]){
+        const actions=[[member.id==='member_9'?'تغيير الصورة':'تعديل',()=>beginEditManagedMember(member.id)]];
+        if(member.id!=='member_9')actions.push(['حذف العضو',()=>deleteManagedMember(member.id)]);
+        for(const [title,action] of actions){
           const button=document.createElement('button');button.type='button';button.className='identity-btn ghost';button.textContent=title;button.disabled=!enabled;button.onclick=action;row.append(button);
         }
         el.append(row);
@@ -1351,7 +1355,7 @@ async function addManagedMember(){
     const id=MEMBER_DIRECTORY_STATE.editingMemberId||'custom_member_directory_'+crypto.randomUUID().replaceAll('-','');
     let src=MEMBER_DIRECTORY_STATE.pendingImageDataUrl||'';if(src===DEFAULT_MEMBER_AVATAR_SRC)src='';
     await persistDirectoryMember({memberId:id,name:qs('#memberManageName').value,src},MEMBER_DIRECTORY_STATE.editingRevision);
-    resetMemberManageForm();setMemberManageStatus('تم حفظ العضو في الدليل دون إنشاء حساب دخول.');
+    resetMemberManageForm();setMemberManageStatus(id==='member_9'?'تم تحديث صورة أمجد.':'تم حفظ العضو في الدليل دون إنشاء حساب دخول.');
   }catch(error){setMemberManageStatus(error.message==='DIRECTORY_CONFLICT'?'تغيّر العضو في جلسة أخرى. أعد فتح التعديل.':'تعذر الحفظ. تحقق من الاسم والصورة والصلاحيات والاتصال.',true);}
   finally{button.disabled=window.__WA3I_SESSION_CONFIG.directoryWritesEnabled!==true;}
 }
@@ -1996,7 +2000,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html?release=20261016-627cf2efd8fc", window.location.href);
+      const url = new URL("azkar.html?release=20261016-397d0e6533ac", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {

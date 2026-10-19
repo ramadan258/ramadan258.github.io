@@ -458,6 +458,24 @@ service cloud.firestore {
           || (id == 'hidden__' + resource.data.memberId && resource.data.type == 'hidden_member'));
     }
 
+    // Amjad may change only his public directory photo; account identity and deletion stay protected.
+    match /directoryMembers/member_9 {
+      function validAmjadAvatar() {
+        return request.resource.data.keys().hasOnly(['schemaVersion','memberId','name','src','revision','updatedAt'])
+          && request.resource.data.keys().hasAll(['schemaVersion','memberId','name','src','revision','updatedAt'])
+          && request.resource.data.schemaVersion == 2 && request.resource.data.memberId == 'member_9'
+          && request.resource.data.name == 'أمجد'
+          && request.resource.data.src is string && request.resource.data.src.size() <= 210000
+          && (request.resource.data.src == '' || request.resource.data.src.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$')
+            || request.resource.data.src.matches('^https://[^"<> ]+$') || request.resource.data.src.matches('^images/[A-Za-z0-9_./%-]+$'))
+          && request.resource.data.revision is int && request.resource.data.updatedAt == request.time;
+      }
+      allow create: if isAmjad() && validAmjadAvatar() && request.resource.data.revision == 1;
+      allow update: if isAmjad() && validAmjadAvatar()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['src','revision','updatedAt'])
+        && request.resource.data.revision == resource.data.revision + 1;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
