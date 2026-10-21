@@ -86,6 +86,8 @@
 .day-dialog-header>div { min-width:0; }.day-dialog-header span { color:var(--muted); font-size:11px; }.day-dialog-header h3 { font-size:15px; margin:3px 0 0; line-height:1.8; }
 .day-dialog-header .icon-button { width:44px; height:44px; flex-shrink:0; }
 .day-dialog-content { padding:16px; overflow-y:auto; overscroll-behavior:contain; min-height:0; }
+.history-habit-row { display:flex; align-items:center; gap:9px; width:100%; min-height:44px; cursor:pointer; }
+.harvest-day-dialog .window-footer { flex-wrap:wrap; }
 .harvest-day-dialog .day-status:empty { display:none; }
 .harvest-day-dialog dl { display:grid; gap:8px; margin:0 0 14px; }.harvest-day-dialog dl>div { text-align:center; padding:10px 5px; min-width:0; }
 .harvest-day-dialog dt { color:var(--muted); font-size:10px; }.harvest-day-dialog dd { margin:4px 0 0; font-size:18px; font-weight:700; }
