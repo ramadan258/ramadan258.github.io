@@ -36,8 +36,10 @@ function saveStatus() {
   const state=store.status();$('#saveStatus').textContent=state.error==='CONFLICT'?'تعارض مع جلسة أخرى؛ مسودتك محفوظة هنا':state.error?'لم يكتمل الحفظ؛ أعد المحاولة قبل المغادرة':state.pending?'جارٍ الحفظ…':state.local?'محفوظ على هذا الجهاز فقط':'محفوظ في الحساب';
   $('#retrySave').hidden=!state.error;$('#saveStatus').dataset.error=!!state.error;
   if(today<trackingStart&&!state.error&&!state.pending)$('#saveStatus').textContent='تبدأ المتابعة في 16 أكتوبر 2026';
+  $('#dayDetailsSaveStatus').textContent=$('#saveStatus').textContent;$('#dayDetailsSaveStatus').dataset.error=!!state.error;
+  $('#saveDayChanges').disabled=state.saving||!canEditDay(harvest?.selectedDay());
   if(state.error==='CONFLICT'&&!$('#resolveConflict')) {
-    const button=document.createElement('button');button.className='list-toggle';button.id='resolveConflict';button.textContent='مراجعة التعارض';button.onclick=resolveConflict;$('.window-footer').append(button);
+    const button=document.createElement('button');button.className='list-toggle';button.id='resolveConflict';button.textContent='مراجعة التعارض';button.onclick=resolveConflict;$('#khutayWindow > .window-footer').append(button);
   }
   if(!state.error)$('#resolveConflict')?.remove();
 }
@@ -82,11 +84,16 @@ function renderHabitDetail() {
   }).join('');toggleDetail();
 }
 function toggleDetail(){ $('#habitOverview').hidden=!!detail;$('#habitDetail').hidden=!detail;$('#detailBack').hidden=!detail; }
-function dayList(type,items,date,complete=false) {
+function canEditDay(date) {
+  return typeof date==='string'&&date>=trackingStart&&date>=catalog.started&&date<=today&&!store.status().readError&&store.hasRange(date,date);
+}
+function dayList(type,items,date,complete=false,editable=false) {
   const visible=complete||expanded[type]?items:items.slice(0,4);
   return (items.length?`<ul class="detail-item-list">${visible.map(item=>{
     const state=days[date]?.habitStatus[item.id]||'unanswered';
-    return `<li class="detail-item${state==='done'?' is-complete':''}"><span class="detail-state-mark">${state==='done'?icon('check'):'<span class="detail-open-mark"></span>'}</span><span class="detail-item-name">${escape(item.name)}</span><span class="detail-item-status">${date>today?'لم يحن بعد':state==='done'?'مكتملة':state==='no'?'غير مكتملة':'دون إجابة'}</span></li>`;
+    const status=date>today?'لم يحن بعد':state==='done'?'مكتملة':state==='no'?'غير مكتملة':'دون إجابة';
+    if(editable)return `<li class="detail-item${state==='done'?' is-complete':''}"><label class="history-habit-row"><span class="check-control"><input type="checkbox" data-day-habit="${escape(item.id)}" data-date="${date}" aria-label="${escape(item.name)}" ${state==='done'?'checked':''}><span class="check-shape">${icon('check')}</span></span><span class="detail-item-name">${escape(item.name)}</span><span class="detail-item-status">${status}</span></label></li>`;
+    return `<li class="detail-item${state==='done'?' is-complete':''}"><span class="detail-state-mark">${state==='done'?icon('check'):'<span class="detail-open-mark"></span>'}</span><span class="detail-item-name">${escape(item.name)}</span><span class="detail-item-status">${status}</span></li>`;
   }).join('')}</ul>`:'<p class="list-empty">لا توجد عناصر مجدولة</p>')+(!complete&&items.length>4?`<button type="button" class="list-toggle" data-expand="${type}">${expanded[type]?'عرض أقل':'عرض الكل'}</button>`:'');
 }
 function renderDayDetails(date=harvestDate,open=false) {
@@ -96,7 +103,15 @@ function renderDayDetails(date=harvestDate,open=false) {
   const percentage=day.required?day.completed/day.required*100:null;
   $('#selectedDayStatus').textContent=day.future?'لم يحن بعد':beforeHistory?'قبل بدء سجلك':date===today?'حتى الآن':'يوم سابق';$('#selectedDayDate').textContent=weekdays[weekday(date)]+'، '+fullDate(date);
   $('#selectedDaySummary').innerHTML=`<dl class="day-detail-totals"><div><dt>إنجاز اليوم</dt><dd data-day-percentage>${day.future?'—':percent(percentage)}</dd></div><div><dt>العادات المجدولة</dt><dd data-day-required>${number(day.required)}</dd></div></dl><dl class="habit-state-summary" aria-label="حالات العادات"><div><dt>منجزة (نعم)</dt><dd data-day-done>${number(day.completed)}</dd></div><div><dt>غير منجزة (لا)</dt><dd data-day-no>${number(day.no)}</dd></div><div><dt>دون إجابة</dt><dd data-day-unanswered>${number(day.unanswered)}</dd></div></dl>`;
-  $('#selectedDayHabits').innerHTML=dayList('habits',day.habits,date,true);
+  const list=$('#selectedDayHabits'),editable=canEditDay(date),key=JSON.stringify([date,editable,day.habits.map(({id,name})=>[id,name])]);
+  // Keep the active checkbox and focus while shared statistics and save state update.
+  if(!list.firstElementChild||list.dataset.renderKey!==key){list.innerHTML=dayList('habits',day.habits,date,true,editable);list.dataset.renderKey=key;}
+  for(const input of list.querySelectorAll('[data-day-habit]')){
+    const state=days[date]?.habitStatus[input.dataset.dayHabit]||'unanswered',row=input.closest('.detail-item');
+    input.checked=state==='done';row.classList.toggle('is-complete',input.checked);
+    row.querySelector('.detail-item-status').textContent=state==='done'?'مكتملة':state==='no'?'غير مكتملة':'دون إجابة';
+  }
+  $('#dayDetailsSave').hidden=!editable||!day.habits.length;saveStatus();
   $('#selectedDayAnnouncement').textContent=weekdays[weekday(date)]+' '+percent(percentage);
 }
 function render(){({catalog,days}=store.snapshot());if(tab==='day')renderDaily();if(tab==='habits')renderHabits();if(tab==='harvest')harvest?.render();saveStatus();}
@@ -131,6 +146,11 @@ document.addEventListener('submit',event=>{
 document.addEventListener('change',async event=>{
   const input=event.target;
   if(input.dataset.habit)run({type:'habitStatus',id:input.dataset.habit,date:selectedDate,status:input.checked?'done':'no'});
+  if(input.dataset.dayHabit){
+    const date=input.dataset.date;
+    if(!$('#dayDetails').open||date!==harvest?.selectedDay()||!canEditDay(date)){render();return;}
+    if(!run({type:'habitStatus',id:input.dataset.dayHabit,date,status:input.checked?'done':'no'}))renderDayDetails(date,true);
+  }
   if(input.id==='dayPicker'&&input.value>=trackingStart&&input.value<=today){
     const requested=input.value;input.value=selectedDate;input.disabled=true;closeEditor();
     try{await store.ensureRange(requested,requested);selectedDate=requested;render();}
@@ -155,13 +175,16 @@ document.addEventListener('click',event=>{
   if(button.id==='archivedHabits'){archivedHabits=!archivedHabits;renderHabits();}
   if(button.dataset.expand){expanded[button.dataset.expand]=!expanded[button.dataset.expand];renderDayDetails(harvestDate);}
   if(button.id==='retrySave')void store.flush().catch(()=>{});
+  if(button.id==='saveDayChanges'&&canEditDay(harvest?.selectedDay())){
+    button.disabled=true;void store.flush().catch(()=>{}).finally(()=>{if($('#dayDetailsSaveStatus'))saveStatus();});
+  }
 });
 $('.tabs').addEventListener('keydown',event=>{
   const next=nextPlannerTab(tab,event.key);
   if(next!==null){event.preventDefault();selectTab(next,true);}
 });
 $('#khutayWindow').addEventListener('cancel',event=>{if(event.target!==event.currentTarget)return;event.preventDefault();if(editor)closeEditor();else void leave();});
-async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=20261016-6516f37221d7';}
+async function leave(){if(await window.WA3I_SESSION.safeLeave())location.href='./index.html?release=20261016-74f887098e5a';}
 $('#closePreview').onclick=leave;$('#launchPreview').onclick=()=>$('#khutayWindow').showModal();
 window.addEventListener('wa3i-session-cleared',()=>{document.body.replaceChildren();});
 async function resolveConflict() {
