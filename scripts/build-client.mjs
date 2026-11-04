@@ -3,6 +3,8 @@ import {readFileSync,writeFileSync,readdirSync,unlinkSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {trackingStart} from '../tracking-period.mjs';
+import {buildPublicDirectory} from './public-directory-build.mjs';
+buildPublicDirectory();
 const sha=value=>createHash('sha256').update(value).digest('hex').slice(0,12);
 const editable=['.','js'].flatMap(directory=>readdirSync(directory).filter(name=>/\.(?:html|js|mjs|css|json)$/.test(name)).map(name=>directory+'/'+name)).sort();
 const normalize=source=>source.replaceAll('\r\n','\n').replace(/release=[a-zA-Z0-9-]+/g,'release=BUILD')

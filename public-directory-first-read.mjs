@@ -1,4 +1,5 @@
 import {validateDirectoryMember} from './directory-service.mjs';
+import {createPublicDirectoryCache,embeddedPublicDirectory,applyPublicDirectoryPreview} from './public-directory-cache.mjs';
 
 const directoryFields=['schemaVersion','memberId','name','src','revision'];
 const legacyFields=['type','schemaVersion','managementState','memberId','name','src'];
@@ -73,12 +74,12 @@ function visiblePhotos(result){
   for(const [id] of result.directory)merged.set(id,result.photoRefs.get('directory/'+id));
   return [...merged.values()].slice(0,3).filter(photoRefOk);
 }
-export async function readPublicDirectory({projectId,apiKey,emulatorPort,hostname='',request=fetch,signal=AbortSignal.timeout(6000),metadataOnly=false,photoCache=null}){
+export async function readPublicDirectory({projectId,apiKey,emulatorPort,hostname='',request=fetch,signal=AbortSignal.timeout(6000),metadataOnly=false,photoCache=null,priority='high'}){
   const parent=`projects/${projectId}/databases/(default)/documents`;
   const endpoint=publicEndpoint({projectId,apiKey,emulatorPort,hostname},'runQuery');
   const read=async collection=>{
     // These are unauthenticated public reads. Security Rules still authorize both fixed queries.
-    const response=await request(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',cache:'no-store',priority:'high',signal,body:JSON.stringify(publicDirectoryQuery(projectId,collection,{metadataOnly}))});
+    const response=await request(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',cache:'no-store',priority,signal,body:JSON.stringify(publicDirectoryQuery(projectId,collection,{metadataOnly}))});
     if(!response.ok)throw Error('PUBLIC_DIRECTORY_READ_FAILED');
     return records(await response.json(),parent,collection);
   };
@@ -148,16 +149,37 @@ export function applyPublicDirectoryFirstRead(state,result){
   // A public bootstrap is not permission to edit. Only the administrative live snapshot sets ready.
   return changed;
 }
+if(typeof window!=='undefined'&&window.WA3I_SESSION){
+  const config=window.__WA3I_FIREBASE_CONFIG;
+  const removals=window.WA3I_PUBLIC_DIRECTORY_REMOVALS;
+  const cache=createPublicDirectoryCache({projectId:config?.projectId,onRemoval:id=>removals?.remove(id)});
+  window.WA3I_PUBLIC_DIRECTORY_CACHE={remember(state){
+    if(!state.publicFirstReadComplete&&!(state.directoryServerSnapshotSeen&&state.legacyServerSnapshotSeen))return;
+    void cache.remember({directory:state.directoryMembers,legacy:state.legacyProfiles});
+  }};
+  if(!window.WA3I_SESSION.adminMode){
+    let previewTimer;
+    window.WA3I_PUBLIC_DIRECTORY_PREVIEW=Promise.race([cache.read(),new Promise(resolve=>{previewTimer=setTimeout(()=>resolve(null),100);})]).finally(()=>clearTimeout(previewTimer)).then(async result=>{
+      if(result)return result;
+      if(document.readyState==='loading')await new Promise(resolve=>document.addEventListener('DOMContentLoaded',resolve,{once:true}));
+      return embeddedPublicDirectory(document,config?.projectId);
+    }).then(result=>{
+      if(result)for(const id of removals?.read()||[]){result.directory.delete(id);result.legacy.delete(id);}
+      return {result,apply:applyPublicDirectoryPreview};
+    }).catch(()=>null);
+  }
+}
 if(typeof window!=='undefined'&&window.WA3I_SESSION&&!window.WA3I_SESSION.adminMode&&!window.WA3I_PUBLIC_DIRECTORY_FIRST_READ){
   const config=window.__WA3I_FIREBASE_CONFIG,session=window.__WA3I_SESSION_CONFIG;
   const options={...config,hostname:location.hostname,emulatorPort:session?.emulators?.firestore,photoCache:createPublicPhotoCache()};
   window.WA3I_PERFORMANCE?.mark('public-directory-request-start');
   window.WA3I_PERFORMANCE?.start('public-directory-first-read');
-  window.WA3I_PUBLIC_DIRECTORY_FIRST_READ=readPublicDirectory({...options,metadataOnly:true})
+  const full=typeof document!=='undefined'&&!!document.getElementById('publicDirectorySnapshot');
+  window.WA3I_PUBLIC_DIRECTORY_FIRST_READ=readPublicDirectory({...options,metadataOnly:!full,priority:full?'low':'high'})
     .then(result=>{
       window.WA3I_PERFORMANCE?.start('public-directory-visible-photos');
-      const photos=readVisiblePublicPhotos(result,options).catch(()=>[]).finally(()=>window.WA3I_PERFORMANCE?.end('public-directory-visible-photos'));
-      return {result,apply:applyPublicDirectoryFirstRead,photos,applyPhotos:applyPublicDirectoryPhotos};
+      const photos=full?Promise.resolve([]):readVisiblePublicPhotos(result,options).catch(()=>[]).finally(()=>window.WA3I_PERFORMANCE?.end('public-directory-visible-photos'));
+      return {result,apply:applyPublicDirectoryFirstRead,full,photos,applyPhotos:applyPublicDirectoryPhotos};
     }).catch(()=>null)
     .finally(()=>window.WA3I_PERFORMANCE?.end('public-directory-first-read'));
   window.dispatchEvent?.(new Event('wa3i-public-directory-start'));

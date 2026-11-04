@@ -304,6 +304,9 @@ const MEMBER_DIRECTORY_STATE = {
   imagePending: false,
   firstReadAttached: false,
   firstReadWatchAttached: false,
+  publicPreviewAttached: false,
+  publicPreviewApplied: false,
+  publicFirstReadComplete: false,
   firstReadApplied: false,
   directoryServerSnapshotSeen: false,
   legacyServerSnapshotSeen: false,
@@ -501,7 +504,8 @@ function refreshMemberDirectoryUI(options = {}) {
     ? options.renderMembers
     : shouldRenderMembersSectionUI();
 
-  if (renderMembers) {
+  const serverRendered=!window.WA3I_SESSION.adminMode&&qs('#publicDirectorySnapshot')&&!MEMBER_DIRECTORY_STATE.publicPreviewApplied&&!MEMBER_DIRECTORY_STATE.firstReadApplied&&!(MEMBER_DIRECTORY_STATE.directoryServerSnapshotSeen&&MEMBER_DIRECTORY_STATE.legacyServerSnapshotSeen);
+  if (renderMembers&&!serverRendered) {
     renderMembersSection();
   }
   IDENTITY_MEMBERS_CACHE = readMembersFromDOM();
@@ -535,6 +539,7 @@ function refreshMemberDirectoryUI(options = {}) {
   if (hasMemberManageAdminAccess()) {
     try { renderMemberManageAdminList(); } catch {}
   }
+  window.WA3I_PUBLIC_DIRECTORY_CACHE?.remember(MEMBER_DIRECTORY_STATE);
 }
 
 async function cleanupLegacyRemovedMembersCloudOnce(){}
@@ -1394,6 +1399,7 @@ async function deleteManagedMember(id){
     const {deleteDirectoryMember}=await import('../directory-service.mjs');
     await deleteDirectoryMember({fs:window.FB,session:window.WA3I_SESSION,adminUid:window.__WA3I_SESSION_CONFIG.adminUid,
       enabled:window.__WA3I_SESSION_CONFIG.directoryWritesEnabled===true,memberId:id,expectedRevision:revision});
+    window.WA3I_PUBLIC_DIRECTORY_REMOVALS?.remove(id);
     MEMBER_DIRECTORY_STATE.directoryMembers.delete(id);MEMBER_DIRECTORY_STATE.legacyProfiles.delete(id);
     if(MEMBER_DIRECTORY_STATE.editingMemberId===id)resetMemberManageForm();
     refreshMemberDirectoryUI();setMemberManageStatus('حُذف اسم العضو وصورته من الدليل نهائيًا.');
@@ -1426,9 +1432,16 @@ function initMemberDirectorySystem(options = {}) {
   refreshMemberDirectoryUI({ renderMembers });
 
   const attachFirstRead=()=>{
+    if(!MEMBER_DIRECTORY_STATE.publicPreviewAttached&&window.WA3I_PUBLIC_DIRECTORY_PREVIEW){
+      MEMBER_DIRECTORY_STATE.publicPreviewAttached=true;
+      void window.WA3I_PUBLIC_DIRECTORY_PREVIEW.then(value=>{
+        if(value?.apply(MEMBER_DIRECTORY_STATE,value.result))refreshMemberDirectoryUI();
+      }).catch(()=>{});
+    }
     if(MEMBER_DIRECTORY_STATE.firstReadAttached||!window.WA3I_PUBLIC_DIRECTORY_FIRST_READ)return;
     MEMBER_DIRECTORY_STATE.firstReadAttached=true;
     void window.WA3I_PUBLIC_DIRECTORY_FIRST_READ.then(value=>{
+      if(value?.full)MEMBER_DIRECTORY_STATE.publicFirstReadComplete=true;
       if(value?.apply(MEMBER_DIRECTORY_STATE,value.result)){
         refreshMemberDirectoryUI();window.WA3I_PERFORMANCE?.mark('public-directory-first-render');
       }
@@ -2046,7 +2059,7 @@ function previousISODate(isoDate) {
 
     function getAzkarReaderUrl(cfg) {
       const key = String(cfg?.key || "morning").trim().toLowerCase() === "evening" ? "evening" : "morning";
-      const url = new URL("azkar.html?release=20261016-74f887098e5a", window.location.href);
+      const url = new URL("azkar.html?release=20261016-bfe99997866b", window.location.href);
       url.searchParams.set("type", key);
       url.searchParams.set("fresh", "20260411p");
       if (previewModeEnabled()) {
